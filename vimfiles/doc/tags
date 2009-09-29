@@ -51,6 +51,7 @@
 :TlistUpdate	taglist.txt	/*:TlistUpdate*
 :VCSAdd	vcscommand.txt	/*:VCSAdd*
 :VCSAnnotate	vcscommand.txt	/*:VCSAnnotate*
+:VCSBlame	vcscommand.txt	/*:VCSBlame*
 :VCSCommit	vcscommand.txt	/*:VCSCommit*
 :VCSDelete	vcscommand.txt	/*:VCSDelete*
 :VCSDiff	vcscommand.txt	/*:VCSDiff*
@@ -58,6 +59,7 @@
 :VCSInfo	vcscommand.txt	/*:VCSInfo*
 :VCSLock	vcscommand.txt	/*:VCSLock*
 :VCSLog	vcscommand.txt	/*:VCSLog*
+:VCSRemove	vcscommand.txt	/*:VCSRemove*
 :VCSRevert	vcscommand.txt	/*:VCSRevert*
 :VCSReview	vcscommand.txt	/*:VCSReview*
 :VCSStatus	vcscommand.txt	/*:VCSStatus*
@@ -79,6 +81,7 @@ LaTeX	latexhelp.txt	/*LaTeX*
 OmniCpp_DefaultNamespaces	omnicppcomplete.txt	/*OmniCpp_DefaultNamespaces*
 OmniCpp_DisplayMode	omnicppcomplete.txt	/*OmniCpp_DisplayMode*
 OmniCpp_GlobalScopeSearch	omnicppcomplete.txt	/*OmniCpp_GlobalScopeSearch*
+OmniCpp_LocalSearchDecl	omnicppcomplete.txt	/*OmniCpp_LocalSearchDecl*
 OmniCpp_MayCompleteArrow	omnicppcomplete.txt	/*OmniCpp_MayCompleteArrow*
 OmniCpp_MayCompleteDot	omnicppcomplete.txt	/*OmniCpp_MayCompleteDot*
 OmniCpp_MayCompleteScope	omnicppcomplete.txt	/*OmniCpp_MayCompleteScope*
@@ -165,10 +168,13 @@ VCSCommandCVSExec	vcscommand.txt	/*VCSCommandCVSExec*
 VCSCommandCommitOnWrite	vcscommand.txt	/*VCSCommandCommitOnWrite*
 VCSCommandDeleteOnHide	vcscommand.txt	/*VCSCommandDeleteOnHide*
 VCSCommandDiffSplit	vcscommand.txt	/*VCSCommandDiffSplit*
+VCSCommandDisableAll	vcscommand.txt	/*VCSCommandDisableAll*
 VCSCommandDisableExtensionMappings	vcscommand.txt	/*VCSCommandDisableExtensionMappings*
 VCSCommandDisableMappings	vcscommand.txt	/*VCSCommandDisableMappings*
 VCSCommandEdit	vcscommand.txt	/*VCSCommandEdit*
 VCSCommandEnableBufferSetup	vcscommand.txt	/*VCSCommandEnableBufferSetup*
+VCSCommandMapPrefix	vcscommand.txt	/*VCSCommandMapPrefix*
+VCSCommandMappings	vcscommand.txt	/*VCSCommandMappings*
 VCSCommandResultBufferNameExtension	vcscommand.txt	/*VCSCommandResultBufferNameExtension*
 VCSCommandResultBufferNameFunction	vcscommand.txt	/*VCSCommandResultBufferNameFunction*
 VCSCommandSVKExec	vcscommand.txt	/*VCSCommandSVKExec*
@@ -176,6 +182,7 @@ VCSCommandSVNDiffExt	vcscommand.txt	/*VCSCommandSVNDiffExt*
 VCSCommandSVNDiffOpt	vcscommand.txt	/*VCSCommandSVNDiffOpt*
 VCSCommandSVNExec	vcscommand.txt	/*VCSCommandSVNExec*
 VCSCommandSplit	vcscommand.txt	/*VCSCommandSplit*
+VCSCommandVCSTypeOverride	vcscommand.txt	/*VCSCommandVCSTypeOverride*
 VimExplorer	vimExplorer.txt	/*VimExplorer*
 VimExplorer-author	vimExplorer.txt	/*VimExplorer-author*
 VimExplorer-browse	vimExplorer.txt	/*VimExplorer-browse*
@@ -471,6 +478,7 @@ customizing-packages	latex-suite.txt	/*customizing-packages*
 customizing-place-holders	latex-suite.txt	/*customizing-place-holders*
 customizing-smart-keys	latex-suite.txt	/*customizing-smart-keys*
 customizing-what-to-fold	latex-suite.txt	/*customizing-what-to-fold*
+cvscommand-changes	vcscommand.txt	/*cvscommand-changes*
 default-folding	latex-suite.txt	/*default-folding*
 description	latexhelp.txt	/*description*
 diacritic-mappings	latex-suite.txt	/*diacritic-mappings*
@@ -885,13 +893,16 @@ minipage	latexhelp.txt	/*minipage*
 normal-mode-environment-mappings	latex-suite.txt	/*normal-mode-environment-mappings*
 notitlepage	latexhelp.txt	/*notitlepage*
 omnicpp-download	omnicppcomplete.txt	/*omnicpp-download*
+omnicpp-faq	omnicppcomplete.txt	/*omnicpp-faq*
 omnicpp-features	omnicppcomplete.txt	/*omnicpp-features*
+omnicpp-history	omnicppcomplete.txt	/*omnicpp-history*
 omnicpp-installation	omnicppcomplete.txt	/*omnicpp-installation*
 omnicpp-limitations	omnicppcomplete.txt	/*omnicpp-limitations*
 omnicpp-may-complete	omnicppcomplete.txt	/*omnicpp-may-complete*
 omnicpp-options	omnicppcomplete.txt	/*omnicpp-options*
 omnicpp-overview	omnicppcomplete.txt	/*omnicpp-overview*
 omnicpp-popup	omnicppcomplete.txt	/*omnicpp-popup*
+omnicpp-thanks	omnicppcomplete.txt	/*omnicpp-thanks*
 omnicppcomplete	omnicppcomplete.txt	/*omnicppcomplete*
 omnicppcomplete.txt	omnicppcomplete.txt	/*omnicppcomplete.txt*
 onecolumn	latexhelp.txt	/*onecolumn*
