@@ -4,8 +4,6 @@ import vim
 import os
 import subprocess
 from xml.etree import ElementTree as ET
-# pyfiles import 
-from ATVimFuncWrapper import VimConfirm
 # AT import
 from ATBase import ATTypeBase
 
@@ -16,24 +14,63 @@ class ATTypeCPP( ATTypeBase ):
         ATTypeBase.__init__( self )
 
 
-    def GetUserInput( self , info , prompt , keynavi , type ):
-        if info == "":
-            showprompt = "%-40s\\\" %s\nAutotags ==> " % ( prompt , keynavi )
+    def GetUserInput( self , prompt , type = None , check_func = None , allow_empty = False ):
+        if type == None :
+            cmdFirst = 'input( "%s: " , "" )' %  prompt  
+            cmdRetry = 'input( "Invalid , retry: " , "" )'
         else:
-            showprompt = "    %s\n%-40s\\\" %s\nAutotags ==> " % ( info , prompt , keynavi )
-        return vim.eval('input("%s","","%s")' % ( showprompt , type ) )
+            cmdFirst = 'input( "%s: " , "" , "%s" )' %  ( prompt  , type )
+            cmdRetry = 'input( "Invalid , retry: " , "" )'
 
+        input = vim.eval( cmdFirst )
+        if check_func == None :
+            return input
+        else:
+            while True :
+                if input == None :
+                    return None
+                if allow_empty and input == "":
+                    return ""
+                if not check_func( input ):
+                    input = vim.eval( cmdRetry )
+                    continue
+                break
+            return input
+
+    #def GetUserInput( self , info , prompt , keynavi , type = None ):
+    #    if info == "":
+    #        showprompt = "%-40s\\\" %s\nAutotags ==> " % ( prompt , keynavi )
+    #    else:
+    #        showprompt = "    %s\n%-40s\\\" %s\nAutotags ==> " % ( info , prompt , keynavi )
+
+    #    if type == None :
+    #        return vim.eval('input("%s","")' % showprompt )
+    #    else:
+    #        return vim.eval('input("%s","","%s")' % ( showprompt , type ) )
+
+    def SearchConfig( self , basepath = None ):
+        if basepath :
+            search_base_path = basepath
+        else:
+            search_base_path = vim.eval(' expand("%:p:h") ' )
+
+        # search config_base_path
+        retryDepth = 8 
+        while retryDepth :
+            retryDepth -= 1
+
+            config_file_path = os.path.join ( search_base_path , '.at' , self.GetTypeID() + '.xml' )
+            if os.path.isfile( config_file_path ):
+                return config_file_path
+
+            next_search = os.path.dirname( search_base_path )
+            if next_search == search_base_path :
+                raise RuntimeError('not find .at config path')
+            search_base_path = next_search
 
     def LoadXML( self , basepath = None ):
-        if basepath :
-            config_base_path = basepath
-        else:
-            config_base_path = vim.eval(' expand("%:p:h") ' )
-
         # check config file
-        config_file_path = os.path.join( config_base_path , '.at' , self.GetTypeID() + '.xml' )
-        if not os.path.isfile( config_file_path ):
-            raise
+        config_file_path = self.SearchConfig( basepath )
 
         # <typeid>cpp</typeid>
         # <soucepath>D:</sourcepath>
@@ -52,71 +89,29 @@ class ATTypeCPP( ATTypeBase ):
 
     def GetConfigFromUser( self ):
         # get source dir
-        sourcepath = self.GetUserInput( 
-                        "" , 
-                        "Give the <Source Path>:" , 
-                        "<ESC> CANCEL" , 
-                        "dir" )
-        while True :
-            if sourcepath == None :
-                return None
-    
-            if not os.path.isdir( sourcepath ):
-                srcbase = self.GetUserInput( 
-                        "[%s] is not valid dir path" % sourcepath , 
-                        "Give the <Source Path>:" , 
-                        "<ESC> CANCEL" , 
-                        "dir" )
-                continue
-            break
-        # get where to gen the tags
-        tagspath = self.GetUserInput( 
-                "Source Path -> %s" % sourcepath ,
-                "Give the <Tags Path> where to gen the tags:" , 
-                "<ESC> CANCEL" , 
-                "dir" )
-        while True :
-            if tagspath == None :
-                return None
+        sourcepath = self.GetUserInput( "Give the <Source Path>" , 'dir' , os.path.isdir )
+        if sourcepath == None : return None
 
-            if not os.path.isdir( tagspath ):
-                tagsbase = self.GetUserInput( 
-                        "[%s] is not valid dir path" % tagspath , 
-                        "Give the <Tags Path> where to gen the tags:" , 
-                        "<ESC> CANCEL" , 
-                        "dir" )
-                continue
-            break
+        # get where to gen the tags
+        tagspath = self.GetUserInput( "Give the <Tag path> where to gen the tags" , "dir" , os.path.isdir )
+        if tagspath == None : return None
         
         # get systags list
         systagslist = []
-        systags = self.GetUserInput(
-                "Tags Path -> %s" % tagspath ,
-                "Add <System Tags> :",
-                "[Empty] enter next step | <Esc> CANCEL" ,
-                "file" )
+        systags = self.GetUserInput( "Add <System Tags> , Empty for next Step" , 'file' , os.path.isfile )
         while True:
             if systags == None:
                 return None
             elif systags == "":
                 break;
 
-            if os.path.isfile( systags ) and ( not systags in systagslist ):
+            if not systags in systagslist :
                 systagslist.append( systags )
-                systags = self.GetUserInput(
-                        "Added to <System Tags> -> %s" % systags,
-                        "Add system tag files:",
-                        "[Empty] enter next step | <Esc> CANCEL" ,
-                        "file" )
-            else:
-                systags = self.GetUserInput(
-                        "[%s] is not valid file path" % systags ,
-                        "Add system tag files:",
-                        "[Empty] enter next step | <Esc> CANCEL" ,
-                        "file" )
+            systags = self.GetUserInput("Add one more , Empty for next step" , 'file' , os.path.isfile , True )
 
 
-        confirmText  = "typeid : \n"
+        confirmText  = "\n" + "=" * 30 + "\n"
+        confirmText += "typeid : \n"
         confirmText += "    cpp\n"
         confirmText += "Source Path :\n"
         confirmText += "    %s\n" % sourcepath
@@ -125,8 +120,10 @@ class ATTypeCPP( ATTypeBase ):
         confirmText += "System Tags :\n"
         for x in systagslist:
             confirmText += "    %s\n" % x
-        selection = VimConfirm( confirmText , ['Continue' , 'Cancel' ] )
-        if selection != 'Continue' :
+        confirmText += "=" * 30 + "\n"
+        selection = self.GetUserInput( confirmText + 'Continue? (Enter to continue , ESC for CANCEL)' )
+
+        if selection != "":
             return None
 
         config_dict = {}
@@ -171,7 +168,7 @@ class ATTypeCPP( ATTypeBase ):
         return "cpp"
 
     def GetFilePattern( self ):
-        return ["cpp","c","h"]
+        return ["cpp","c","h","hrh"]
 
     def LoadConfig( self ):
         # load config
@@ -212,32 +209,20 @@ class ATTypeCPP( ATTypeBase ):
             return 
         et = self.GenXML( config_dict );
 
-        for root , dirs , files in os.walk( config_dict['sourcepath'] , topdown = False ):
-            for dir in dirs :
-                self.GenATOneFolder( os.path.join( root , dir ) , et )
-        self.GenATOneFolder( config_dict['sourcepath'] , et )
+        atdir = os.path.join( config_dict['sourcepath'] , '.at' )
+        os.mkdir( atdir )
+        if not os.path.isdir( atdir ):
+            sys.stderr.write("Autotags ==> Gen [%s] dir error!" % atdir )
+            return
+        filename = os.path.join( atdir , self.GetTypeID() + '.xml' )
+        et.write( filename , 'UTF-8' )
 
 
     def RemoveRepository( self ):
         # get source dir
-        sourcepath = self.GetUserInput( 
-                        "" , 
-                        "Give the <Source Path>:" , 
-                        "<ESC> CANCEL" , 
-                        "dir" )
-        while True :
-            if sourcepath == None :
-                return None
+        sourcepath = self.GetUserInput( "Give the <Source Path>:" , "dir" , os.path.isdir )
+        if sourcepath == None : return
     
-            if not os.path.isdir( sourcepath ):
-                srcbase = self.GetUserInput( 
-                        "[%s] is not valid dir path" % sourcepath , 
-                        "Give the <Source Path>:" , 
-                        "<ESC> CANCEL" , 
-                        "dir" )
-                continue
-            break
-
         try:
             config_dict = self.LoadXML( sourcepath )
         except:
@@ -246,20 +231,13 @@ class ATTypeCPP( ATTypeBase ):
 
         confirmText = "source path:\n"
         confirmText+= "    %s" % config_dict['sourcepath']
-        selection = VimConfirm( confirmText , ['Continue' , 'Cancel' ] )
+        selection = self.GetUserInput( confirmText + '\nContinue? ( Enter to continue , ESC for CANCEL)' )
 
-        if selection != 'Continue':
-            print "Autotags ==> User cancel action!"
+        if selection != '' :
             return
 
         import shutil
-        for root , dirs , files in os.walk( config_dict['sourcepath'] , topdown = False ):
-            if '.at' in dirs :
-                shutil.rmtree( os.path.join( root , '.at' ) )
-        try:
-            shutil.rmtree( os.path.join( config_dict['sourcepath'] , '.at' ) )
-        except:
-            pass
+        shutil.rmtree( os.path.join( config_dict['sourcepath'] , '.at' ) )
 
 
 

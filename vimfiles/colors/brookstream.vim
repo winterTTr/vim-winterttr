@@ -45,9 +45,9 @@ hi Pmenu        guifg=white          guibg=#445599  gui=none
 " syntax highlighting groups ----------------------------------------
 
 hi Comment guifg=#696969
-hi Constant guifg=#00aaaa
+hi Constant guifg=#0FBD89
 hi Identifier guifg=#00e5ee
-hi Statement gui=None guifg=#00ffff
+hi Statement gui=None guifg=#00B9B9
 hi PreProc guifg=#8470ff
 hi Type gui=None guifg=#C8AD75
 hi Special gui=none guifg=#87cefa

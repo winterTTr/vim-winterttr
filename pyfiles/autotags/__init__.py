@@ -4,7 +4,8 @@ from ATExport import LoadConfig , ResetConfig , UpdateTags , RegisterLoader , Do
 # pyfiles auto loaded
 def pyfilesInit():
     vim.command('command! -nargs=0 Autotags py autotags.DoCommand()')
-    from ATTypeCPP import ATTypeCPP
-    RegisterLoader( ATTypeCPP() )
+    #from ATTypeCPP import ATTypeCPP
+    import ATTypeCPP
+    RegisterLoader( ATTypeCPP.ATTypeCPP() )
 
 

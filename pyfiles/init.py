@@ -13,8 +13,9 @@ for eachdir in load_list :
     
     try:
         module = __import__( eachdir )
-    except ImportError:
-        module = None
+    except ImportError , e:
+        print e
+        continue
     globals()[eachdir] = module
     try :
         getattr( module , 'pyfilesInit' )()
