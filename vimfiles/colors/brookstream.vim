@@ -18,28 +18,29 @@ let g:colors_name="brookstream"
 
 "--------------------------------------------------------------------
 
-hi Normal gui=none guibg=#000000 guifg=#89C591
-hi Cursor guibg=#44ff44 guifg=#000000
-hi Directory guifg=#44ffff
-hi DiffAdd guibg=#080808 guifg=#ffff00
-hi DiffDelete guibg=#080808 guifg=#444444
-hi DiffChange guibg=#080808 guifg=#ffffff
-hi DiffText guibg=#080808 guifg=#bb0000
-hi ErrorMsg guibg=#880000 guifg=#ffffff
-hi Folded guifg=#000088
-hi IncSearch guibg=#000000 guifg=#bbcccc
-hi Search guibg=#AAAAAA
-hi LineNr guibg=#050505 guifg=#4682b4
-hi ModeMsg guifg=#ffffff
-hi MoreMsg guifg=#44ff44
-hi NonText guifg=#4444ff
-hi Question guifg=#ffff00
-hi SpecialKey guifg=#4444ff
-hi StatusLine gui=none guibg=#2f4f4f guifg=#BBBBBB
+hi Normal       gui=none guibg=#000000 guifg=#89C591
+hi Cursor       guibg=#44ff44 guifg=#000000
+hi Directory    guifg=#44ffff
+hi DiffAdd      guibg=#080808 guifg=#ffff00
+hi DiffDelete   guibg=#080808 guifg=#444444
+hi DiffChange   guibg=#080808 guifg=#ffffff
+hi DiffText     guibg=#080808 guifg=#bb0000
+hi ErrorMsg     guibg=#880000 guifg=#ffffff
+hi Folded       guifg=#000088
+hi IncSearch    guibg=#000000 guifg=#bbcccc
+hi Search       guibg=#AAAAAA
+hi LineNr       guibg=#050505 guifg=#4682b4
+hi ModeMsg      guifg=#ffffff
+hi MoreMsg      guifg=#44ff44
+hi NonText      guifg=#4444ff
+hi Question     guifg=#ffff00
+hi SpecialKey   guifg=#4444ff
+hi StatusLine   gui=none guibg=#2f4f4f guifg=#BBBBBB
 hi StatusLineNC gui=none guibg=#bbbbbb guifg=#000000 
-hi Title guifg=#ffffff
-hi Visual gui=none guibg=#bbbbbb guifg=#000000
-hi WarningMsg guifg=#ffff00
+hi Title        guifg=#ffffff
+hi Visual       gui=none guibg=#bbbbbb guifg=#000000
+hi WarningMsg   guifg=#ffff00
+hi Pmenu        guifg=white          guibg=#445599  gui=none
 
 " syntax highlighting groups ----------------------------------------
 
