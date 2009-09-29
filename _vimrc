@@ -54,7 +54,8 @@ if has("gui_running")
     set lines=45
     "colorscheme darkblue
 	"colorscheme desertEx
-    colorscheme freya
+    "colorscheme freya
+	colorscheme brookstream
     set background=dark
     "set guioptions=aegimtrLv
     set guioptions=aegimtrL
@@ -239,7 +240,7 @@ nnoremap <silent> <M-/> :nohl<CR>
 " -------------------------------- }}}2
 
 " --- Get the current highlight group --- {{{2
-"nnoremap  <F7>  :echo "hi<".synIDattr(synID(line("."),col("."),1),"name").'> trans<'.synIDattr(synID(line("."),col("."),0),"name")."> lo<".synIDattr(synIDtrans(synID(line("."),col("."),1)),"name").">"<CR>
+nnoremap  <F7>  :echo "hi<".synIDattr(synID(line("."),col("."),1),"name").'> trans<'.synIDattr(synID(line("."),col("."),0),"name")."> lo<".synIDattr(synIDtrans(synID(line("."),col("."),1)),"name").">"<CR>
 " --------------------------------------- }}}2
 
 " --- Find the line with the same indent --- {{{2
