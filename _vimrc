@@ -36,7 +36,8 @@ set number
 set ruler
 "set rulerformat=%55(%{strftime('%a\ %b\ %e\ %I:%M\ %p')}\ %5l,%-6(%c%V%)\ %P%)
 set showmatch
-"set visualbell t_vb="<Esc>|1000f"
+set visualbell t_vb= 
+set novisualbell
 "set cul
 "set guifont&
 
@@ -103,13 +104,19 @@ set autoindent
 " --- auto command ---- {{{2
 if !exists("autocommands_loaded")
     let autocommands_loaded = 1
+
+	augroup SymbianFileType
+		autocmd BufRead,BufNewFile *.hrh set filetype=cpp 
+		au!
+	augroup END
+
     autocmd FileType * :set formatoptions=tcql autoindent comments&
     autocmd FileType css :set formatoptions=cql autoindent
     autocmd FileType c,cpp,h,java :set formatoptions=croql smartindent
                 \ comments=sr:/*,mb:*,ex:*/,:// expandtab
 	"autocmd BufEnter * :cd %:p:h
-    autocmd CursorMoved *.c,*.cpp,*.h,*.java call ColumnHighlight()
-    autocmd InsertEnter *.c,*.cpp,*.h,*.java call RemoveHighlightOnInsertEnter()
+    "autocmd CursorMoved *.c,*.cpp,*.h,*.java call ColumnHighlight()
+    "autocmd InsertEnter *.c,*.cpp,*.h,*.java call RemoveHighlightOnInsertEnter()
     augroup CPPFile "{{{3
         au!
         autocmd FileType cpp syn match cppFuncDef "::\~\?\zs\h\w*\ze([^)]*\()\s*\(const\)\?\)\?$"
@@ -351,6 +358,8 @@ nnoremenu <silent> &Cscope.including\ file :cs find d <C-R>=expand("<cword>")<CR
 " taglist options {{{1
 nnoremap <silent><F8> :TlistToggle<CR>
 let Tlist_Use_SingleClick=0
+let Tlist_Use_Right_Window = 1
+let Tlist_File_Fold_Auto_Close = 1
 let Tlist_Exit_OnlyWindow=1
 let updatetime=4
 let Tlist_Sort_Type="name"
@@ -681,7 +690,7 @@ if !exists("autoload_python") "{{{2
     augroup PYTHON
         au!
         autocmd FileType PYTHON set expandtab shiftwidth=4
-        autocmd QuickFixCmdPre * copen
+        autocmd QuickFixCmdPre PYTHON copen
         "autocmd FileType PYTHON inoremap <C-ENTER> <C-R>=Py_CompleteAttributes()<CR>
 
 	   "Set some bindings up for 'compile' of python
