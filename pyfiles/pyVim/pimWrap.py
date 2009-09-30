@@ -8,7 +8,13 @@ def CreateRandomName( base ):
     random_ext = random.randint( 0 , 999999 )
     return '%s.%06d' % ( base , random_ext )
 
+
 class pimBuffer:
+    """
+    Totally wrapper for the vim-buffer-object(VBO)
+    This class can create , wipeout , and used to the class for a
+    real buffer in the vim.
+    """
     def __init__( self ,  type = PIM_BUF_TYPE_NORMAL , name = None):
         # save property
         self.type = type
@@ -16,30 +22,19 @@ class pimBuffer:
         # get name if given , otherwise give the system random name
         self.name = name if name != None else CreateRandomName('PIM.BUF')
 
-        # create buffer
-        self._create()
+        # make enter first, use this flag to do the first enter # initialization
+        self.firstEnter = True
+
+        # create buffer, get the buffer id ( which is unique )
+        bufferId = int( vim.eval('bufnr( "%s" ,1 )' % self.name ) )
+
+        # get the vim buffer object
+        self._buffer = filter( lambda x : x.number == bufid , vim.buffers )[0]
 
     def __del__( self ):
         if self._buffer != None:
             self.wipeout()
 
-    def _create(self ):
-        # enter first
-        self.firstEnter = True
-
-        # get the buffer id ( which is unique )
-        #vim.command('silent! call bufnr( "%s" , 1)' % self.name )
-        bufferId = int( vim.eval('bufnr( "%s" ,1 )' % self.name ) )
-        # save the pyhon object to current buffer
-        self._buffer = self._getBufferObj( bufferId )
-
-    def _getBufferObj( self , bufid ):
-        # search the buf object in vim.buffers
-        for buf in vim.buffers:
-            if buf.number == bufid:
-                return buf
-        else:
-            throw
 
     def isExist( self ):
         if self._buffer == None :
@@ -47,6 +42,9 @@ class pimBuffer:
         else:
             # if the buffer delete , the object has no member
             return dir(self._buffer ) != []
+
+    def isShown(self):
+        return int( vim.eval( 'bufwinnr(%d)' % self._buffer.number ) ) != -1 
 
     def getID( self ):
         return self._buffer.number
@@ -69,24 +67,20 @@ class pimBuffer:
             
             ## maintain the shape
             vim.command('setlocal nonumber')
-            vim.command('setlocal cursorline')
+            #vim.command('setlocal cursorline')
             vim.command('setlocal foldcolumn=0')
             
             ## about buffer
-            vim.command('setlocal bufhidden=delete')
+            vim.command('setlocal bufhidden=hide')
             vim.command('setlocal nobuflisted')
+
         elif self.type == PIM_BUF_TYPE_NORMAL:
             vim.command('setlocal buflisted')
     
-    def isShown(self):
-        ret = int( vim.eval( 'bufwinnr(%d)' % self._buffer.number ) )
-        return ret != -1
-        
         
     def showBuffer( self , parentwin , **kwdict ):
         # the buffer does not exist
-        if not self.isExist() :
-            return
+        if not self.isExist() : return
 
         # can not focus the parent win , win is closed maybe
         if parentwin and ( not parentwin.setFocus() ):
@@ -96,7 +90,6 @@ class pimBuffer:
 
         # if this is the first time to show the buffer , set property
         if self.firstEnter :
-            self.firstEnterHook()
             self.setBufferType()
             self.firstEnter = False
 
@@ -117,45 +110,59 @@ class pimBuffer:
         pass
 
 
-    def firstEnterHook( self ):
-        # give the oppotunity for the user for do something on first
-        # Enter
-        pass
-
-
 class pimWindow:
-    def __init__( self , winObj , splitter ):
-        if splitter == None and winObj == None:
-            raise "pimWindow : invalid window init arguments"
-
-        self.splitter = splitter
-        self._window = winObj
-        self._statusline= None
-
-    def showWindow( self ):
-        # get window id , -1 mean not show
-        id = self.getWindowID()
-        if id != -1 :
-            return
-
-        # focus after create if neccessary
-        if self.setFocus( create = True ):
-            if not self._statusline :
-                vim.command('setlocal statusline=%s' % self._statusline )
-
+    """
+    pimWindow is the wrap to a vim-window-object(VWO)
+    This class just attach to the VWO , not create it.
+    To create the VWO ,use the WindowsManager ,and WindowsManager just
+    return the pimWindow Object.
+    """
+    def __init__( self , winObj = None ):
+        self._window = winObj if winObj else vim.current.window
+        #self._statusline= None
 
     def closeWindow( self ):
         # get win id , -1 means has been closed
-        id = self.getWindowID()
-        if id == -1 :
+        if self.getWindowID() == -1 :
             return
         else:
             self.setFocus()
             vim.command("close")
             
-    def setStatusLine(self , statusline = None ):
-        self._statusline = statusline
-        #print "%d %s" % ( self.getWindowID() , self._statusline )
+    def setFocus( self ):
+        winID = self.getWindowID()
+        # window has been close( destroyed ) 
+        if winID == -1 :
+            return False
+
+        # focus the win
+        vim.command("%dwincmd w" % ( self.getWindowID() + 1 , ) )
+        return True
+
+    def getWindowID( self ):
+        # no window object is attach
+        if self._window == None :
+            return -1
+
+        import re
+        winStr = str( self._window )
+        reMatch = re.match( '<window (?P<id>\d+)>' , winStr )
+        if reMatch:
+            return int( reMatch.group('id') )
+
+        reMatch = re.match( 
+                '<window object \(deleted\) at [A-Z0-9]{8}>' ,
+                winStr)
+        if reMatch:
+            return -1
+        raise
+
+    def isShown( self ):
+        return self.getWindowID() != -1
+
+    #def setStatusLine(self , statusline = None ):
+    #    self._statusline = statusline
+    #    #print "%d %s" % ( self.getWindowID() , self._statusline )
 
         
 
@@ -208,38 +215,7 @@ class pimWindow:
     #    for buf in self.buflist :
     #        if _getter(buf) == id :
     #            x.showBuffer( self )
-        
-    def setFocus( self , create = False ):
-        winID = self.getWindowID()
-        if ( winID == -1 ) and ( not create ) or ( self.splitter == None ) :
-                return FALSE
 
-        if winID == -1 :
-            self._window = self.splitter.doSplit( True )
-
-        vim.command("%dwincmd w" % ( self.getWindowID() + 1 , ) )
-        return True
-
-    def getWindowID( self ):
-        if self._window == None :
-            return -1
-
-        import re
-        winStr = str( self._window )
-        reMatch = re.match( '<window (?P<id>\d+)>' , winStr )
-        if reMatch:
-            return int( reMatch.group('id') )
-
-        reMatch = re.match( 
-                '<window object \(deleted\) at [A-Z0-9]{8}>' ,
-                winStr)
-        if reMatch:
-            return -1
-
-        raise
-
-    def isShown( self ):
-        return self.getWindowID() != -1
 
 
 PIM_SPLIT_TYPE_MOST_TOP     = 0x01
@@ -278,16 +254,13 @@ class pimWinSplitter:
     _resize_command = 'resize'
     _resize_format = '%(type)s %(cmd)s %(width)d'
             
-    def __init__( self , type , width ,  baseWin = None):
-        if type & 0xF0 and baseWin == None :
+    def __init__( self , type , width , base_window = None):
+        if type & 0xF0 and base_window == None :
             raise "pimWinSplitter : Must give base window when split with CUR"
-        self.type = type
-        self.width = width
-        self.base = baseWin
-        #self.bufferID = bufferID
 
-    def getBaseWin( self ):
-        return self.base
+        self.type = type
+        self._basewin = base_window
+        self.width = width
 
     def getResizeCmd( self ):
         return self._resize_format % {
@@ -297,18 +270,31 @@ class pimWinSplitter:
 
     def getSplitCmd( self ):
         return self._split_format % {
-                'width' : self._width , 
+                'width' : self.width , 
                 'type'  : self._split_map[self.type] , 
                 'cmd'   : self._split_command }
         
-    def doSplit(self , create = False ):
-        if self._base :
-            self._base.setFocus( create )
+    def doSplit(self):
+        if self._basewin :
+            self._basewin.setFocus()
 
         command = self.getSplitCmd()
         vim.command( command )
 
-        return vim.current.window
+        return pimWindow ( vim.current.window )
+
+
+class pimWindowManager():
+    def __init__( self , description_file = None ):
+        self.window_info = {}
+
+    def makeWindows( self ):
+        self.window_info['main'] = pimWindow()
+        self.window_info['panel'] = pimWinSplitter( PIM_SPLIT_TYPE_MOST_RIGHT , 30 ).doSplit()
+        self.window_info['list'] = pimWinSplitter( 
+                PIM_SPLIT_TYPE_CUR_BOTTOM , 10 , self.window_info['panel'] ).doSplit()
+
+
 
 
 
