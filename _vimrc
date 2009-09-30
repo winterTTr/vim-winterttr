@@ -36,7 +36,8 @@ set number
 set ruler
 "set rulerformat=%55(%{strftime('%a\ %b\ %e\ %I:%M\ %p')}\ %5l,%-6(%c%V%)\ %P%)
 set showmatch
-"set visualbell t_vb="<Esc>|1000f"
+set visualbell t_vb= 
+set novisualbell
 "set cul
 "set guifont&
 
@@ -357,6 +358,8 @@ nnoremenu <silent> &Cscope.including\ file :cs find d <C-R>=expand("<cword>")<CR
 " taglist options {{{1
 nnoremap <silent><F8> :TlistToggle<CR>
 let Tlist_Use_SingleClick=0
+let Tlist_Use_Right_Window = 1
+let Tlist_File_Fold_Auto_Close = 1
 let Tlist_Exit_OnlyWindow=1
 let updatetime=4
 let Tlist_Sort_Type="name"
