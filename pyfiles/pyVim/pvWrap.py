@@ -1,8 +1,8 @@
 import vim
 import re
 
-PIM_BUF_TYPE_READONLY   = 0x0001
-PIM_BUF_TYPE_NORMAL     = 0x0002
+PV_BUF_TYPE_READONLY   = 0x0001
+PV_BUF_TYPE_NORMAL     = 0x0002
 
 def CreateRandomName( base ):
     import random
@@ -10,18 +10,18 @@ def CreateRandomName( base ):
     return '%s.%06d' % ( base , random_ext )
 
 
-class pimBuffer:
+class pvBuffer:
     """
     Totally wrapper for the vim-buffer-object(VBO)
     This class can create , wipeout , and used to the class for a
     real buffer in the vim.
     """
-    def __init__( self ,  type = PIM_BUF_TYPE_NORMAL , name = None):
+    def __init__( self ,  type = PV_BUF_TYPE_NORMAL , name = None):
         # save property
         self.type = type
 
         # get name if given , otherwise give the system random name
-        self.name = name if name != None else CreateRandomName('PIM.BUF')
+        self.name = name if name != None else CreateRandomName('pv.BUF')
 
         # make enter first, use this flag to do the first enter # initialization
         self.firstEnter = True
@@ -58,7 +58,7 @@ class pimBuffer:
         self._buffer = None
         
     def setBufferType( self ):
-        if self.type == PIM_BUF_TYPE_READONLY:
+        if self.type == PV_BUF_TYPE_READONLY:
             ## can not write
             vim.command('setlocal nomodifiable')
             vim.command('setlocal noswapfile')
@@ -75,7 +75,7 @@ class pimBuffer:
             vim.command('setlocal bufhidden=hide')
             vim.command('setlocal nobuflisted')
 
-        elif self.type == PIM_BUF_TYPE_NORMAL:
+        elif self.type == PV_BUF_TYPE_NORMAL:
             vim.command('setlocal buflisted')
     
         
@@ -95,14 +95,14 @@ class pimBuffer:
             self.firstEnter = False
 
         # close readonly if need to
-        if self.type == PIM_BUF_TYPE_READONLY :
+        if self.type == PV_BUF_TYPE_READONLY :
             vim.command('setlocal modifiable')
             vim.command('setlocal noreadonly')
             
         self.OnUpdate( ** kwdict )
         
         # open readonly after update buffer
-        if self.type == PIM_BUF_TYPE_READONLY :
+        if self.type == PV_BUF_TYPE_READONLY :
             vim.command('setlocal nomodifiable')
             vim.command('setlocal readonly')
             
@@ -111,12 +111,12 @@ class pimBuffer:
         pass
 
 
-class pimWindow:
+class pvWindow:
     """
-    pimWindow is the wrap to a vim-window-object(VWO)
+    pvWindow is the wrap to a vim-window-object(VWO)
     This class just attach to the VWO , not create it.
-    To create the VWO ,use the pimWindowManager ,and pimWindowManager
-    return the pimWindow Object.
+    To create the VWO ,use the pvWindowManager ,and pvWindowManager
+    return the pvWindow Object.
     """
     def __init__( self , winObj = None ):
         self._window = winObj if winObj else vim.current.window
@@ -218,32 +218,32 @@ class pimWindow:
 
 
 
-PIM_SPLIT_TYPE_MOST_TOP     = 0x01
-PIM_SPLIT_TYPE_MOST_BOTTOM  = 0x02
-PIM_SPLIT_TYPE_MOST_RIGHT   = 0x04
-PIM_SPLIT_TYPE_MOST_LEFT    = 0x08
-PIM_SPLIT_TYPE_CUR_TOP      = 0x10
-PIM_SPLIT_TYPE_CUR_BOTTOM   = 0x20
-PIM_SPLIT_TYPE_CUR_LEFT     = 0x40
-PIM_SPLIT_TYPE_CUR_RIGHT    = 0x80
+PV_SPLIT_TYPE_MOST_TOP     = 0x01
+PV_SPLIT_TYPE_MOST_BOTTOM  = 0x02
+PV_SPLIT_TYPE_MOST_RIGHT   = 0x04
+PV_SPLIT_TYPE_MOST_LEFT    = 0x08
+PV_SPLIT_TYPE_CUR_TOP      = 0x10
+PV_SPLIT_TYPE_CUR_BOTTOM   = 0x20
+PV_SPLIT_TYPE_CUR_LEFT     = 0x40
+PV_SPLIT_TYPE_CUR_RIGHT    = 0x80
 
-class pimWinSplitter:
+class pvWinSplitter:
     _split_map = {
-            PIM_SPLIT_TYPE_MOST_TOP   : 'topleft' ,
-            PIM_SPLIT_TYPE_MOST_RIGHT : 'vertical botright',
-            PIM_SPLIT_TYPE_MOST_LEFT  : 'vertical topleft',
-            PIM_SPLIT_TYPE_MOST_BOTTOM: 'botright' ,
-            PIM_SPLIT_TYPE_CUR_TOP    : 'aboveleft' ,
-            PIM_SPLIT_TYPE_CUR_BOTTOM : 'rightbelow' ,
-            PIM_SPLIT_TYPE_CUR_LEFT   : 'vertical aboveleft' ,
-            PIM_SPLIT_TYPE_CUR_RIGHT  : 'vertical rightbelow' }
+            PV_SPLIT_TYPE_MOST_TOP   : 'topleft' ,
+            PV_SPLIT_TYPE_MOST_RIGHT : 'vertical botright',
+            PV_SPLIT_TYPE_MOST_LEFT  : 'vertical topleft',
+            PV_SPLIT_TYPE_MOST_BOTTOM: 'botright' ,
+            PV_SPLIT_TYPE_CUR_TOP    : 'aboveleft' ,
+            PV_SPLIT_TYPE_CUR_BOTTOM : 'rightbelow' ,
+            PV_SPLIT_TYPE_CUR_LEFT   : 'vertical aboveleft' ,
+            PV_SPLIT_TYPE_CUR_RIGHT  : 'vertical rightbelow' }
 
     _split_command = 'split'
     _split_format = '%(type)s %(width)d%(cmd)s'
 
     def __init__( self , type , size , base_window = None):
         if type & 0xF0 and base_window == None :
-            raise "pimWinSplitter : Must give base window when split with CUR"
+            raise "pvWinSplitter : Must give base window when split with CUR"
 
         self.type = type
         self._basewin = base_window
@@ -270,10 +270,10 @@ class pimWinSplitter:
             command = "resize %d" % self.size[1]
             vim.command( command )
 
-        return pimWindow ( vim.current.window )
+        return pvWindow ( vim.current.window )
 
 
-class pimWindowManager():
+class pvWindowManager():
     def __init__( self , description ):
         self.windows = {}
         self.mainwin_position = (-1,-1)
@@ -316,24 +316,24 @@ class pimWindowManager():
 
     def makeColumnWindows( self , win_group_info , split_type ):
         info = win_group_info[0]
-        self.windows[info['name']] = pimWinSplitter( split_type , info['size'] ).doSplit()
+        self.windows[info['name']] = pvWinSplitter( split_type , info['size'] ).doSplit()
 
         prev_win = self.windows[info['name']]
         for index_win in xrange( 1 , len( win_group_info ) ) :
             info = win_group_info[index_win]
-            self.windows[ info['name'] ] = pimWinSplitter(
-                    PIM_SPLIT_TYPE_CUR_BOTTOM ,
+            self.windows[ info['name'] ] = pvWinSplitter(
+                    PV_SPLIT_TYPE_CUR_BOTTOM ,
                     info['size'] , 
                     prev_win ).doSplit()
             prev_win = self.windows[ info['name'] ]
         
 
     def makeWindows( self ):
-        self.windows['main'] = pimWindow()
+        self.windows['main'] = pvWindow()
         # split the window left the main one
         if self.mainwin_position[0] != 0 : # if has left window
             for index_group in xrange( self.mainwin_position[0] - 1 , -1 , -1  ):
-                self.makeColumnWindows( self.windows_info[index_group] , PIM_SPLIT_TYPE_MOST_LEFT )
+                self.makeColumnWindows( self.windows_info[index_group] , PV_SPLIT_TYPE_MOST_LEFT )
 
         if self.mainwin_position[1] != 0 :
             # split the window up the main one
@@ -342,8 +342,8 @@ class pimWindowManager():
             prev_win = self.windows['main']
             for index_win in xrange( self.mainwin_position[1] - 1 , -1 , -1 ) :
                 info = self.windows_info[index_group][index_win]
-                self.windows[info['name']] = pimWinSplitter( 
-                        PIM_SPLIT_TYPE_CUR_TOP , 
+                self.windows[info['name']] = pvWinSplitter( 
+                        PV_SPLIT_TYPE_CUR_TOP , 
                         info['size'] , 
                         prev_win )
                 prev_win = self.windows[info['name']]
@@ -352,8 +352,8 @@ class pimWindowManager():
             prev_win = self.windows['main']
             for index_win in xrange( self.mainwin_position[1] + 1 , len( self.windows_info[index_group]) ) :
                 info = self.windows_info[index_group][index_win]
-                self.windows[info['name']] = pimWinSplitter( 
-                        PIM_SPLIT_TYPE_CUR_BOTTOM , 
+                self.windows[info['name']] = pvWinSplitter( 
+                        PV_SPLIT_TYPE_CUR_BOTTOM , 
                         info['size'] , 
                         prev_win )
                 prev_win = self.windows[info['name']]
@@ -361,7 +361,7 @@ class pimWindowManager():
 
         # split the window right the main one
         for index_group in xrange( self.mainwin_position[0] + 1 , len( self.windows_info ) ):
-            self.makeColumnWindows( self.windows_info[index_group] , PIM_SPLIT_TYPE_MOST_RIGHT )
+            self.makeColumnWindows( self.windows_info[index_group] , PV_SPLIT_TYPE_MOST_RIGHT )
 
         for x in self.windows.keys():
             self.windows[x].setFocus()
