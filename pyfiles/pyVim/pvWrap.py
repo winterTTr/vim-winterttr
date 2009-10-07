@@ -21,16 +21,16 @@ class pvBuffer:
         self.type = type
 
         # get name if given , otherwise give the system random name
-        self.name = name if name != None else CreateRandomName('pv.BUF')
+        self.name = name if name != None else CreateRandomName('PV.BUF')
 
         # make enter first, use this flag to do the first enter # initialization
         self.firstEnter = True
 
         # create buffer, get the buffer id ( which is unique )
-        bufferId = int( vim.eval('bufnr( "%s" ,1 )' % self.name ) )
+        buffer_id = int( vim.eval('bufnr( "%s" ,1 )' % self.name ) )
 
         # get the vim buffer object
-        self._buffer = filter( lambda x : x.number == bufid , vim.buffers )[0]
+        self._buffer = filter( lambda x : x.number == buffer_id , vim.buffers )[0]
 
     def __del__( self ):
         if self._buffer != None:
@@ -46,6 +46,14 @@ class pvBuffer:
 
     def isShown(self):
         return int( vim.eval( 'bufwinnr(%d)' % self._buffer.number ) ) != -1 
+
+    def setFocus( self ):
+        show_win_id = int( vim.eval( 'bufwinnr(%d)' % self._buffer.number ) )
+        if show_win_id == -1 :
+            return False
+
+        vim.command("%dwincmd w" % ( show_win_id , ) )
+        return True
 
     def getID( self ):
         return self._buffer.number
@@ -79,9 +87,12 @@ class pvBuffer:
             vim.command('setlocal buflisted')
     
         
-    def showBuffer( self , parentwin , **kwdict ):
+    def showBuffer( self , parentwin ):
         # the buffer does not exist
         if not self.isExist() : return
+
+        # save focus
+        current_focus_win = pvWindow()
 
         # can not focus the parent win , win is closed maybe
         if parentwin and ( not parentwin.setFocus() ):
@@ -94,17 +105,33 @@ class pvBuffer:
             self.setBufferType()
             self.firstEnter = False
 
+        # restore the focus
+        if current_focus_win.getWindowID() != parentwin.getWindowID():
+            current_focus_win.setFocus()
+
+
+    def updateBuffer( self , **kwdict ):
+        # save current focus win
+        current_focus_win = pvWindow()
+
+        # if not shown , do not update
+        if not self.setFocus() : return
+
+
         # close readonly if need to
         if self.type == PV_BUF_TYPE_READONLY :
             vim.command('setlocal modifiable')
             vim.command('setlocal noreadonly')
-            
+
         self.OnUpdate( ** kwdict )
-        
+
         # open readonly after update buffer
         if self.type == PV_BUF_TYPE_READONLY :
             vim.command('setlocal nomodifiable')
             vim.command('setlocal readonly')
+
+        # restore focus
+        current_focus_win.setFocus()
             
     def OnUpdate(self , ** kwdict ):
         # give the change to user to update the context
