@@ -1,4 +1,5 @@
 import vim
+import re
 
 PIM_BUF_TYPE_READONLY   = 0x0001
 PIM_BUF_TYPE_NORMAL     = 0x0002
@@ -114,7 +115,7 @@ class pimWindow:
     """
     pimWindow is the wrap to a vim-window-object(VWO)
     This class just attach to the VWO , not create it.
-    To create the VWO ,use the WindowsManager ,and WindowsManager just
+    To create the VWO ,use the pimWindowManager ,and pimWindowManager
     return the pimWindow Object.
     """
     def __init__( self , winObj = None ):
@@ -144,7 +145,6 @@ class pimWindow:
         if self._window == None :
             return -1
 
-        import re
         winStr = str( self._window )
         reMatch = re.match( '<window (?P<id>\d+)>' , winStr )
         if reMatch:
@@ -238,39 +238,20 @@ class pimWinSplitter:
             PIM_SPLIT_TYPE_CUR_LEFT   : 'vertical aboveleft' ,
             PIM_SPLIT_TYPE_CUR_RIGHT  : 'vertical rightbelow' }
 
-    _resize_map = {
-            PIM_SPLIT_TYPE_MOST_TOP   : '',
-            PIM_SPLIT_TYPE_MOST_RIGHT : 'vertical',
-            PIM_SPLIT_TYPE_MOST_LEFT  : 'vertical',
-            PIM_SPLIT_TYPE_MOST_BOTTOM: '',
-            PIM_SPLIT_TYPE_CUR_TOP    : '',
-            PIM_SPLIT_TYPE_CUR_BOTTOM : '',
-            PIM_SPLIT_TYPE_CUR_LEFT   : 'vertical',
-            PIM_SPLIT_TYPE_CUR_RIGHT  : 'vertical' }
-
     _split_command = 'split'
     _split_format = '%(type)s %(width)d%(cmd)s'
 
-    _resize_command = 'resize'
-    _resize_format = '%(type)s %(cmd)s %(width)d'
-            
-    def __init__( self , type , width , base_window = None):
+    def __init__( self , type , size , base_window = None):
         if type & 0xF0 and base_window == None :
             raise "pimWinSplitter : Must give base window when split with CUR"
 
         self.type = type
         self._basewin = base_window
-        self.width = width
-
-    def getResizeCmd( self ):
-        return self._resize_format % {
-                'type': self._resize_map[self.type],
-                'cmd' : self._resize_command ,
-                'width' : self.width }
+        self.size = size
 
     def getSplitCmd( self ):
         return self._split_format % {
-                'width' : self.width , 
+                'width' : 1 , 
                 'type'  : self._split_map[self.type] , 
                 'cmd'   : self._split_command }
         
@@ -281,20 +262,113 @@ class pimWinSplitter:
         command = self.getSplitCmd()
         vim.command( command )
 
+        if self.size[0] > 0 :
+            command = "vertical resize %d" % self.size[0]
+            vim.command( command )
+
+        if self.size[1] > 0 :
+            command = "resize %d" % self.size[1]
+            vim.command( command )
+
         return pimWindow ( vim.current.window )
 
 
 class pimWindowManager():
-    def __init__( self , description_file = None ):
-        self.window_info = {}
+    def __init__( self , description ):
+        self.windows = {}
+        self.mainwin_position = (-1,-1)
+
+
+        # analyze the description
+        self.windows_info = []
+        reEachWindow = re.compile("""
+                \(\s*
+                (?P<width>[\d-]+)
+                \s*,\s*
+                (?P<height>[\d-]+)
+                \s*\)\s*
+                (?P<name>[\w_-]+)
+                """ , re.VERBOSE )
+        for x in description.split('|') :
+            self.windows_info.append([])
+            for eachwin in reEachWindow.finditer( x ):
+                self.windows_info[-1].append(
+                        { 'name': eachwin.group('name') , 
+                          'size' : ( 
+                              -1 if eachwin.group('width') == '-' else int( eachwin.group('width') ),
+                              -1 if eachwin.group('height') == '-' else int( eachwin.group('height') ) 
+                                   )
+                        } )
+
+        # search 'main' window , get index ( x , y )
+        try :
+            for x in xrange( len(  self.windows_info ) ) :
+                for y in xrange( len( self.windows_info[x] ) ):
+                    if self.windows_info[x][y]['name'] == 'main':
+                        self.mainwin_position = ( x , y )
+                        raise
+        except:
+            pass
+
+        if self.mainwin_position[0] == -1 :
+            raise RuntimeError('must specify the "main" window info!')
+
+
+    def makeColumnWindows( self , win_group_info , split_type ):
+        info = win_group_info[0]
+        self.windows[info['name']] = pimWinSplitter( split_type , info['size'] ).doSplit()
+
+        prev_win = self.windows[info['name']]
+        for index_win in xrange( 1 , len( win_group_info ) ) :
+            info = win_group_info[index_win]
+            self.windows[ info['name'] ] = pimWinSplitter(
+                    PIM_SPLIT_TYPE_CUR_BOTTOM ,
+                    info['size'] , 
+                    prev_win ).doSplit()
+            prev_win = self.windows[ info['name'] ]
+        
 
     def makeWindows( self ):
-        self.window_info['main'] = pimWindow()
-        self.window_info['panel'] = pimWinSplitter( PIM_SPLIT_TYPE_MOST_RIGHT , 30 ).doSplit()
-        self.window_info['list'] = pimWinSplitter( 
-                PIM_SPLIT_TYPE_CUR_BOTTOM , 10 , self.window_info['panel'] ).doSplit()
+        self.windows['main'] = pimWindow()
+        # split the window left the main one
+        if self.mainwin_position[0] != 0 : # if has left window
+            for index_group in xrange( self.mainwin_position[0] - 1 , -1 , -1  ):
+                self.makeColumnWindows( self.windows_info[index_group] , PIM_SPLIT_TYPE_MOST_LEFT )
+
+        if self.mainwin_position[1] != 0 :
+            # split the window up the main one
+            index_group = self.mainwin_position[0]
+
+            prev_win = self.windows['main']
+            for index_win in xrange( self.mainwin_position[1] - 1 , -1 , -1 ) :
+                info = self.windows_info[index_group][index_win]
+                self.windows[info['name']] = pimWinSplitter( 
+                        PIM_SPLIT_TYPE_CUR_TOP , 
+                        info['size'] , 
+                        prev_win )
+                prev_win = self.windows[info['name']]
+
+            # split the window down the main one
+            prev_win = self.windows['main']
+            for index_win in xrange( self.mainwin_position[1] + 1 , len( self.windows_info[index_group]) ) :
+                info = self.windows_info[index_group][index_win]
+                self.windows[info['name']] = pimWinSplitter( 
+                        PIM_SPLIT_TYPE_CUR_BOTTOM , 
+                        info['size'] , 
+                        prev_win )
+                prev_win = self.windows[info['name']]
 
 
+        # split the window right the main one
+        for index_group in xrange( self.mainwin_position[0] + 1 , len( self.windows_info ) ):
+            self.makeColumnWindows( self.windows_info[index_group] , PIM_SPLIT_TYPE_MOST_RIGHT )
 
+        for x in self.windows.keys():
+            self.windows[x].setFocus()
+
+        self.windows['main'].setFocus()
+
+    def getWindow( self , name ):
+        return self.windows[name]
 
 

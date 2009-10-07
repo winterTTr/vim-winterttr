@@ -4,14 +4,6 @@ from pimWrap import *
 class pimBufferException(Exception):
     pass
     
-class pimBufferW(pimBuffer):
-    def __init__( self , type , name , baseWin ):
-        pimBuffer.__init__( self , type , name )
-        self._basewin = baseWin
-        
-    def showBuffer( self ):
-        pimBuffer.showBuffer( self , self._basewin )
-
 PTNT_BRANCH     = 0 
 PTNT_LEEF       = 1 
 
@@ -68,7 +60,6 @@ class pimTreeBuffer(pimBuffer):
         if name == None :
             name = CreateRandomName( 'PIM.TREE.BUF' )
 
-        # pimBufferW.__init__( self , PIM_BUF_TYPE_READONLY , name , basewin)
         pimBuffer.__init__( self , PIM_BUF_TYPE_READONLY , name )
         self._headerIndex = -1 
         self._data = []
