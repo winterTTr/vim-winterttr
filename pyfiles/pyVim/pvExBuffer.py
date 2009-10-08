@@ -7,7 +7,7 @@ from pvWrap import PV_BUF_TYPE_READONLY , PV_BUF_TYPE_NORMAL
 class pvListBuffer(pvBuffer):
     data_format = "%(mark)1s [%(name)s]"
     def __init__( self ):
-        pvBuffer.__init__( self , PV_BUF_TYPE_READONLY , CreateRandomName( 'PV.LISTBUF' ) )
+        pvBuffer.__init__( self , PV_BUF_TYPE_READONLY , CreateRandomName( 'PV_LISTBUF' ) )
         self.data = []
         self.selection = 0
         self.resize = False

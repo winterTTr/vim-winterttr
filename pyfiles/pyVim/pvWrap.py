@@ -7,7 +7,7 @@ PV_BUF_TYPE_NORMAL     = 0x0002
 def CreateRandomName( base ):
     import random
     random_ext = random.randint( 0 , 999999 )
-    return '%s.%06d' % ( base , random_ext )
+    return '%s_%06d' % ( base , random_ext )
 
 
 class pvBuffer:
@@ -21,7 +21,7 @@ class pvBuffer:
         self.type = type
 
         # get name if given , otherwise give the system random name
-        self.name = name if name != None else CreateRandomName('PV.BUF')
+        self.name = name if name != None else CreateRandomName('PV_BUF')
 
         # make enter first, use this flag to do the first enter # initialization
         self.firstEnter = True
