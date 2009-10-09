@@ -149,6 +149,14 @@ class pvWindow:
         self._window = winObj if winObj else vim.current.window
         #self._statusline= None
 
+    def __eq__( self , other ):
+        if isinstance( other , pvWindow ):
+            self_id = self.getWindowID()
+            other_id = other.getWindowID()
+            return self_id != -1 and other_id != -1 and self_id == other_id
+
+        return False
+
     def closeWindow( self ):
         # get win id , -1 means has been closed
         if self.getWindowID() == -1 :

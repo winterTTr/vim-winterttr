@@ -12,10 +12,6 @@ class pvListBuffer(pvBuffer):
         self.selection = 0
         self.resize = False
 
-    def updateSelection( self , offset ):
-        self.selection = ( self.selection + offset ) % len( self.data )
-        self.updateBuffer()
-
     def OnUpdate( self , ** kwdict ):
         """
         @brief update the list buffer content according to the member data [self.data]

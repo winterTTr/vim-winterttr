@@ -631,29 +631,29 @@ endfunction
 " ----------------------- }}}2
 
 " [AutoComplete functions] from mbbill {{{2
-let s:min_len = 2
-function! AutoComplete()
-    let length = strlen(matchstr(getline('.')[:col('.')-2],'\w*$'))
-    if length != s:min_len
-        return ''
-    else
-        return "\<c-x>\<c-n>\<c-p>"
-    endif
-endfun
-function! DoAutoComplete()
-    let letter = char2nr("a")
-    while letter <= char2nr("z")
-        execute "inoremap <buffer>" nr2char(letter) nr2char(letter) . "<c-r>=AutoComplete()<CR>"
-        let letter = letter + 1
-    endwhile
-    let letter = char2nr("A")
-    while letter <= char2nr("Z")
-        execute "inoremap <buffer>" nr2char(letter) nr2char(letter) . "<c-r>=AutoComplete()<CR>"
-        let letter = letter + 1
-    endwhile
-endfun
-
-autocmd BufReadPost * call DoAutoComplete() "}}}2
+"let s:min_len = 2
+"function! AutoComplete()
+"    let length = strlen(matchstr(getline('.')[:col('.')-2],'\w*$'))
+"    if length != s:min_len
+"        return ''
+"    else
+"        return "\<c-x>\<c-n>\<c-p>"
+"    endif
+"endfun
+"function! DoAutoComplete()
+"    let letter = char2nr("a")
+"    while letter <= char2nr("z")
+"        execute "inoremap <buffer>" nr2char(letter) nr2char(letter) . "<c-r>=AutoComplete()<CR>"
+"        let letter = letter + 1
+"    endwhile
+"    let letter = char2nr("A")
+"    while letter <= char2nr("Z")
+"        execute "inoremap <buffer>" nr2char(letter) nr2char(letter) . "<c-r>=AutoComplete()<CR>"
+"        let letter = letter + 1
+"    endwhile
+"endfun
+"
+"autocmd BufReadPost * call DoAutoComplete() "}}}2
 
 
 "}}}1
