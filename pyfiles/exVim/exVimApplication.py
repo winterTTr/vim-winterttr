@@ -17,7 +17,6 @@ class Application:
         self.panels = [ pvListBuffer() , pvListBuffer() , pvListBuffer() ]
         self.caption_buffer = pvListBuffer()
 
-        self.initKeyMap()
 
     def initKeyMap( self ):
         exVim_key_map_manager.register( '<C-J>' , PV_KMM_MODE_INSERT , self.onMoveUpDown_Panel )
@@ -35,17 +34,18 @@ class Application:
             exVim_key_map_manager.register( letter , PV_KMM_MODE_INSERT , self.onContentComplete )
         exVim_key_map_manager.register( '_' , PV_KMM_MODE_INSERT , self.onContentComplete )
 
+        exVim_key_map_manager.register( '<C-Space>' , PV_KMM_MODE_INSERT , self.onReplaceWithSelection )
+
 
     def start( self ):
         exVim_window_manager.makeWindows('( 30 , - )panel , ( -,10) list | (-,-)main ')
+        self.initKeyMap()
 
         defaul_selection = 0 
         self.caption_buffer.showBuffer( exVim_window_manager.getWindow('list') )
         self.caption_buffer.data = self.panels_caption
         self.caption_buffer.updateBuffer( selection = defaul_selection , resize = True )
         self.panels[defaul_selection].showBuffer( exVim_window_manager.getWindow('panel') )
-        #self.panels[defaul_selection].data = [ '11' , '22' , '33' ]
-        #self.panels[defaul_selection].updateBuffer( selection = 0 )
 
 
     def onMoveUpDown_Panel( self , key , mode ):
@@ -85,12 +85,18 @@ class Application:
     def onContentComplete( self , key , mode ):
         if not pvWindow() == exVim_window_manager.getWindow('main'):
             return key
+
+        # check if the [content complete] panels is open
+        if not self.panels[0].isShown(): return key
         
         # search base word
         cursor_line , cursor_column = vim.current.window.cursor
         line_left_cursor = vim.current.buffer[ cursor_line - 1 ][: cursor_column ] + str( key )
         word = re_match_last_word.match( line_left_cursor ).group('word')
 
+        if len( word ) < 3 : return key
+
+        # find the possible words
         re_search_word = re.compile( '(?P<word>[\w_]*%s[\w_]*)' % word )
 
         search_set = set()
@@ -100,12 +106,27 @@ class Application:
 
         search_list = list(search_set)
         search_list.sort()
-
-        vim.command('set noshowmode')
-        print search_list
+        self.panels[0].data = search_list
+        self.panels[0].updateBuffer( selection = 0 )
 
         return key
 
-        
+    def onReplaceWithSelection( self , key , mode ):
+        complete_buffer = self.panels[0]
+        if len( complete_buffer.data ) == 0 :
+            return
 
+        # valiable when inputting in the main panel
+        if not pvWindow() == exVim_window_manager.getWindow('main'): return
+
+        # valiable if the [content complete] panel is show
+        if not complete_buffer.isShown() : return
+
+        # delete word on cursor
+        vim.command('normal diw')
+        cursor_line , cursor_column = vim.current.window.cursor
+        if cursor_column > 0 :
+            vim.current.window.cursor = (  cursor_line , cursor_column + 1 )
+
+        return complete_buffer.data[ complete_buffer.selection ]
         
