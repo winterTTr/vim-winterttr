@@ -34,6 +34,7 @@ class pvKeyMapManager:
 
         self.key_map = {}
         self.key_map[PV_KMM_MODE_INSERT] = {}
+        self.key_map[PV_KMM_MODE_NORMAL] = {}
 
 
 
@@ -44,18 +45,25 @@ class pvKeyMapManager:
     def register( self , vim_key , mode , py_function ):
         internal_key = urllib.quote( vim_key )
         if mode == PV_KMM_MODE_INSERT :
-            vim.command('inoremap %(key)s <C-R>=%(function_name)s("%(internal_key)s" , "I")<CR>' % {
-                'key' : vim_key ,
-                'function_name' : self.id , 
-                'internal_key' : internal_key
-                })
+            command_format = 'inoremap <silent> %(key)s <C-R>=%(function_name)s("%(internal_key)s" , "I")<CR>'
+        elif mode == PV_KMM_MODE_NORMAL :
+            command_format = 'nnoremap <silent> %(key)s :call %(function_name)s("%(internal_key)s" , "N")<CR>'
+        else:
+            raise RuntimeError( 'invalid kmm mode' )
+
+        vim.command( command_format % {
+            'key' : vim_key ,
+            'function_name' : self.id , 
+            'internal_key' : internal_key
+            })
 
         self.key_map[mode][internal_key] = py_function
 
 
     def doKey( self , internal_key , mode ):
         vim_key = urllib.unquote(internal_key)
-        mode = { 'I' : PV_KMM_MODE_INSERT }[mode]
+        mode = { 'I' : PV_KMM_MODE_INSERT ,
+                 'N' : PV_KMM_MODE_NORMAL }[mode]
         return self.key_map[mode][internal_key]( vim_key , mode )
 
 

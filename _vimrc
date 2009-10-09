@@ -165,6 +165,7 @@ set imsearch=1
 set selectmode=key
 set keymodel=startsel,stopsel
 set switchbuf=useopen,usetab
+set winaltkeys=no
 "}}}1
 "=============================================================================
 " Key map {{{1
