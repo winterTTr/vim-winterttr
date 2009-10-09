@@ -301,13 +301,13 @@ class pvWinSplitter:
 
 
 class pvWindowManager():
-    def __init__( self , description ):
+    def __init__( self ):
         self.windows = {}
         self.mainwin_position = (-1,-1)
-
-
-        # analyze the description
         self.windows_info = []
+
+    def analyzeDescription( self , description ):
+        # analyze the description
         reEachWindow = re.compile("""
                 \(\s*
                 (?P<width>[\d-]+)
@@ -355,7 +355,10 @@ class pvWindowManager():
             prev_win = self.windows[ info['name'] ]
         
 
-    def makeWindows( self ):
+    def makeWindows( self , description ):
+        self.analyzeDescription( description )
+
+        # make current window to be the main window
         self.windows['main'] = pvWindow()
         # split the window left the main one
         if self.mainwin_position[0] != 0 : # if has left window
