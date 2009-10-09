@@ -16,18 +16,19 @@ endfunction
 """
 
 def kmmDispatch( id , internal_key , mode ):
-    vim.command('let g:%s=""' % ( pv_kmm_internal_register_table[id].id + '_RET' , ) )
+    vim.command('let g:%s=""' % ( pv_kmm_internal_register_table[id].ret_var ) )
     ret = pv_kmm_internal_register_table[id].doKey( internal_key , mode )
     if ret == None: ret = ""
-    vim.command('let g:%s="%s"' % ( pv_kmm_internal_register_table[id].id + '_RET' , str(ret) ) ) 
+    vim.command('let g:%s="%s"' % ( pv_kmm_internal_register_table[id].ret_var , str(ret) ) ) 
 
 class pvKeyMapManager:
     def __init__( self ):
         self.id = CreateRandomName('KMM_FUNCTION')
+        self.ret_var = self.id + '_RET'
 
         vim.command( VIM_KEY_MAP_REG_FUNCTION % {
             'function_name' : self.id ,
-            'return_var' : self.id + "_RET" } )
+            'return_var' : self.ret_var } )
 
         pv_kmm_internal_register_table[self.id] =  self
 
