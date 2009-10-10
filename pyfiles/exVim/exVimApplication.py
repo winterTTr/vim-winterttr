@@ -159,14 +159,13 @@ class Application:
 
         self.panels[0].data = []
         self.panels[0].data.extend( searchDict2List( search_dict__start_with ) )
-        if len (  self.panels[0].data ) == 1 :
+        if not kwdict['key'] == '<Backspace>' and len (  self.panels[0].data ) == 1 :
             final_word = self.panels[0].data[0]
             add_len = len( final_word ) - len( word )
             if add_len == 1 :
                 return_key = '\<C-W>%s\<C-O>v\<C-G>' %  final_word 
             else:
                 return_key = '\<C-W>%s\<C-O>v%dh\<C-G>' % (  final_word , add_len - 1 )
-            print final_word , word , add_len , return_key
 
         self.panels[0].data.extend( searchDict2List( search_dict__middle_with ) )
         self.panels[0].updateBuffer( selection = 0 )
