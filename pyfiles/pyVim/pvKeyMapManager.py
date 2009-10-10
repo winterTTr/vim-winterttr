@@ -15,22 +15,30 @@ endfunction
 """
 
 # possible mode for the key map
-PV_KMM_MODE_INSERT = 0x01
-PV_KMM_MODE_NORMAL = 0x02
+PV_KMM_MODE_INSERT  = 0x01
+PV_KMM_MODE_NORMAL  = 0x02
+PV_KMM_MODE_SELECT  = 0x04
+PV_KMM_MODE_VISUAL  = 0x08
 
 pv_kmm_mode_map__vim_to_kmm = {
         'I' : PV_KMM_MODE_INSERT , 
-        'N' : PV_KMM_MODE_NORMAL
+        'N' : PV_KMM_MODE_NORMAL , 
+        'S' : PV_KMM_MODE_SELECT ,
+        'V' : PV_KMM_MODE_VISUAL 
         }
 
 pv_kmm_mode_map__kmm_to_vim = {
         PV_KMM_MODE_INSERT : 'I' ,
-        PV_KMM_MODE_NORMAL : 'N'
+        PV_KMM_MODE_NORMAL : 'N' , 
+        PV_KMM_MODE_SELECT : 'S' ,
+        PV_KMM_MODE_VISUAL : 'V' 
         }
 
 pv_kmm_vim_keymap_command_map = {
         PV_KMM_MODE_NORMAL : 'nnoremap <silent> %(vim_key)s :call %(function_name)s("%(internal_key)s" , "N")<CR>' ,
-        PV_KMM_MODE_INSERT : 'inoremap <silent> %(vim_key)s <C-R>=%(function_name)s("%(internal_key)s" , "I")<CR>'
+        PV_KMM_MODE_INSERT : 'inoremap <silent> %(vim_key)s <C-R>=%(function_name)s("%(internal_key)s" , "I")<CR>' , 
+        PV_KMM_MODE_SELECT : 'snoremap <silent> %(vim_key)s <ESC>`>a<C-R>=%(function_name)s("%(internal_key)s" , "S")<CR>' ,
+        PV_KMM_MODE_VISUAL : 'xnoremap <silent> %(vim_key)s <ESC>`>a<C-R>=%(function_name)s("%(internal_key)s" , "V")<CR>'
         }
 
 # function used to dispatch all the key to call this registered py functions
@@ -123,9 +131,15 @@ class pvKeyMapManager:
 
     def doKey( self , kmm_key , kmm_mode ):
         # make key
-        key = pvkmmKeyName()
-        key.setKMMKey( kmm_key )
-        return self.call_function_map[kmm_mode][key.getVimKey()]( key , kmm_mode )
+        kwdict = {}
+        kwdict['key'] = pvkmmKeyName()
+        kwdict['key'].setKMMKey( kmm_key ) 
+        kwdict['mode'] = kmm_mode
+
+        if kwdict['mode'] in [ PV_KMM_MODE_SELECT , PV_KMM_MODE_VISUAL ]:
+            kwdict['range'] = [ vim.eval( 'getpos("%s")' % x )[1:3] for x in [ "'<" , "'>" ] ]
+
+        return self.call_function_map[kmm_mode][kwdict['key'].getVimKey()]( **kwdict )
 
 
 
