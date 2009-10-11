@@ -13,8 +13,7 @@ for eachdir in load_list :
     
     try:
         module = __import__( eachdir )
-    except ImportError , e:
-        print e
+    except ImportError:
         continue
     globals()[eachdir] = module
     try :
