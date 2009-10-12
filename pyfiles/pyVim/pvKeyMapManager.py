@@ -9,7 +9,7 @@ pv_kmm_internal_register_table = {}
 PV_VIM_KEY_MAP_REG_FUNCTION = """
 let g:%(return_var_name)s = ""
 function! %(function_name)s(internal_key,vim_mode_flag)
-  exec 'python pyVim.pvKeyMapManager.kmmDispatch("%(id)s" , "'. a:internal_key . '","' . a:vim_mode_flag . '")'
+  exec 'python pyVim.pvKeyMapManager.pvkmmDispatch("%(id)s" , "'. a:internal_key . '","' . a:vim_mode_flag . '")'
   return g:%(return_var_name)s
 endfunction
 """
@@ -42,7 +42,7 @@ pv_kmm_vim_keymap_command_map = {
         }
 
 # function used to dispatch all the key to call this registered py functions
-def kmmDispatch( id , kmm_key , vim_mode ):
+def pvkmmDispatch( id , kmm_key , vim_mode ):
     vim.command('let g:%s=""' % ( pv_kmm_internal_register_table[id].return_var_name ) )
 
     # call function
@@ -84,7 +84,13 @@ class pvkmmKeyName:
 
     def __str__( self ):
         return self.vim_key
+
+class pvkmmResolver:
+    def check( self , **kwdict ):
+        raise RuntimeError( 'no implement pvkmmResolver::check' )
         
+    def do( self ):
+        raise RuntimeError( 'no implement pvkmmResolver::do' )
 
 class pvKeyMapManager:
     def __init__( self ):
@@ -108,17 +114,10 @@ class pvKeyMapManager:
         del pv_kmm_internal_register_table[self.id]
 
 
-    def register( self , vim_key , kmm_mode , py_function ):
-        if type( vim_key ) in types.StringTypes :
-            key = pvkmmKeyName()
-            key.setVimKey( vim_key )
-        else :
-            raise RuntimeError( 'not invalid key type' )
-
-        try :
-            command_format = pv_kmm_vim_keymap_command_map[ kmm_mode ]
-        except:
-            raise RuntimeError( 'invalid kmm mode' )
+    def register( self , vim_key , kmm_mode , resolver ):
+        key = pvkmmKeyName()
+        key.setVimKey( vim_key )
+        command_format = pv_kmm_vim_keymap_command_map[ kmm_mode ]
 
         vim.command( command_format % {
             'vim_key' : key.getVimKey() , 
@@ -126,7 +125,7 @@ class pvKeyMapManager:
             'internal_key' : key.getKMMKey()
             })
 
-        self.call_function_map[kmm_mode][key.getVimKey()] = py_function
+        self.call_function_map[kmm_mode][key.getVimKey()] = resolver
 
 
     def doKey( self , kmm_key , kmm_mode ):
@@ -139,7 +138,9 @@ class pvKeyMapManager:
         if kwdict['mode'] in [ PV_KMM_MODE_SELECT , PV_KMM_MODE_VISUAL ]:
             kwdict['range'] = [ vim.eval( 'getpos("%s")' % x )[1:3] for x in [ "'<" , "'>" ] ]
 
-        return self.call_function_map[kmm_mode][kwdict['key'].getVimKey()]( **kwdict )
+        resolver = self.call_function_map[kmm_mode][kwdict['key'].getVimKey()]
+        if resolver.check( **kwdict ):
+            resolver.do()
 
 
 
