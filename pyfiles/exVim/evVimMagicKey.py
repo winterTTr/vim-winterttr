@@ -6,16 +6,20 @@ from pyVim.pvKeyMapManager import PV_KMM_MODE_INSERT , PV_KMM_MODE_NORMAL , PV_K
 from pyVim.pvWrap import pvWindow
 # exVim
 import exVimMagicKeyConfig 
-from exVimApplication import exVim_window_manager
 
+# add the key to expand
 exVim_magic_key_list = [
-        Tab , 
-        LeftRoundBracket , 
-        RightRoundBracket
+        exVimKey_ExpandContent , 
+        exVimKey_AutoAddPair , 
+        exVimKey_AutoMoveRightPair
         ]
 
 
-class KeyBase:
+class MagicKeyBase:
+    def __init__( self , kmm , wm ):
+        self.kmm = kmm
+        self.wm = wm
+
     def registerKey( self , kmm ):
         raise RuntimeError("No implement")
 
@@ -24,9 +28,9 @@ class KeyBase:
 
 
 
-class Tab( KeyBase ):
-    def registerKey( self , kmm ):
-        kmm.register( '<Tab>' , PV_KMM_MODE_INSERT , self.doAction )
+class exVimKey_ExpandContent( MagicKeyBase ):
+    def registerKey( self ):
+        self.kmm.register( '<Tab>' , PV_KMM_MODE_INSERT , self.doAction )
 
     def DoExpandKeyword( self ):
         # get left context accordding to the cursor position
@@ -175,7 +179,7 @@ class Tab( KeyBase ):
         return '\<C-\>\<C-N>v%dl\<C-G>' % ( end - begin - 1 , )
 
     def doAction( self  , **kwdict ):
-        if not pvWindow() == exVim_window_manager.getWindow('main') : return
+        if not pvWindow() == self.wm.getWindow('main') : return
 
         # 1. try to expand keyword
         # 2. try to complete the function prototype
@@ -184,25 +188,36 @@ class Tab( KeyBase ):
         return self.DoExpandKeyword() or self.DoCompleteFunctionPrototype() or self.DoFocusAutoFillRegion() or '\<Tab>'
 
 
-class LeftRoundBracket( KeyBase ):
-    def registerKey( self , kmm ):
-        kmm.register( '(' , PV_KMM_MODE_INSERT , self.doAction )
+exVim_pair_map = {
+        '(' : ')' ,
+        '[' : ']' ,
+        '{' : '}' ,
+        '"' : '"' ,
+        '\'' : '\''
+        }
+exVim_pair_map_revert = dict ( [ ( exVim_pair_map[x] , x ) for x in exVim_pair_map.keys() if x != exVim_pair_map[x] ] ) 
+
+class exVimKey_AutoAddPair( MagicKeyBase ):
+    def registerKey( self ):
+        for key in exVim_pair_map :
+            self.kmm.register( key , PV_KMM_MODE_INSERT , self.doAction )
 
     def doAction( self , **kwdict ):
-        if pvWindow() == exVim_window_manager.getWindow('main') :
-            return '()\<C-\>\<C-N>i'
+        if pvWindow() == self.wm.getWindow('main') :
+            return '%s\<C-\>\<C-N>i' % ( str(key) + self.pair_map( str(key) ) , ) 
 
-class RightRoundBracket( KeyBase ):
-    def registerKey( self , kmm ):
-        kmm.register( ')' , PV_KMM_MODE_INSERT , self.doAction )
+class exVimKey_AutoMoveRightPair( MagicKeyBase ):
+    def registerKey( self ):
+        for key in exVim_pair_map_revert :
+            self.kmm.register( key , PV_KMM_MODE_INSERT , self.doAction )
 
-    def CalcBracketNumber( self , line ):
+    def CalcBracketNumber( self , line , key ):
         left = 0
         right = 0
         for x in line:
-            if x == '(' :
+            if x == exVim_pair_map_revert[str(key)]
                 left +=1
-            elif x == ')' :
+            elif x == str(key)
                 right += 1
         return ( left , right )
 
@@ -213,12 +228,12 @@ class RightRoundBracket( KeyBase ):
         lineLeftCursor =  vim.current.line[:cursorCol]
         lineRightCursor = vim.current.line[cursorCol:]
 
-        regRet =  re.match( '^\s*(\)).*' , lineRightCursor )
+        regRet =  re.match( '^\s*(%s).*' % ( str(key) if key != ')' else '\\' + str(key  , ) , lineRightCursor )
         if regRet:
             position = regRet.start(1)
 
-            leftLB , leftRB = self.CalcBracketNumber( lineLeftCursor )
-            rightLB , rightRB = self.CalcBracketNumber( lineRightCursor )
+            leftLB , leftRB = self.CalcBracketNumber( lineLeftCursor , key )
+            rightLB , rightRB = self.CalcBracketNumber( lineRightCursor , key  )
 
             if leftLB - leftRB != 0 and leftLB - leftRB == rightRB - rightLB:
                 vim.current.window.cursor = ( cursorRow , cursorCol + position + 1 )

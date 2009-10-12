@@ -1,16 +1,30 @@
 import vim
+import types
 
 from pvWrap import pvBuffer
 from pvWrap import CreateRandomName
 from pvWrap import PV_BUF_TYPE_READONLY , PV_BUF_TYPE_NORMAL
 
+class pvListBufferItem:
+    def __str__( self ):
+        raise RuntimeError('no implement')
+
+    def __eq__( self , other ):
+        return str( self ) == str( other )
+
 class pvListBuffer(pvBuffer):
     data_format = "%(mark)1s [%(name)s]"
     def __init__( self ):
         pvBuffer.__init__( self , PV_BUF_TYPE_READONLY , CreateRandomName( 'PV_LISTBUF' ) )
-        self.data = []
+        self.item = []
         self.selection = 0
         self.resize = False
+
+    def getItemList( self ):
+        return self.item
+
+    def getSelection( self ):
+        return self.selection
 
     def OnUpdate( self , ** kwdict ):
         """
@@ -39,11 +53,11 @@ class pvListBuffer(pvBuffer):
 
         # deal with internal data
         show_data = []
-        for index in xrange( len( self.data ) ):
+        for index in xrange( len( self.item ) ):
             show_data.append( 
                     self.data_format % {
                         'mark' : '>' if self.selection == index else ' ' ,
-                        'name' : self.data[index] } )
+                        'name' : str( self.item[index] ) } )
 
         # redraw the content
         self._buffer[0:len(show_data) -1 ] = show_data
