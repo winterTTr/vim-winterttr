@@ -86,10 +86,10 @@ class pvkmmKeyName:
         return self.vim_key
 
 class pvkmmResolver:
-    def check( self , **kwdict ):
-        raise RuntimeError( 'no implement pvkmmResolver::check' )
+    def checkValidation( self , **kwdict ):
+        return True
         
-    def do( self ):
+    def runAction( self ):
         raise RuntimeError( 'no implement pvkmmResolver::do' )
 
 class pvKeyMapManager:
