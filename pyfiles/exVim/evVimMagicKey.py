@@ -203,7 +203,7 @@ class exVimKey_AutoAddPair( exVimMagicKeyBase ):
         self.key = str( kwdict['key'] )
         return pvWindow() == self.wm.getWindow('main')
 
-    def doAction( self ):
+    def runAction( self ):
         return '%s\<C-\>\<C-N>i' % ( self.key + exVim_pair_map[ self.key ] , ) 
 
 
@@ -249,6 +249,23 @@ class exVimKey_AutoMoveRightPair( exVimMagicKeyBase ):
         return ( left , right )
     
 
-class exVimKey_
+class exVimKey_ChangeSelectionOnPanel( exVimMagicKeyBase ):
+    def register( self ):
+        self.kmm.register( '<C-J>' , PV_KMM_MODE_INSERT , self )
+        self.kmm.register( '<C-J>' , PV_KMM_MODE_NORMAL , self )
+        self.kmm.register( '<C-K>' , PV_KMM_MODE_INSERT , self )
+        self.kmm.register( '<C-K>' , PV_KMM_MODE_NORMAL , self )
+
+    def checkValidation( self , **kwdict ):
+        self.key = str( kwdict['key'] )
+        return pvWindow() == self.wm.getWindow('main')
+
+    def runAction( self ):
+        buffer = self.panels[ self.caption_buffer.selection ]
+        if isinstance( buffer , pvListBuffer ):
+            if len( buffer.data) == 0 :
+                return
+            offset = 1 if kwdict['key'] == "<C-J>" else -1
+            buffer.updateBuffer(  selection = ( buffer.selection + offset ) % len( buffer.data )  )
 
 
