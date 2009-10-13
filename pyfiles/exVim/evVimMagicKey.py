@@ -2,6 +2,7 @@
 import vim
 import re
 # pyVim module
+from pvVim.pvKeyMapManager import pvkmmResolver
 from pyVim.pvKeyMapManager import PV_KMM_MODE_INSERT , PV_KMM_MODE_NORMAL , PV_KMM_MODE_SELECT
 from pyVim.pvWrap import pvWindow
 # exVim
@@ -15,24 +16,30 @@ exVim_magic_key_list = [
         ]
 
 
-class MagicKeyBase:
+class exVimMagicKeyBase( pvkmmResolver ):
     def __init__( self , kmm , wm ):
         self.kmm = kmm
         self.wm = wm
 
-    def registerKey( self , kmm ):
-        raise RuntimeError("No implement")
-
-    def doAction( self , **kwdict ):
+    def register( self , kmm ):
         raise RuntimeError("No implement")
 
 
+class exVimKey_ExpandContent( exVimMagicKeyBase ):
+    def register( self ):
+        self.kmm.register( '<Tab>' , PV_KMM_MODE_INSERT , self )
 
-class exVimKey_ExpandContent( MagicKeyBase ):
-    def registerKey( self ):
-        self.kmm.register( '<Tab>' , PV_KMM_MODE_INSERT , self.doAction )
+    def checkValidation( self , **kdwcit ):
+        return pvWindow() == self.wm.getWindow('main')
 
-    def DoExpandKeyword( self ):
+    def runAction( self  ):
+        # 1. try to expand keyword
+        # 2. try to complete the function prototype
+        # 3. try replace the region
+        # 4. default , just return the Tab Key
+        return self.__DoExpandKeyword() or self.__DoCompleteFunctionPrototype() or self.__DoFocusAutoFillRegion() or '\<Tab>'
+
+    def __DoExpandKeyword( self ):
         # get left context accordding to the cursor position
         cursorRow , cursorCol = vim.current.window.cursor
         lineLeftCursor =  vim.current.line[:cursorCol]
@@ -70,7 +77,7 @@ class exVimKey_ExpandContent( MagicKeyBase ):
         configDict['insertMode'] = 'i' if len( lineRightCursor ) else 'a'
         return retStr % configDict 
 
-    def DoCompleteFunctionPrototype( self ):
+    def __DoCompleteFunctionPrototype( self ):
         # get left context accordding to the cursor position
         cursorRow , cursorCol = vim.current.window.cursor
         lineLeftCursor =  vim.current.line[:cursorCol]
@@ -152,7 +159,7 @@ class exVimKey_ExpandContent( MagicKeyBase ):
         return insertSigList[userSelection - 1] 
 
 
-    def DoFocusAutoFillRegion( self ):
+    def __DoFocusAutoFillRegion( self ):
         offsetSearch = 20  # search 20 lines range up and down the current line
         totalLine = len( vim.current.buffer )
         cursorRow , cursorCol = vim.current.window.cursor  # get cursor position
@@ -178,15 +185,6 @@ class exVimKey_ExpandContent( MagicKeyBase ):
         vim.current.window.cursor = ( lineIndex + 1 , begin + 1 )
         return '\<C-\>\<C-N>v%dl\<C-G>' % ( end - begin - 1 , )
 
-    def doAction( self  , **kwdict ):
-        if not pvWindow() == self.wm.getWindow('main') : return
-
-        # 1. try to expand keyword
-        # 2. try to complete the function prototype
-        # 3. try replace the region
-        # 4. default , just return the Tab Key
-        return self.DoExpandKeyword() or self.DoCompleteFunctionPrototype() or self.DoFocusAutoFillRegion() or '\<Tab>'
-
 
 exVim_pair_map = {
         '(' : ')' ,
@@ -195,23 +193,52 @@ exVim_pair_map = {
         '"' : '"' ,
         '\'' : '\''
         }
+
+class exVimKey_AutoAddPair( exVimMagicKeyBase ):
+    def register( self ):
+        for key in exVim_pair_map :
+            self.kmm.register( key , PV_KMM_MODE_INSERT , self )
+
+    def checkValidation( self , **kwdict ):
+        self.key = str( kwdict['key'] )
+        return pvWindow() == self.wm.getWindow('main')
+
+    def doAction( self ):
+        return '%s\<C-\>\<C-N>i' % ( self.key + exVim_pair_map[ self.key ] , ) 
+
+
 exVim_pair_map_revert = dict ( [ ( exVim_pair_map[x] , x ) for x in exVim_pair_map.keys() if x != exVim_pair_map[x] ] ) 
 
-class exVimKey_AutoAddPair( MagicKeyBase ):
-    def registerKey( self ):
-        for key in exVim_pair_map :
-            self.kmm.register( key , PV_KMM_MODE_INSERT , self.doAction )
-
-    def doAction( self , **kwdict ):
-        if pvWindow() == self.wm.getWindow('main') :
-            return '%s\<C-\>\<C-N>i' % ( str(key) + self.pair_map( str(key) ) , ) 
-
-class exVimKey_AutoMoveRightPair( MagicKeyBase ):
-    def registerKey( self ):
+class exVimKey_AutoMoveRightPair( exVimMagicKeyBase ):
+    def register( self ):
         for key in exVim_pair_map_revert :
-            self.kmm.register( key , PV_KMM_MODE_INSERT , self.doAction )
+            self.kmm.register( key , PV_KMM_MODE_INSERT , self )
 
-    def CalcBracketNumber( self , line , key ):
+    def checkValidation( self ,  **kwdict ):
+        self.key = str( kwdict['key'] )
+        return pvWindow() == exVim_window_manager.getWindow('main') 
+
+
+    def runAction( self ):
+        # get left context accordding to the cursor position
+        cursorRow , cursorCol = vim.current.window.cursor
+        lineLeftCursor =  vim.current.line[:cursorCol]
+        lineRightCursor = vim.current.line[cursorCol:]
+
+        regRet =  re.match( '^\s*(%s).*' % ( self.key if self.key != ')' else '\\)' , ) , lineRightCursor )
+        if regRet:
+            position = regRet.start(1)
+
+            leftLB , leftRB = self.__CalcBracketNumber( lineLeftCursor , self.key )
+            rightLB , rightRB = self.__CalcBracketNumber( lineRightCursor , exVim_pair_map_revert[ self.key ]  )
+
+            if leftLB - leftRB != 0 and leftLB - leftRB == rightRB - rightLB:
+                vim.current.window.cursor = ( cursorRow , cursorCol + position + 1 )
+                return ''
+
+        return exVim_pair_map_revert[ self.key ]
+
+    def __CalcBracketNumber( self , line , key ):
         left = 0
         right = 0
         for x in line:
@@ -220,24 +247,8 @@ class exVimKey_AutoMoveRightPair( MagicKeyBase ):
             elif x == str(key)
                 right += 1
         return ( left , right )
+    
 
-    def doAction( self , **kwdict ):
-        if not pvWindow() == exVim_window_manager.getWindow('main') : return
-        # get left context accordding to the cursor position
-        cursorRow , cursorCol = vim.current.window.cursor
-        lineLeftCursor =  vim.current.line[:cursorCol]
-        lineRightCursor = vim.current.line[cursorCol:]
+class exVimKey_
 
-        regRet =  re.match( '^\s*(%s).*' % ( str(key) if key != ')' else '\\' + str(key  , ) , lineRightCursor )
-        if regRet:
-            position = regRet.start(1)
-
-            leftLB , leftRB = self.CalcBracketNumber( lineLeftCursor , key )
-            rightLB , rightRB = self.CalcBracketNumber( lineRightCursor , key  )
-
-            if leftLB - leftRB != 0 and leftLB - leftRB == rightRB - rightLB:
-                vim.current.window.cursor = ( cursorRow , cursorCol + position + 1 )
-                return ''
-
-        return ')'
 
