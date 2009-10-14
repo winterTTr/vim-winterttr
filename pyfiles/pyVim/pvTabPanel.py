@@ -53,9 +53,9 @@ class pvTabPanelManager:
             item_index = self.panel_list.index( name_or_panel )
         except:
             return
-        self.updateBuffer( selection = item_index , resize = True )
+        self.buffer.updateBuffer( selection = item_index , resize = True )
 
-        panel_buffer = self.panel_list[index].getBuffer()
+        panel_buffer = self.panel_list[item_index].getBuffer()
         panel_buffer.showBuffer( self.panel_win )
         panel_buffer.updateBuffer()
 
