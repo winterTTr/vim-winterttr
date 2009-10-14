@@ -2,35 +2,27 @@
 import vim
 import re
 # pyVim module
-from pvVim.pvKeyMapManager import pvkmmResolver
+from pyVim.pvKeyMapManager import pvkmmResolver
 from pyVim.pvKeyMapManager import PV_KMM_MODE_INSERT , PV_KMM_MODE_NORMAL , PV_KMM_MODE_SELECT
 from pyVim.pvWrap import pvWindow
 # exVim
 import exVimMagicKeyConfig 
 
-# add the key to expand
-exVim_magic_key_list = [
-        exVimKey_ExpandContent , 
-        exVimKey_AutoAddPair , 
-        exVimKey_AutoMoveRightPair
-        ]
-
 
 class exVimMagicKeyBase( pvkmmResolver ):
-    def __init__( self , kmm , wm ):
-        self.kmm = kmm
-        self.wm = wm
-
     def register( self , kmm ):
         raise RuntimeError("No implement")
 
 
 class exVimKey_ExpandContent( exVimMagicKeyBase ):
-    def register( self ):
-        self.kmm.register( '<Tab>' , PV_KMM_MODE_INSERT , self )
+    def __init__( self , main_window ):
+        self.main_window = main_window
+
+    def register( self , kmm ):
+        kmm.register( '<Tab>' , PV_KMM_MODE_INSERT , self )
 
     def checkValidation( self , **kdwcit ):
-        return pvWindow() == self.wm.getWindow('main')
+        return pvWindow() == main_window
 
     def runAction( self  ):
         # 1. try to expand keyword
@@ -195,13 +187,16 @@ exVim_pair_map = {
         }
 
 class exVimKey_AutoAddPair( exVimMagicKeyBase ):
-    def register( self ):
+    def __init__( self , main_window ):
+        self.main_window = main_window 
+
+    def register( self , kmm ):
         for key in exVim_pair_map :
-            self.kmm.register( key , PV_KMM_MODE_INSERT , self )
+            kmm.register( key , PV_KMM_MODE_INSERT , self )
 
     def checkValidation( self , **kwdict ):
         self.key = str( kwdict['key'] )
-        return pvWindow() == self.wm.getWindow('main')
+        return pvWindow() == main_window
 
     def runAction( self ):
         return '%s\<C-\>\<C-N>i' % ( self.key + exVim_pair_map[ self.key ] , ) 
@@ -210,13 +205,16 @@ class exVimKey_AutoAddPair( exVimMagicKeyBase ):
 exVim_pair_map_revert = dict ( [ ( exVim_pair_map[x] , x ) for x in exVim_pair_map.keys() if x != exVim_pair_map[x] ] ) 
 
 class exVimKey_AutoMoveRightPair( exVimMagicKeyBase ):
-    def register( self ):
+    def __init__( self , main_window ):
+        self.main_window = main_window 
+
+    def register( self , kmm ):
         for key in exVim_pair_map_revert :
-            self.kmm.register( key , PV_KMM_MODE_INSERT , self )
+            kmm.register( key , PV_KMM_MODE_INSERT , self )
 
     def checkValidation( self ,  **kwdict ):
         self.key = str( kwdict['key'] )
-        return pvWindow() == exVim_window_manager.getWindow('main') 
+        return pvWindow() == self.main_window
 
 
     def runAction( self ):
@@ -242,30 +240,196 @@ class exVimKey_AutoMoveRightPair( exVimMagicKeyBase ):
         left = 0
         right = 0
         for x in line:
-            if x == exVim_pair_map_revert[str(key)]
+            if x == exVim_pair_map_revert[str(key)] :
                 left +=1
-            elif x == str(key)
+            elif x == str(key) :
                 right += 1
         return ( left , right )
     
 
 class exVimKey_ChangeSelectionOnPanel( exVimMagicKeyBase ):
-    def register( self ):
-        self.kmm.register( '<C-J>' , PV_KMM_MODE_INSERT , self )
-        self.kmm.register( '<C-J>' , PV_KMM_MODE_NORMAL , self )
-        self.kmm.register( '<C-K>' , PV_KMM_MODE_INSERT , self )
-        self.kmm.register( '<C-K>' , PV_KMM_MODE_NORMAL , self )
+    def __init__( self , tab_panel ):
+        self.tab_panel = tab_panel
+
+    def register( self , kmm ):
+        kmm.register( '<C-J>' , PV_KMM_MODE_INSERT , self )
+        kmm.register( '<C-J>' , PV_KMM_MODE_NORMAL , self )
+        kmm.register( '<C-K>' , PV_KMM_MODE_INSERT , self )
+        kmm.register( '<C-K>' , PV_KMM_MODE_NORMAL , self )
 
     def checkValidation( self , **kwdict ):
-        self.key = str( kwdict['key'] )
-        return pvWindow() == self.wm.getWindow('main')
+        self.key = key
+        return True
 
     def runAction( self ):
-        buffer = self.panels[ self.caption_buffer.selection ]
-        if isinstance( buffer , pvListBuffer ):
-            if len( buffer.data) == 0 :
-                return
-            offset = 1 if kwdict['key'] == "<C-J>" else -1
-            buffer.updateBuffer(  selection = ( buffer.selection + offset ) % len( buffer.data )  )
+        panel_item = self.tab_panel.getCurrentPanelItem()
+        buffer = panel_item.getBuffer()
 
+        # check if the buffer is list buffer
+        if not isinstance( buffer , pvListBuffer ): return
+
+        offset = 1 if self.key == '<C-J>' else -1
+        buffer.updateBuffer( selection = ( buffer.getSelection() + offset ) % len( buffer.getItemList() ) )
+
+
+class exVimKey_ChangeSelectonOnPanelList( exVimMagicKeyBase ):
+    def __init__ ( self , tab_panel ):
+        self.tab_panel = tab_panel
+
+    def register( self , kmm ):
+        kmm.register( '<2-LeftMouse>' , PV_KMM_MODE_NORMAL , self )
+
+    def checkValidation( self , **kwdict ):
+        return True
+
+    def runAction( self ):
+        if not  pvWindow() == self.tab_panel.getListPanel() :
+            vim.command('normal viw')
+            return
+
+        item_list = self.tab_panel.getItemList()
+        # get selection position and update list
+        cursor_line = vim.current.window.cursor[0]
+        try :
+            self.tab_panel.switchPanel( item_list[ cursor_line - 1 ] )
+        except:
+            return
+
+
+
+class exVimKey_AutoContextComplete( exVimMagicKeyBase ):
+    re_match_last_word = re.compile( "(.*\W+|^)(?P<word>[\w_]+)$" )
+
+    def __init__( self , main_window , tab_panel ):
+        self.main_window = main_window
+        self.tab_panel = tab_panel
+
+    def register( self , kmm ):
+        import string
+        for letter in string.ascii_letters:
+            kmm.register( letter , PV_KMM_MODE_INSERT , self )
+        kmm.register( '_' , PV_KMM_MODE_INSERT , self )
+        kmm.register( '<backspace>' , PV_KMM_MODE_INSERT , self )
+
+    def checkValidation( self , **kwdict ):
+        self.key = kwdict['key']
+        self.return_key = '\\<Backspace>'  if self.key == '<Backspace>' else str ( self.key )
+        return True
+
+    def runAction( self ):
+        # check if the main window
+        if not pvWindow() == self.main_window :
+            return self.return_key
+
+
+        # check if the [content complete] panels is open
+        current_panel = self.tab_panel.getCurrentPanelItem()
+        if not current_panel == 'Context Complete' : return self.return_key
+        
+
+        # get line left cursor 
+        cursor_line , cursor_column = vim.current.window.cursor
+        line_left_cursor = vim.current.buffer[ cursor_line - 1 ][: cursor_column ] 
+        # if input a valid letter , append it
+        if not self.key == '<Backspace>' :
+            line_left_cursor += str( self.key )
+
+        try :
+            base_word = self.re_match_last_word.match( line_left_cursor ).group('word')
+        except:
+            return self.return_key
+
+        if self.key == '<Backspace>' :
+            word = base_word[:-1]
+            remove_list = [ base_word ]
+        else:
+            word = base_word
+            remove_list = []
+
+        #if len( word ) < 3 : return self.return_key
+
+        # find the possible words
+        def searchWord( re_search_str , decrease_list = [] ):
+            search_dict = {}
+            re_search = re.compile( re_search_str )
+            for eachline in vim.current.buffer :
+                for search_ret in re_search.finditer( eachline ):
+                    find_word = search_ret.group('word')
+                    search_dict.__setitem__( find_word , search_dict.get( find_word , 0 ) + 1 )
+
+            for x in decrease_list :
+                if search_dict.has_key( x ):
+                    if search_dict[x] == 1 :
+                        del search_dict[x]
+                    else:
+                        search_dict[x] -= 1
+                        
+            revert_dict = {}
+            for key in search_dict.keys() :
+                if revert_dict.has_key( search_dict[key] ):
+                    revert_dict[ search_dict[key] ].append( key )
+                else:
+                    revert_dict[ search_dict[key] ] = [ key ]
+
+            for key in revert_dict.keys():
+                revert_dict[key].sort()
+
+            return revert_dict
+
+        ## search  start with the 'word'  and middle with
+        search_dict__start_with = searchWord( '(?P<word>%s[\w_]+)' % word , remove_list )
+        search_dict__middle_with = searchWord( '(?P<word>[\w_]+%s[\w_]*)' % word )
+
+        # to list
+        def searchDict2List( data_dict ):
+            return_list = []
+            key_list = data_dict.keys()
+            key_list.sort( lambda x , y : x < y )
+            for x in key_list :
+                return_list.extend( data_dict[x] )
+            return return_list
+
+        buffer = current_panel.getBuffer()
+        buffer.item = []
+        buffer.item.extend( searchDict2List( search_dict__start_with ) )
+        if ( not self.key == '<Backspace>' ) and len (  buffer.item ) == 1 :
+            final_word = buffer.item[0]
+            append_part = final_word[len(word):]
+            if len( append_part ) == 1 :
+                self.return_key = '%s%s\<C-O>v\<C-G>' % ( self.key , append_part )
+            else:
+                self.return_key = '%s%s\<C-O>v%dh\<C-G>' % (  self.key , append_part ,  len( append_part ) - 1 )
+
+        buffer.item.extend( searchDict2List( search_dict__middle_with ) )
+        buffer.updateBuffer( selection = 0 )
+
+        return self.return_key
+
+class exVimKey_AcceptContextComplete( exVimMagicKeyBase ):
+    def __init__( self , main_window , tab_panel ):
+        self.main_window = main_window
+        self.tab_panel = tab_panel
+
+    def register( self , kmm ):
+        kmm.register( '<C-Space>' , PV_KMM_MODE_INSERT , self )
+        kmm.register( '<C-Space>' , PV_KMM_MODE_SELECT , self )
+
+    def checkValidation( self , **kwdict ):
+        self.mode = kwdict['mode']
+        # check if it occured on the main window
+        if not pvWindow() == self.main_window : return False
+        # check if the 'Context Complete' Panel
+        return self.tab_panel.getCurrentPanelItem() == 'Context Complete'
+
+    def runAction( self ):
+        if self.mode == PV_KMM_MODE_INSERT :
+            complete_buffer = self.tab_panel.getCurrentPanelItem().getBuffer()
+
+            # no data to complete
+            if len( complete_buffer.data ) == 0 : return
+
+            # delete word on cursor
+            return ('\<C-W>%s' % complete_buffer.getItemList()[ complete_buffer.getSelection() ] )
+        else : # PV_KMM_MODE_SELECT
+            return ""
 

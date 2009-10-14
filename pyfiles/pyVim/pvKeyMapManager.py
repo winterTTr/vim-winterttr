@@ -139,8 +139,8 @@ class pvKeyMapManager:
             kwdict['range'] = [ vim.eval( 'getpos("%s")' % x )[1:3] for x in [ "'<" , "'>" ] ]
 
         resolver = self.call_function_map[kmm_mode][kwdict['key'].getVimKey()]
-        if resolver.check( **kwdict ):
-            resolver.do()
+        if resolver.checkValidation( **kwdict ):
+            return resolver.runAction()
 
 
 
