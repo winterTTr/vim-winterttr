@@ -13,26 +13,26 @@ class Application:
         vim.command( 'set noshowmode' )
         self.magic_key_list = []
 
-        #from exVimMagicKey import exVimKey_ExpandContent
-        #self.magic_key_list.append( exVimKey_ExpandContent( self.wm.getWindow('main') ) )
+        from exVimMagicKey import exVimKey_ExpandContent
+        self.magic_key_list.append( exVimKey_ExpandContent( self.wm.getWindow('main') ) )
 
-        #from exVimMagicKey import exVimKey_AutoAddPair
-        #self.magic_key_list.append( exVimKey_AutoAddPair( self.wm.getWindow('main') ) )
+        from exVimMagicKey import exVimKey_AutoAddPair
+        self.magic_key_list.append( exVimKey_AutoAddPair( self.wm.getWindow('main') ) )
 
-        #from exVimMagicKey import exVimKey_AutoMoveRightPair
-        #self.magic_key_list.append( exVimKey_AutoMoveRightPair( self.wm.getWindow('main') ) )
+        from exVimMagicKey import exVimKey_AutoMoveRightPair
+        self.magic_key_list.append( exVimKey_AutoMoveRightPair( self.wm.getWindow('main') ) )
 
-        #from exVimMagicKey import exVimKey_ChangeSelectionOnPanel
-        #self.magic_key_list.append( exVimKey_ChangeSelectionOnPanel(self.tp) )
+        from exVimMagicKey import exVimKey_ChangeSelectionOnPanel
+        self.magic_key_list.append( exVimKey_ChangeSelectionOnPanel(self.tp) )
 
-        #from exVimMagicKey import exVimKey_ChangeSelectonOnPanelList
-        #self.magic_key_list.append( exVimKey_ChangeSelectonOnPanelList(self.tp) )
+        from exVimMagicKey import exVimKey_ChangeSelectonOnPanelList
+        self.magic_key_list.append( exVimKey_ChangeSelectonOnPanelList(self.tp) )
 
-        from evVimMagicKey import exVimKey_AutoContextComplete
+        from exVimMagicKey import exVimKey_AutoContextComplete
         self.magic_key_list.append( exVimKey_AutoContextComplete( self.wm.getWindow('main') , self.tp) )
 
-        #from exVimMagicKey import exVimKey_AcceptContextComplete
-        #self.magic_key_list.append( exVimKey_AcceptContextComplete( self.wm.getWindow('main') , self.tp) )
+        from exVimMagicKey import exVimKey_AcceptContextComplete
+        self.magic_key_list.append( exVimKey_AcceptContextComplete( self.wm.getWindow('main') , self.tp) )
 
         for key in self.magic_key_list :
             key.register( self.kmm )

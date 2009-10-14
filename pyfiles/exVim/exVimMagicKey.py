@@ -5,6 +5,7 @@ import re
 from pyVim.pvKeyMapManager import pvkmmResolver
 from pyVim.pvKeyMapManager import PV_KMM_MODE_INSERT , PV_KMM_MODE_NORMAL , PV_KMM_MODE_SELECT
 from pyVim.pvWrap import pvWindow
+from pyVim.pvExBuffer import pvListBuffer
 # exVim
 import exVimMagicKeyConfig 
 
@@ -22,7 +23,7 @@ class exVimKey_ExpandContent( exVimMagicKeyBase ):
         kmm.register( '<Tab>' , PV_KMM_MODE_INSERT , self )
 
     def checkValidation( self , **kdwcit ):
-        return pvWindow() == main_window
+        return pvWindow() == self.main_window
 
     def runAction( self  ):
         # 1. try to expand keyword
@@ -42,7 +43,7 @@ class exVimKey_ExpandContent( exVimMagicKeyBase ):
         if exVimMagicKeyConfig.MagicKeyExpandTemplate.has_key( vim.eval('&ft') ) :
              expandKeyList.extend( exVimMagicKeyConfig.MagicKeyExpandTemplate[ vim.eval('&ft') ].keys() )
 
-        regStr = "(.*\s+|^)(?P<key>" + '|'.join(expandKeyList) + ")\s*$"
+        regStr = "(.*\s+|^)(?P<key>" + '|'.join(expandKeyList) + ")$"
         regRet =  re.match( regStr , lineLeftCursor )
         if not regRet :
             return ""
@@ -182,6 +183,7 @@ exVim_pair_map = {
         '(' : ')' ,
         '[' : ']' ,
         '{' : '}' ,
+        '<' : '>' ,
         '"' : '"' ,
         '\'' : '\''
         }
@@ -196,10 +198,14 @@ class exVimKey_AutoAddPair( exVimMagicKeyBase ):
 
     def checkValidation( self , **kwdict ):
         self.key = str( kwdict['key'] )
-        return pvWindow() == main_window
+        return pvWindow() == self.main_window
 
     def runAction( self ):
-        return '%s\<C-\>\<C-N>i' % ( self.key + exVim_pair_map[ self.key ] , ) 
+        if self.key == '"' :
+            return_value = '%s\<C-\>\<C-N>i' % ( '\\' + self.key + '\\' + exVim_pair_map[ self.key ] , )
+        else:
+            return_value = '%s\<C-\>\<C-N>i' % ( self.key + exVim_pair_map[ self.key ] , )
+        return return_value
 
 
 exVim_pair_map_revert = dict ( [ ( exVim_pair_map[x] , x ) for x in exVim_pair_map.keys() if x != exVim_pair_map[x] ] ) 
@@ -228,13 +234,13 @@ class exVimKey_AutoMoveRightPair( exVimMagicKeyBase ):
             position = regRet.start(1)
 
             leftLB , leftRB = self.__CalcBracketNumber( lineLeftCursor , self.key )
-            rightLB , rightRB = self.__CalcBracketNumber( lineRightCursor , exVim_pair_map_revert[ self.key ]  )
+            rightLB , rightRB = self.__CalcBracketNumber( lineRightCursor , self.key )
 
             if leftLB - leftRB != 0 and leftLB - leftRB == rightRB - rightLB:
                 vim.current.window.cursor = ( cursorRow , cursorCol + position + 1 )
                 return ''
 
-        return exVim_pair_map_revert[ self.key ]
+        return self.key
 
     def __CalcBracketNumber( self , line , key ):
         left = 0
@@ -258,7 +264,7 @@ class exVimKey_ChangeSelectionOnPanel( exVimMagicKeyBase ):
         kmm.register( '<C-K>' , PV_KMM_MODE_NORMAL , self )
 
     def checkValidation( self , **kwdict ):
-        self.key = key
+        self.key = kwdict['key']
         return True
 
     def runAction( self ):
@@ -283,11 +289,11 @@ class exVimKey_ChangeSelectonOnPanelList( exVimMagicKeyBase ):
         return True
 
     def runAction( self ):
-        if not  pvWindow() == self.tab_panel.getListPanel() :
+        if not  pvWindow() == self.tab_panel.getListWindow() :
             vim.command('normal viw')
             return
 
-        item_list = self.tab_panel.getItemList()
+        item_list = self.tab_panel.buffer.getItemList()
         # get selection position and update list
         cursor_line = vim.current.window.cursor[0]
         try :
@@ -351,7 +357,7 @@ class exVimKey_AutoContextComplete( exVimMagicKeyBase ):
             word = base_word
             remove_list = []
 
-        #if len( word ) < 3 : return self.return_key
+        if len( word ) < 3 : return self.return_key
 
         # find the possible words
         def searchWord( re_search_str , decrease_list = [] ):
@@ -382,7 +388,7 @@ class exVimKey_AutoContextComplete( exVimMagicKeyBase ):
             return revert_dict
 
         ## search  start with the 'word'  and middle with
-        search_dict__start_with = searchWord( '(?P<word>%s[\w_]+)' % word , remove_list )
+        search_dict__start_with = searchWord( '(^|\s+)(?P<word>%s[\w_]+)' % word , remove_list )
         search_dict__middle_with = searchWord( '(?P<word>[\w_]+%s[\w_]*)' % word )
 
         # to list
@@ -431,7 +437,7 @@ class exVimKey_AcceptContextComplete( exVimMagicKeyBase ):
             complete_buffer = self.tab_panel.getCurrentPanelItem().getBuffer()
 
             # no data to complete
-            if len( complete_buffer.data ) == 0 : return
+            if len( complete_buffer.item ) == 0 : return ""
 
             # delete word on cursor
             return ('\<C-W>%s' % complete_buffer.getItemList()[ complete_buffer.getSelection() ] )

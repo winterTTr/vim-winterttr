@@ -10,8 +10,9 @@ from Doxygen import DoxygenInit
 
 
 def pyfilesInit():
-    MagicKeyInit()
-    DoxygenInit()
+    pass
+    #MagicKeyInit()
+    #DoxygenInit()
 
 
 
