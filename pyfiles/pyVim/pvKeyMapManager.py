@@ -82,6 +82,12 @@ class pvkmmKeyName:
 
         return False
 
+    def __radd__( self , other ):
+        return str( self ) + str( other )
+
+    def __add__( self , other ):
+        return str( self ) + str( other )
+
     def __str__( self ):
         return self.vim_key
 
