@@ -45,7 +45,7 @@ class pvListBuffer(pvBuffer):
         except:
             resize = self.resize
 
-        if self.selection >= len( self.data ):
+        if self.selection >= len( self.item ):
             self.selection = 0
 
         # clear the screen
@@ -63,6 +63,6 @@ class pvListBuffer(pvBuffer):
         self._buffer[0:len(show_data) -1 ] = show_data
 
         # resize window
-        if self.resize : vim.command('resize %d' % len( self.data ) )
+        if self.resize : vim.command('resize %d' % len( self.item ) )
 
         

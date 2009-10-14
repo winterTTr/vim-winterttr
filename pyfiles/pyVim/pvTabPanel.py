@@ -18,7 +18,7 @@ class pvTabPanelManager:
         self.buffer = pvListBuffer()
         self.panel_list = self.buffer.getItemList()
 
-        self.buffer.showBuffer( self.list_window )
+        self.buffer.showBuffer( self.list_win )
         self.buffer.updateBuffer()
 
     def addPanel( self , panel ):
@@ -32,7 +32,7 @@ class pvTabPanelManager:
 
         if len( self.panel_list ) == 1 :
             buffer = panel.getBuffer()
-            buffer.showBuffer( self.panel_window )
+            buffer.showBuffer( self.panel_win )
             buffer.updateBuffer() 
 
         return True
@@ -56,8 +56,20 @@ class pvTabPanelManager:
         self.updateBuffer( selection = item_index , resize = True )
 
         panel_buffer = self.panel_list[index].getBuffer()
-        panel_buffer.showBuffer( self.panel_window )
+        panel_buffer.showBuffer( self.panel_win )
         panel_buffer.updateBuffer()
+
+    def getCurrentPanelItem( self ):
+        return self.panel_list[ self.buffer.getSelection() ]
+
+    def getListWindow( self ):
+        return self.list_win
+
+    def getPanelWindow( self ):
+        return self.panel_win
+
+
+
 
 
 
