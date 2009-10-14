@@ -325,12 +325,12 @@ class exVimKey_AutoContextComplete( exVimMagicKeyBase ):
         # check if the [content complete] panels is open
         current_panel = self.tab_panel.getCurrentPanelItem()
         if not current_panel == 'Context Complete' : return self.return_key
-        
 
+        
         # get line left cursor 
         cursor_line , cursor_column = vim.current.window.cursor
         line_left_cursor = vim.current.buffer[ cursor_line - 1 ][: cursor_column ] 
-        # if input a valid letter , append it
+        # if input a valid letter , append it 
         if not self.key == '<Backspace>' :
             line_left_cursor += str( self.key )
 
@@ -340,6 +340,11 @@ class exVimKey_AutoContextComplete( exVimMagicKeyBase ):
             return self.return_key
 
         if self.key == '<Backspace>' :
+            # if just one letter left , it will be remove , so just
+            # remove it , without complete anything
+            if len( base_word ) == 1 :
+                return self.return_key
+
             word = base_word[:-1]
             remove_list = [ base_word ]
         else:
