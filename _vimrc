@@ -61,7 +61,9 @@ if has("gui_running")
     "set guioptions=aegimtrLv
     set guioptions=aegimtrL
     let Tlist_Show_Menu=1
-    set guifont=Bitstream_Vera_Sans_Mono:h10:cANSI
+    "set guifont=Bitstream_Vera_Sans_Mono:h10:cANSI
+    "set guifont=Fixedsys:h10:cGB2312
+    set guifont=Bitstream_Vera_Sans_Mono:h10:b:cANSI
     set guifontwide=NSimsun:h12
 endif
 " ------------------- }}}2
