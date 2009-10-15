@@ -52,7 +52,22 @@ def pvkmmDispatch( id , kmm_key , vim_mode ):
     # set return value
     vim.command('let g:%s="%s"' % ( pv_kmm_internal_register_table[id].return_var_name , str(ret) ) ) 
 
-class pvkmmKeyName:
+class pvFunctionMapID( object ):
+    def __init__( self , key , mode , function_name ):
+        self.key = key 
+        self.mode = mode 
+        self.function_name = function_name
+
+    def __eq__( self , other ):
+        return self.key == other.key \
+                and self.mode == other.mode \
+                and self.function_name == other.function_name
+
+    def __hash__( self ):
+        hash_string = '|'.join( map( str , [ self.key , self.mode , self.function_name ] ) )
+        return hash( hash_string )
+
+class pvKeyName:
     def __init__( self ):
         self.vim_key = None
 
@@ -73,11 +88,11 @@ class pvkmmKeyName:
 
     def __eq__( self , other ):
         if type( other ) in types.StringTypes :
-            other_key = pvkmmKeyName()
+            other_key = pvKeyName()
             other_key.setVimKey( other )
             return self.vim_key == other_key.vim_key
 
-        if isinstance( other , pvkmmKeyName ):
+        if isinstance( other , pvKeyName ):
             return self.vim_key == other.vim_key
 
         return False
@@ -121,7 +136,7 @@ class pvKeyMapManager:
 
 
     def register( self , vim_key , kmm_mode , resolver ):
-        key = pvkmmKeyName()
+        key = pvKeyName()
         key.setVimKey( vim_key )
         command_format = pv_kmm_vim_keymap_command_map[ kmm_mode ]
 
@@ -137,7 +152,7 @@ class pvKeyMapManager:
     def doKey( self , kmm_key , kmm_mode ):
         # make key
         kwdict = {}
-        kwdict['key'] = pvkmmKeyName()
+        kwdict['key'] = pvKeyName()
         kwdict['key'].setKMMKey( kmm_key ) 
         kwdict['mode'] = kmm_mode
 
