@@ -9,7 +9,7 @@ pv_kmm_internal_register_table = {}
 PV_VIM_KEY_MAP_REG_FUNCTION = """
 let g:%(return_var_name)s = ""
 function! %(function_name)s(internal_key,vim_mode_flag)
-  exec 'python pyVim.pvKeyMapManager.pvkmmDispatch("%(id)s" , "'. a:internal_key . '","' . a:vim_mode_flag . '")'
+  exec 'python pyVim.pvKeyMap.pvkmmDispatch("%(id)s" , "'. a:internal_key . '","' . a:vim_mode_flag . '")'
   return g:%(return_var_name)s
 endfunction
 """
