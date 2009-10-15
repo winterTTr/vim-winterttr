@@ -12,7 +12,7 @@ class exVimPanel_ContextComplete( pvTabPanelItem ):
         return 'Context Complete'
 
 
-class exVimPanel_FileExplorer( pvTabPanelItem ):
+class exVimPanel_BufferExplorer( pvTabPanelItem ):
     def __init__( self ):
         self.buffer = pvListBuffer()
 
@@ -20,5 +20,5 @@ class exVimPanel_FileExplorer( pvTabPanelItem ):
         return self.buffer
 
     def __str__( self ):
-        return 'File Explorer'
+        return 'Buffer Explorer'
 

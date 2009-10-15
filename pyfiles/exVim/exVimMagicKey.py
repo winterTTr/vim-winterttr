@@ -2,8 +2,8 @@
 import vim
 import re
 # pyVim module
-from pyVim.pvKeyMapManager import pvkmmResolver
-from pyVim.pvKeyMapManager import PV_KMM_MODE_INSERT , PV_KMM_MODE_NORMAL , PV_KMM_MODE_SELECT
+from pyVim.pvKeyMap import pvkmmResolver
+from pyVim.pvKeyMap import PV_KMM_MODE_INSERT , PV_KMM_MODE_NORMAL , PV_KMM_MODE_SELECT
 from pyVim.pvWrap import pvWindow
 from pyVim.pvExBuffer import pvListBuffer
 # exVim
@@ -416,7 +416,7 @@ class exVimKey_AutoContextComplete( exVimMagicKeyBase ):
 
         return self.return_key
 
-class exVimKey_AcceptContextComplete( exVimMagicKeyBase ):
+class exVimKey_AcceptSelectionOnPanel( exVimMagicKeyBase ):
     def __init__( self , main_window , tab_panel ):
         self.main_window = main_window
         self.tab_panel = tab_panel
@@ -441,6 +441,6 @@ class exVimKey_AcceptContextComplete( exVimMagicKeyBase ):
 
             # delete word on cursor
             return ('\<C-W>%s' % complete_buffer.getItemList()[ complete_buffer.getSelection() ] )
-        else : # PV_KMM_MODE_SELECT
+        elif self.mode ==  PV_KMM_MODE_SELECT:
             return ""
 

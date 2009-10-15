@@ -1,5 +1,4 @@
 MagicKeyConfig = {}
-
 MagicKeyConfig['AutoFillRegion'] = {}
 MagicKeyConfig['AutoFillRegion']['begin'] = '`<'
 MagicKeyConfig['AutoFillRegion']['end'] = '>`'
@@ -11,7 +10,7 @@ MagicKeyExpandTemplate = {}
 
 # all type file
 MagicKeyExpandTemplate['_'] = {}
-## _:time {{{2
+## _: get time      :time {{{2
 def GetCurrentTime(): 
     import datetime
     now = datetime.datetime.now()
@@ -21,7 +20,7 @@ MagicKeyExpandTemplate['_']['time'] = GetCurrentTime  #}}}2
 
 # cpp & c
 MagicKeyExpandTemplate['cpp'] = {}
-## cpp:main {{{2
+## cpp: main        :main {{{2
 MagicKeyExpandTemplate['cpp']['main'] = """\
 int main( int argc , char * argv[] )
 {
@@ -29,14 +28,14 @@ int main( int argc , char * argv[] )
 return 0;
 }\
 """ % MagicKeyConfig['AutoFillRegion'] #}}}2
-## cpp:for {{{2
+## cpp: for         :for {{{2
 MagicKeyExpandTemplate['cpp']['for'] = """\
 for ( %(region)s ; %(region)s ; %(region)s )
 {
 %(region)s;
 }\
 """ % MagicKeyConfig['AutoFillRegion'] # }}}2
-## cpp:switch {{{2
+## cpp: switch      :switch {{{2
 MagicKeyExpandTemplate['cpp']['switch'] = """\
 switch( %(region)s )
 {
@@ -54,14 +53,14 @@ default :
 break;
 }\
 """ % MagicKeyConfig['AutoFillRegion'] # }}}2
-## cpp:while {{{2
+## cpp: while       :while {{{2
 MagicKeyExpandTemplate['cpp']['while'] = """\
 while( %(region)s )
 {
 %(region)s;
 }\
 """ % MagicKeyConfig['AutoFillRegion'] #}}}2
-## cpp:if {{{2
+## cpp: if          :if {{{2
 MagicKeyExpandTemplate['cpp']['if'] = """\
 if ( %(region)s )
 {
@@ -72,15 +71,15 @@ else
 %(region)s;
 }\
 """ % MagicKeyConfig['AutoFillRegion'] #}}}2
-## cpp:define {{{2
+## cpp: define      :#d {{{2
 MagicKeyExpandTemplate['cpp']['#d'] = """\
 #define \
 """ #}}}2
-## cpp:include {{{2
+## cpp: include     :#i {{{2
 MagicKeyExpandTemplate['cpp']['#i'] = """\
 #include \
 """ #}}}2
-## cpp:define file:df  {{{2
+## cpp: define file :#df  {{{2
 def MakeDefineForHeaderFile():
     import vim 
     filename = vim.eval('expand("%:t")')

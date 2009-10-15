@@ -1,6 +1,6 @@
 import vim
 from pyVim.pvWrap import pvWindowManager 
-from pyVim.pvKeyMapManager import pvKeyMapManager
+from pyVim.pvKeyMap import pvKeyMapManager
 from pyVim.pvTabPanel import pvTabPanelManager
 
 class Application:
@@ -31,8 +31,8 @@ class Application:
         from exVimMagicKey import exVimKey_AutoContextComplete
         self.magic_key_list.append( exVimKey_AutoContextComplete( self.wm.getWindow('main') , self.tp) )
 
-        from exVimMagicKey import exVimKey_AcceptContextComplete
-        self.magic_key_list.append( exVimKey_AcceptContextComplete( self.wm.getWindow('main') , self.tp) )
+        from exVimMagicKey import exVimKey_AcceptSelectionOnPanel
+        self.magic_key_list.append( exVimKey_AcceptSelectionOnPanel( self.wm.getWindow('main') , self.tp) )
 
         for key in self.magic_key_list :
             key.register( self.kmm )
@@ -44,9 +44,9 @@ class Application:
                 self.wm.getWindow('list') ,
                 self.wm.getWindow('panel') )
 
-        from exVimFunctionPanel import exVimPanel_ContextComplete , exVimPanel_FileExplorer
+        from exVimFunctionPanel import exVimPanel_ContextComplete , exVimPanel_BufferExplorer
         self.tp.addPanel( exVimPanel_ContextComplete() )
-        self.tp.addPanel( exVimPanel_FileExplorer() )
+        self.tp.addPanel( exVimPanel_BufferExplorer() )
 
         self.initMagicKey()
 
