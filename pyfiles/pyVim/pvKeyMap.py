@@ -3,16 +3,15 @@ import urllib
 import types
 from pvWrap import CreateRandomName
 
-pv_kmm_internal_register_table = {}
-
-# register the function with a internal name
-PV_VIM_KEY_MAP_REG_FUNCTION = """
-let g:%(return_var_name)s = ""
-function! %(function_name)s(internal_key,vim_mode_flag)
-  exec 'python pyVim.pvKeyMap.pvkmmDispatch("%(id)s" , "'. a:internal_key . '","' . a:vim_mode_flag . '")'
-  return g:%(return_var_name)s
-endfunction
-"""
+# register the dispatch funciton for vim
+vim.command( """
+if !exists("*PV_KEY_MAP_DISPATCH")
+    function PV_KEY_MAP_DISPATCH(appid,internal_key,vim_mode_flag)
+      exec 'python pyVim.pvKeyMap.pvKeyMapDispatch("' .a:appid . '" , "'. a:internal_key . '","' . a:vim_mode_flag . '")'
+      return @v
+    endfunction
+endif
+""" )
 
 # possible mode for the key map
 PV_KMM_MODE_INSERT  = 0x01
@@ -35,41 +34,29 @@ pv_kmm_mode_map__kmm_to_vim = {
         }
 
 pv_kmm_vim_keymap_command_map = {
-        PV_KMM_MODE_NORMAL : 'nnoremap <silent> %(vim_key)s :call %(function_name)s("%(internal_key)s" , "N")<CR>' ,
-        PV_KMM_MODE_INSERT : 'inoremap <silent> %(vim_key)s <C-R>=%(function_name)s("%(internal_key)s" , "I")<CR>' , 
-        PV_KMM_MODE_SELECT : 'snoremap <silent> %(vim_key)s <ESC>`>a<C-R>=%(function_name)s("%(internal_key)s" , "S")<CR>' ,
-        PV_KMM_MODE_VISUAL : 'xnoremap <silent> %(vim_key)s <ESC>`>a<C-R>=%(function_name)s("%(internal_key)s" , "V")<CR>'
+        PV_KMM_MODE_NORMAL : 'nnoremap <silent> %(vim_key)s :call PV_KEY_MAP_DISPATCH("%(appid)s" , "%(internal_key)s" , "N")<CR>' ,
+        PV_KMM_MODE_INSERT : 'inoremap <silent> %(vim_key)s <C-R>=PV_KEY_MAP_DISPATCH("%(appid)s" ,"%(internal_key)s" , "I")<CR>' , 
+        PV_KMM_MODE_SELECT : 'snoremap <silent> %(vim_key)s <ESC>`>a<C-R>=PV_KEY_MAP_DISPATCH("%(appid)s" ,"%(internal_key)s" , "S")<CR>' ,
+        PV_KMM_MODE_VISUAL : 'xnoremap <silent> %(vim_key)s <ESC>`>a<C-R>=PV_KEY_MAP_DISPATCH("%(appid)s" ,"%(internal_key)s" , "V")<CR>'
         }
 
 # function used to dispatch all the key to call this registered py functions
-def pvkmmDispatch( id , kmm_key , vim_mode ):
-    vim.command('let g:%s=""' % ( pv_kmm_internal_register_table[id].return_var_name ) )
+def pvKeyMapDispatch( appid , internal_key , vim_mode ):
+    vim.command('let @v=""')
 
     # call function
-    ret = pv_kmm_internal_register_table[id].doKey( kmm_key ,  pv_kmm_mode_map__vim_to_kmm[vim_mode] )
+    ret = pvKeyMapManager( appid , False ).doKey( internal_key ,  pv_kmm_mode_map__vim_to_kmm[vim_mode] )
     if ret == None: ret = ""
 
     # set return value
-    vim.command('let g:%s="%s"' % ( pv_kmm_internal_register_table[id].return_var_name , str(ret) ) ) 
+    vim.command('let @v="%s"' % str(ret) ) 
 
-class pvFunctionMapID( object ):
-    def __init__( self , key , mode , function_name ):
-        self.key = key 
-        self.mode = mode 
-        self.function_name = function_name
-
-    def __eq__( self , other ):
-        return self.key == other.key \
-                and self.mode == other.mode \
-                and self.function_name == other.function_name
-
-    def __hash__( self ):
-        hash_string = '|'.join( map( str , [ self.key , self.mode , self.function_name ] ) )
-        return hash( hash_string )
-
-class pvKeyName:
+class pvKeyName(object):
     def __init__( self ):
         self.vim_key = None
+
+    def getVimKey( self ):
+        return self.vim_key
 
     def setVimKey( self , key ):
         if key.find('<') != -1 and key.find('>') != -1 :
@@ -77,89 +64,79 @@ class pvKeyName:
         else:
             self.vim_key = key
 
-    def getVimKey( self ):
-        return self.vim_key
+    vim_name = property( getVimKey , setVimKey )
+
 
     def setKMMKey( self , key ):
-        self.setVimKey ( urllib.unquote( key ) )
+        self.vim_name =  urllib.unquote( key )
 
     def getKMMKey( self ):
         return urllib.quote( self.vim_key )
 
+    internal_name = property( getKMMKey , setKMMKey )
+
     def __eq__( self , other ):
         if type( other ) in types.StringTypes :
             other_key = pvKeyName()
-            other_key.setVimKey( other )
-            return self.vim_key == other_key.vim_key
+            other_key.vim_name = other
+            return self.vim_name == other_key.vim_name
 
         if isinstance( other , pvKeyName ):
-            return self.vim_key == other.vim_key
+            return self.vim_name == other.vim_name
 
         return False
 
-    def __radd__( self , other ):
-        return str( self ) + str( other )
-
-    def __add__( self , other ):
-        return str( self ) + str( other )
-
     def __str__( self ):
-        return self.vim_key
+        return self.vim_name
 
-class pvkmmResolver:
+class pvKeyMapResolver(object):
     def checkValidation( self , **kwdict ):
         return True
         
     def runAction( self ):
-        raise RuntimeError( 'no implement pvkmmResolver::do' )
+        raise NotImplementedError('pvKeyMapResolver::runAction')
 
-class pvKeyMapManager:
-    def __init__( self ):
-        self.id = CreateRandomName('KMM')
+class pvKeyMapManager(object):
+    __internal_map = {}
 
-        self.function_name = self.id + '_FUNCTION'
-        self.return_var_name = self.id + '_RET'
+    def __new__( cls , appid , create = True ):
+        if ( not create ) or ( appid in cls.__internal_map ):
+            return cls.__internal_map[appid]
 
-        vim.command( PV_VIM_KEY_MAP_REG_FUNCTION % {
-            'id' : self.id , 
-            'function_name' : self.function_name ,
-            'return_var_name' : self.return_var_name } )
+        cls.__internal_map[appid] = object.__new__( cls )
+        cls.__internal_map[appid].init( appid )
+        return cls.__internal_map[appid]
 
-        pv_kmm_internal_register_table[self.id] =  self
-
+    def init( self  , appid ):
+        self.appid = appid
         self.call_function_map = {}
-        for mode in pv_kmm_vim_keymap_command_map.keys() :
+        for mode in pv_kmm_vim_keymap_command_map:
             self.call_function_map[mode] = {}
-
-    def release( self ):
-        del pv_kmm_internal_register_table[self.id]
-
 
     def register( self , vim_key , kmm_mode , resolver ):
         key = pvKeyName()
-        key.setVimKey( vim_key )
-        command_format = pv_kmm_vim_keymap_command_map[ kmm_mode ]
+        key.vim_name = vim_key
 
-        vim.command( command_format % {
-            'vim_key' : key.getVimKey() , 
-            'function_name' : self.function_name , 
-            'internal_key' : key.getKMMKey()
+        vim.command( pv_kmm_vim_keymap_command_map[ kmm_mode ] % {
+            'appid' : self.appid , 
+            'vim_key' : key.vim_name , 
+            'internal_key' : key.internal_name
             })
 
-        self.call_function_map[kmm_mode][key.getVimKey()] = resolver
+        self.call_function_map[kmm_mode][key.vim_name] = resolver
 
 
     def doKey( self , kmm_key , kmm_mode ):
         # make key
         kwdict = {}
         kwdict['key'] = pvKeyName()
-        kwdict['key'].setKMMKey( kmm_key ) 
+        kwdict['key'].internal_name = kmm_key
         kwdict['mode'] = kmm_mode
 
         if kwdict['mode'] in [ PV_KMM_MODE_SELECT , PV_KMM_MODE_VISUAL ]:
             kwdict['range'] = [ vim.eval( 'getpos("%s")' % x )[1:3] for x in [ "'<" , "'>" ] ]
 
-        resolver = self.call_function_map[kmm_mode][kwdict['key'].getVimKey()]
+        resolver = self.call_function_map[kmm_mode][ kwdict['key'].vim_name ]
         if resolver.checkValidation( **kwdict ):
             return resolver.runAction()
 
