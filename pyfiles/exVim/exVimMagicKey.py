@@ -2,7 +2,7 @@
 import vim
 import re
 # pyVim module
-from pyVim.pvKeyMap import pvkmmResolver
+from pyVim.pvKeyMap import pvKeyMapResolver , pvKeyMapManager
 from pyVim.pvKeyMap import PV_KMM_MODE_INSERT , PV_KMM_MODE_NORMAL , PV_KMM_MODE_SELECT
 from pyVim.pvWrap import pvWindow
 from pyVim.pvExBuffer import pvListBuffer
@@ -10,16 +10,18 @@ from pyVim.pvExBuffer import pvListBuffer
 import exVimMagicKeyConfig 
 
 
-class exVimMagicKeyBase( pvkmmResolver ):
-    def register( self , kmm ):
-        raise RuntimeError("No implement")
+class exVimMagicKeyBase( pvKeyMapResolver ):
+    def register( self ):
+        raise NotImplementedError( "exVimMagicKeyBase::register" )
 
 
 class exVimKey_ExpandContent( exVimMagicKeyBase ):
     def __init__( self , main_window ):
         self.main_window = main_window
 
-    def register( self , kmm ):
+    def register( self ):
+        from exVimConfig import appid
+        kmm = pvKeyMapManager( appid )
         kmm.register( '<Tab>' , PV_KMM_MODE_INSERT , self )
 
     def checkValidation( self , **kdwcit ):
@@ -192,7 +194,9 @@ class exVimKey_AutoAddPair( exVimMagicKeyBase ):
     def __init__( self , main_window ):
         self.main_window = main_window 
 
-    def register( self , kmm ):
+    def register( self ):
+        from exVimConfig import appid
+        kmm = pvKeyMapManager( appid )
         for key in exVim_pair_map :
             kmm.register( key , PV_KMM_MODE_INSERT , self )
 
@@ -214,7 +218,9 @@ class exVimKey_AutoMoveRightPair( exVimMagicKeyBase ):
     def __init__( self , main_window ):
         self.main_window = main_window 
 
-    def register( self , kmm ):
+    def register( self ):
+        from exVimConfig import appid
+        kmm = pvKeyMapManager( appid )
         for key in exVim_pair_map_revert :
             kmm.register( key , PV_KMM_MODE_INSERT , self )
 
@@ -257,7 +263,9 @@ class exVimKey_ChangeSelectionOnPanel( exVimMagicKeyBase ):
     def __init__( self , tab_panel ):
         self.tab_panel = tab_panel
 
-    def register( self , kmm ):
+    def register( self ):
+        from exVimConfig import appid
+        kmm = pvKeyMapManager( appid )
         kmm.register( '<C-J>' , PV_KMM_MODE_INSERT , self )
         kmm.register( '<C-J>' , PV_KMM_MODE_NORMAL , self )
         kmm.register( '<C-K>' , PV_KMM_MODE_INSERT , self )
@@ -282,7 +290,9 @@ class exVimKey_ChangeSelectonOnPanelList( exVimMagicKeyBase ):
     def __init__ ( self , tab_panel ):
         self.tab_panel = tab_panel
 
-    def register( self , kmm ):
+    def register( self ):
+        from exVimConfig import appid
+        kmm = pvKeyMapManager( appid )
         kmm.register( '<2-LeftMouse>' , PV_KMM_MODE_NORMAL , self )
 
     def checkValidation( self , **kwdict ):
@@ -310,10 +320,14 @@ class exVimKey_AutoContextComplete( exVimMagicKeyBase ):
         self.main_window = main_window
         self.tab_panel = tab_panel
 
-    def register( self , kmm ):
+    def register( self ):
+        from exVimConfig import appid
+        kmm = pvKeyMapManager( appid )
+
         import string
         for letter in string.ascii_letters:
             kmm.register( letter , PV_KMM_MODE_INSERT , self )
+
         kmm.register( '_' , PV_KMM_MODE_INSERT , self )
         kmm.register( '<backspace>' , PV_KMM_MODE_INSERT , self )
 
@@ -421,7 +435,11 @@ class exVimKey_AcceptSelectionOnPanel( exVimMagicKeyBase ):
         self.main_window = main_window
         self.tab_panel = tab_panel
 
-    def register( self , kmm ):
+
+    def register( self ):
+        from exVimConfig import appid
+        kmm = pvKeyMapManager( appid )
+
         kmm.register( '<C-Space>' , PV_KMM_MODE_INSERT , self )
         kmm.register( '<C-Space>' , PV_KMM_MODE_SELECT , self )
 

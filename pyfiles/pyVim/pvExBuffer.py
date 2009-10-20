@@ -5,7 +5,7 @@ from pvWrap import pvBuffer
 from pvWrap import CreateRandomName
 from pvWrap import PV_BUF_TYPE_READONLY , PV_BUF_TYPE_NORMAL
 
-class pvListBufferItem:
+class pvListBufferItem(object):
     def __str__( self ):
         raise RuntimeError('no implement')
 

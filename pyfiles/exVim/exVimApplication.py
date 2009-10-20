@@ -5,9 +5,7 @@ from pyVim.pvTabPanel import pvTabPanelManager
 
 class Application:
     def __init__( self ):
-        self.kmm = pvKeyMapManager()
         self.wm = pvWindowManager()
-
 
     def initMagicKey( self ):
         vim.command( 'set noshowmode' )
@@ -35,7 +33,7 @@ class Application:
         self.magic_key_list.append( exVimKey_AcceptSelectionOnPanel( self.wm.getWindow('main') , self.tp) )
 
         for key in self.magic_key_list :
-            key.register( self.kmm )
+            key.register()
 
 
     def start( self ):

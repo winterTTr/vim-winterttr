@@ -10,7 +10,7 @@ def CreateRandomName( base ):
     return '%s_%06d' % ( base , random_ext )
 
 
-class pvBuffer:
+class pvBuffer(object):
     """
     Totally wrapper for the vim-buffer-object(VBO)
     This class can create , wipeout , and used to the class for a
@@ -138,7 +138,7 @@ class pvBuffer:
         pass
 
 
-class pvWindow:
+class pvWindow(object):
     """
     pvWindow is the wrap to a vim-window-object(VWO)
     This class just attach to the VWO , not create it.
@@ -262,7 +262,7 @@ PV_SPLIT_TYPE_CUR_BOTTOM   = 0x20
 PV_SPLIT_TYPE_CUR_LEFT     = 0x40
 PV_SPLIT_TYPE_CUR_RIGHT    = 0x80
 
-class pvWinSplitter:
+class pvWinSplitter(object):
     _split_map = {
             PV_SPLIT_TYPE_MOST_TOP   : 'topleft' ,
             PV_SPLIT_TYPE_MOST_RIGHT : 'vertical botright',
@@ -308,7 +308,7 @@ class pvWinSplitter:
         return pvWindow ( vim.current.window )
 
 
-class pvWindowManager():
+class pvWindowManager(object):
     def __init__( self ):
         self.windows = {}
         self.mainwin_position = (-1,-1)
