@@ -45,7 +45,5 @@ class Application:
         from exVimFunctionPanel import exVimPanel_ContextComplete , exVimPanel_BufferExplorer
         self.tp.addPanel( exVimPanel_ContextComplete() )
         self.tp.addPanel( exVimPanel_BufferExplorer() )
-
         self.initMagicKey()
-
 

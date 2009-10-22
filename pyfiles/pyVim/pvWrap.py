@@ -23,8 +23,23 @@ class pvBuffer(object):
         # get name if given , otherwise give the system random name
         self.name = name if name != None else CreateRandomName('PV_BUF')
 
-        # make enter first, use this flag to do the first enter # initialization
-        self.firstEnter = True
+        # save the buffered command , when the buffer is open , the
+        # command will be executed
+        if type == PV_BUF_TYPE_READONLY :
+            self.buffered_command_list = [
+                    'setlocal nomodifiable' ,
+                    'setlocal noswapfile' , 
+                    'setlocal buftype=nofile' ,
+                    'setlocal readonly' ,
+                    'setlocal nowrap' , 
+                    'setlocal nonumber' , 
+                    'setlocal foldcolumn=0' , 
+                    'setlocal bufhidden=hide' ,
+                    'setlocal nobuflisted' ]
+        elif type == PV_BUF_TYPE_NORMAL :
+            self.buffered_command_list = ['setlocal buflisted']
+        else:
+            raise RuntimeError('pvBuffer , invalid type[%d]' % type )
 
         # create buffer, get the buffer id ( which is unique )
         buffer_id = int( vim.eval('bufnr( "%s" ,1 )' % self.name ) )
@@ -65,28 +80,22 @@ class pvBuffer(object):
         vim.command('bwipeout %d' % self._buffer.number )
         self._buffer = None
         
-    def setBufferType( self ):
-        if self.type == PV_BUF_TYPE_READONLY:
-            ## can not write
-            vim.command('setlocal nomodifiable')
-            vim.command('setlocal noswapfile')
-            vim.command('setlocal buftype=nofile')
-            vim.command('setlocal readonly')
-            vim.command('setlocal nowrap')
-            
-            ## maintain the shape
-            vim.command('setlocal nonumber')
-            #vim.command('setlocal cursorline')
-            vim.command('setlocal foldcolumn=0')
-            
-            ## about buffer
-            vim.command('setlocal bufhidden=hide')
-            vim.command('setlocal nobuflisted')
+    def registerCommand( self , cmd ):
+        self.buffered_command_list.append( cmd )
 
-        elif self.type == PV_BUF_TYPE_NORMAL:
-            vim.command('setlocal buflisted')
-    
-        
+        # try to run the command
+        # 1. save the current focus
+        current_focus_win = pvWindow()
+        # 2. if is shown , focus it and runcommand
+        if not self.setFocus(): return 
+        self.runCommand()
+
+        # 3. recover the focus
+        current_focus_win.setFocus()
+
+    def runCommand( self ):
+        while self.buffered_command_list : vim.command( self.buffered_command_list.pop(0) )
+
     def showBuffer( self , parentwin ):
         # the buffer does not exist
         if not self.isExist() : return
@@ -98,12 +107,11 @@ class pvBuffer(object):
         if parentwin and ( not parentwin.setFocus() ):
             return 
             
+        # open the buffer on the current window
         vim.command('buffer %d' % self._buffer.number )
 
-        # if this is the first time to show the buffer , set property
-        if self.firstEnter :
-            self.setBufferType()
-            self.firstEnter = False
+        # run the buffer-specific command
+        self.runCommand()
 
         # restore the focus
         if current_focus_win.getWindowID() != parentwin.getWindowID():
