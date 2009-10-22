@@ -21,6 +21,16 @@ class pvTabPanelManager:
         self.buffer.showBuffer( self.list_win )
         self.buffer.updateBuffer()
 
+    def updateView( self ):
+        self.buffer.showBuffer( self.list_win )
+        self.buffer.updateBuffer()
+
+        if len( self.buffer.getItemList() ) > 0 :
+            panel = self.buffer.getItemList()[ self.buffer.getSelection() ]
+            panel.getBuffer().showBuffer( self.panel_win )
+            panel.getBuffer().updateBuffer()
+
+
     def addPanel( self , panel ):
         # check if the name already exist
         if panel in self.panel_list :
@@ -61,6 +71,9 @@ class pvTabPanelManager:
 
     def getCurrentPanelItem( self ):
         return self.panel_list[ self.buffer.getSelection() ]
+
+    def getListBuffer( self ):
+        return self.buffer
 
     def getListWindow( self ):
         return self.list_win

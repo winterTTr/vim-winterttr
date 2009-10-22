@@ -293,16 +293,12 @@ class exVimKey_ChangeSelectonOnPanelList( exVimMagicKeyBase ):
     def register( self ):
         from exVimConfig import appid
         kmm = pvKeyMapManager( appid )
-        kmm.register( '<2-LeftMouse>' , PV_KMM_MODE_NORMAL , self )
+        kmm.register( '<2-LeftMouse>' , PV_KMM_MODE_NORMAL , self , self.tab_panel.getListBuffer() )
 
     def checkValidation( self , **kwdict ):
         return True
 
     def runAction( self ):
-        if not  pvWindow() == self.tab_panel.getListWindow() :
-            vim.command('normal viw')
-            return
-
         item_list = self.tab_panel.buffer.getItemList()
         # get selection position and update list
         cursor_line = vim.current.window.cursor[0]
