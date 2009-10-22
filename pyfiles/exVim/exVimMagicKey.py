@@ -276,7 +276,7 @@ class exVimKey_ChangeSelectionOnPanel( exVimMagicKeyBase ):
         return True
 
     def runAction( self ):
-        panel_item = self.tab_panel.getCurrentPanelItem()
+        panel_item = self.tab_panel.getCurrentPanel()
         buffer = panel_item.getBuffer()
 
         # check if the buffer is list buffer
@@ -293,7 +293,7 @@ class exVimKey_ChangeSelectonOnPanelList( exVimMagicKeyBase ):
     def register( self ):
         from exVimConfig import appid
         kmm = pvKeyMapManager( appid )
-        kmm.register( '<2-LeftMouse>' , PV_KMM_MODE_NORMAL , self , self.tab_panel.getListBuffer() )
+        kmm.register( '<2-LeftMouse>' , PV_KMM_MODE_NORMAL , self , self.tab_panel.getTabBuffer() )
 
     def checkValidation( self , **kwdict ):
         return True
@@ -339,7 +339,7 @@ class exVimKey_AutoContextComplete( exVimMagicKeyBase ):
 
 
         # check if the [content complete] panels is open
-        current_panel = self.tab_panel.getCurrentPanelItem()
+        current_panel = self.tab_panel.getCurrentPanel()
         if not current_panel == 'Context Complete' : return self.return_key
 
         
@@ -444,11 +444,11 @@ class exVimKey_AcceptSelectionOnPanel( exVimMagicKeyBase ):
         # check if it occured on the main window
         if not pvWindow() == self.main_window : return False
         # check if the 'Context Complete' Panel
-        return self.tab_panel.getCurrentPanelItem() == 'Context Complete'
+        return self.tab_panel.getCurrentPanel() == 'Context Complete'
 
     def runAction( self ):
         if self.mode == PV_KMM_MODE_INSERT :
-            complete_buffer = self.tab_panel.getCurrentPanelItem().getBuffer()
+            complete_buffer = self.tab_panel.getCurrentPanel().getBuffer()
 
             # no data to complete
             if len( complete_buffer.item ) == 0 : return ""
