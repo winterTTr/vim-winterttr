@@ -69,13 +69,13 @@ class pvTabPanelManager:
         panel_buffer.showBuffer( self.panel_win )
         panel_buffer.updateBuffer()
 
-    def getCurrentPanelItem( self ):
+    def getCurrentPanel( self ):
         return self.panel_list[ self.buffer.getSelection() ]
 
-    def getListBuffer( self ):
+    def getTabBuffer( self ):
         return self.buffer
 
-    def getListWindow( self ):
+    def getTabWindow( self ):
         return self.list_win
 
     def getPanelWindow( self ):
