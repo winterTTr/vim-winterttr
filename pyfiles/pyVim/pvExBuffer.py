@@ -2,7 +2,7 @@ import vim
 import types
 
 from pvWrap import pvBuffer
-from pvWrap import CreateRandomName
+from pvWrap import GenerateRandomName
 from pvWrap import PV_BUF_TYPE_READONLY , PV_BUF_TYPE_NORMAL
 
 class pvListBufferItem(object):
@@ -15,7 +15,7 @@ class pvListBufferItem(object):
 class pvListBuffer(pvBuffer):
     data_format = "%(mark)1s [%(name)s]"
     def __init__( self ):
-        pvBuffer.__init__( self , PV_BUF_TYPE_READONLY , CreateRandomName( 'PV_LISTBUF' ) )
+        pvBuffer.__init__( self , PV_BUF_TYPE_READONLY , GenerateRandomName( 'PV_LISTBUF' ) )
         self.item = []
         self.selection = 0
         self.resize = False
@@ -49,7 +49,7 @@ class pvListBuffer(pvBuffer):
             self.selection = 0
 
         # clear the screen
-        self._buffer[:] = None
+        self.buffer[:] = None
 
         # deal with internal data
         show_data = []
@@ -60,7 +60,7 @@ class pvListBuffer(pvBuffer):
                         'name' : str( self.item[index] ) } )
 
         # redraw the content
-        self._buffer[0:len(show_data) -1 ] = show_data
+        self.buffer[0:len(show_data) -1 ] = show_data
 
         # resize window
         if self.resize : vim.command('resize %d' % len( self.item ) )
