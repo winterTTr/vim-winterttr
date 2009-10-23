@@ -44,8 +44,6 @@ else
     highlight NonText       gui=None guibg=#000000 guifg=LightSkyBlue
 endif
 highlight Normal        gui=None guibg=#000000 guifg=honeydew2
-"highlight Normal        gui=None guibg=#000000 guifg=#C4E3C8
-"highlight Normal        gui=None guibg=#000000 guifg=#BDF9C1
 highlight Question      gui=bold  guifg=SeaGreen2 guibg=bg
 highlight Search        gui=NONE guibg=LightSkyBlue4 guifg=NONE
 highlight SpecialKey    guibg=#103040 guifg=#324262
@@ -90,7 +88,7 @@ hi Define gui=None guifg=LightSteelBlue2 guibg=bg
 hi Macro gui=None guifg=LightSkyBlue3 guibg=bg
 hi PreCondit gui=None guifg=LightSkyBlue2 guibg=bg
 
-highlight Type          gui=italic guifg=LightBlue
+highlight Type          gui=NONE guifg=LightBlue
 hi StorageClass gui=None guifg=LightBlue guibg=bg
 hi Structure gui=None guifg=LightBlue guibg=bg
 hi Typedef gui=None guifg=LightBlue guibg=bg
