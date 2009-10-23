@@ -12,7 +12,7 @@ from Doxygen import DoxygenInit
 def pyfilesInit():
     pass
     #MagicKeyInit()
-    #DoxygenInit()
+    DoxygenInit()
 
 
 

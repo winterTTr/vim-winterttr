@@ -1,3 +1,19 @@
+"""
+@file     pvWrap.py
+@brief    wrap the basic vim elements
+@author   winterTTr
+@version  $Revision$
+@date     $Date$
+@bug      add more
+
+The function in this file is used to wrap the basic vim function into
+the python object, which contains 
+ - buffer (pvBuffer) 
+ - window (pvWindow) 
+ - function to split window (pvWinSplitter)
+ - function to split window accordding to a description( pvWindowManager )
+"""
+
 import vim
 import re
 
