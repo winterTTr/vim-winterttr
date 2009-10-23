@@ -1,7 +1,7 @@
 import vim
 import urllib
 import types
-from pvWrap import CreateRandomName
+from pvWrap import GenerateRandomName
 
 # register the dispatch funciton for vim
 vim.command( """
@@ -112,7 +112,7 @@ class pvKeyMapManager(object):
         uid = "%(keyname)s:%(mode)d:%(bufferid)d" % {
                 'keyname' : key.internal_name , 
                 'mode'    : kmm_mode , 
-                'bufferid': buffer.getID() if buffer else 0 }
+                'bufferid': buffer.id if buffer else 0 }
         self.call_function_map[uid] = resolver
 
         vim_cmd_format = pv_kmm_vim_keymap_command_map if buffer == None else pv_kmm_vim_buffered_keymap_command_map
