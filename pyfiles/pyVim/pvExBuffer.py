@@ -7,7 +7,7 @@ from pvWrap import PV_BUF_TYPE_READONLY , PV_BUF_TYPE_NORMAL
 
 class pvListBufferItem(object):
     def __str__( self ):
-        raise RuntimeError('no implement')
+        raise NotImplementedError("pvListBufferItem::__str__")
 
     def __eq__( self , other ):
         return str( self ) == str( other )
@@ -79,4 +79,17 @@ class pvListBuffer(pvBuffer):
         # resize window
         if self.resize : vim.command('resize %d' % len( self.item ) )
 
+
+class pvTreeNode(object):
+    def hasChildren(self):
+        raise NotImplementedError("pvTreeNode::hasChildren")
+
+    def __iter__( self ):
+        raise NotImplementedError("pvTreeNode::__iter__")
+
         
+class pvTreeBuffer(pvBuffer):
+    def __init__( self ):
+        pvBuffer.__init__( self , PV_BUF_TYPE_READONLY , GenerateRandomName( 'PV_TREEBUF' ) )
+
+
