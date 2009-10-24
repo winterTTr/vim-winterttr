@@ -13,12 +13,13 @@ class pvListBufferItem(object):
         return str( self ) == str( other )
 
 class pvListBuffer(pvBuffer):
-    data_format = "%(mark)1s [%(name)s]"
     def __init__( self ):
         pvBuffer.__init__( self , PV_BUF_TYPE_READONLY , GenerateRandomName( 'PV_LISTBUF' ) )
         self.item = []
         self.selection = 0
         self.resize = False
+        self.format = "%-20s"
+        self.hilight = 'Search'
 
     def getItemList( self ):
         return self.item
@@ -32,6 +33,8 @@ class pvListBuffer(pvBuffer):
         @param kwdict 
                       - selection : set the current selection item
                       - resize    : set if resize the window height
+                      - format    : use to format the string to show
+                      - hilight   : the group name for the hilight
         """
 
         # get selection and resize
@@ -45,6 +48,16 @@ class pvListBuffer(pvBuffer):
         except:
             resize = self.resize
 
+        try:
+            self.format = kwdict['format']
+        except:
+            format = self.format
+
+        try:
+            self.hilight = kwdict['hilight']
+        except:
+            hilight = self.hilight
+
         if self.selection >= len( self.item ):
             self.selection = 0
 
@@ -54,10 +67,11 @@ class pvListBuffer(pvBuffer):
         # deal with internal data
         show_data = []
         for index in xrange( len( self.item ) ):
-            show_data.append( 
-                    self.data_format % {
-                        'mark' : '>' if self.selection == index else ' ' ,
-                        'name' : str( self.item[index] ) } )
+            show_data.append( format % str( self.item[index] ) )
+
+        # hilight the item
+        if len( show_data ) != 0 :
+            vim.command('match %s /\V%s/' % ( hilight ,  show_data[self.selection] ) )
 
         # redraw the content
         self.buffer[0:len(show_data) -1 ] = show_data

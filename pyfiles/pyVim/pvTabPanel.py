@@ -19,7 +19,7 @@ class pvTabPanelManager:
         self.panel_list = self.buffer.getItemList()
 
         self.buffer.showBuffer( self.list_win )
-        self.buffer.updateBuffer()
+        self.buffer.updateBuffer( format = '< %-20s >' , hilight = 'Visual')
 
     def updateView( self ):
         self.buffer.showBuffer( self.list_win )
