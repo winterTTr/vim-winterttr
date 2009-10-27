@@ -1,7 +1,6 @@
 import vim
 import urllib
 import types
-from pvWrap import GenerateRandomName
 
 # register the dispatch funciton for vim
 vim.command( """

@@ -26,7 +26,7 @@ def GenerateRandomName( base ):
     """
     import random
     random_ext = random.randint( 0 , 9999999999 )
-    return '%s_%10d' % ( base , random_ext )
+    return '%s%10d' % ( base , random_ext )
 
 
 class pvBuffer(object):
@@ -46,7 +46,7 @@ class pvBuffer(object):
         self.__type = type
 
         # get name if given , otherwise give the system random name
-        self.__name = name if name != None else GenerateRandomName('PV_BUF')
+        self.__name = name if name != None else GenerateRandomName('PV_BUF_')
 
         # create buffer, get the buffer id ( which is unique )
         buffer_id = int( vim.eval('bufnr( "%s" ,1 )' % self.__name ) )

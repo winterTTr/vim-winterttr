@@ -1,6 +1,4 @@
 import vim
-import types
-
 from pvWrap import pvBuffer
 from pvWrap import GenerateRandomName
 from pvWrap import PV_BUF_TYPE_READONLY , PV_BUF_TYPE_NORMAL
@@ -14,7 +12,7 @@ class pvListBufferItem(object):
 
 class pvListBuffer(pvBuffer):
     def __init__( self ):
-        pvBuffer.__init__( self , PV_BUF_TYPE_READONLY , GenerateRandomName( 'PV_LISTBUF' ) )
+        pvBuffer.__init__( self , PV_BUF_TYPE_READONLY , GenerateRandomName( 'PV_LISTBUF_' ) )
         self.item = []
         self.selection = 0
         self.resize = False
@@ -85,15 +83,35 @@ class pvListBuffer(pvBuffer):
 
 
 class pvTreeNode(object):
+    def __init__( self ):
+        self.__is_open = False
+
+    def isOpen( self ):
+        return self.__is_open
+
     def hasChildren(self):
         raise NotImplementedError("pvTreeNode::hasChildren")
 
     def __iter__( self ):
         raise NotImplementedError("pvTreeNode::__iter__")
 
+    def __str__( self ):
+        raise NotImplementedError("pvTreeNode::__iter__")
+
         
 class pvTreeBuffer(pvBuffer):
+    __level_indent = 2
     def __init__( self ):
-        pvBuffer.__init__( self , PV_BUF_TYPE_READONLY , GenerateRandomName( 'PV_TREEBUF' ) )
+        pvBuffer.__init__( self , PV_BUF_TYPE_READONLY , GenerateRandomName( 'PV_TREEBUF_' ) )
+
+        self.__root = None
+        self.__show_root = True
+
+        self.registerCommand('setlocal nowrap')
+        self.registerCommand('setlocal nonumber')
+        self.registerCommand('setlocal foldcolumn=0')
+
+    def OnUpdate( **kwdict ) :
+        buffer = kwdict['buffer'] # get vim buffer object
 
 
