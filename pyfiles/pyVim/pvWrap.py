@@ -48,27 +48,38 @@ class pvBuffer(object):
         # get name if given , otherwise give the system random name
         self.__name = name if name != None else GenerateRandomName('PV_BUF')
 
-        # save the buffered command , when the buffer is open , the
-        # command will be executed
-        if type == PV_BUF_TYPE_READONLY :
-            self.__buffered_command_list = [
-                    'setlocal nomodifiable' ,
-                    'setlocal noswapfile' , 
-                    'setlocal buftype=nofile' ,
-                    'setlocal readonly' ,
-                    'setlocal nowrap' , 
-                    'setlocal nonumber' , 
-                    'setlocal foldcolumn=0' , 
-                    'setlocal bufhidden=hide' ,
-                    'setlocal nobuflisted' ]
-        elif type == PV_BUF_TYPE_NORMAL :
-            self.__buffered_command_list = ['setlocal buflisted']
-
         # create buffer, get the buffer id ( which is unique )
         buffer_id = int( vim.eval('bufnr( "%s" ,1 )' % self.__name ) )
 
         # get the vim buffer object
         self.__buffer = filter( lambda x : x.number == buffer_id , vim.buffers )[0]
+
+        # save the buffered command , when the buffer is open , the
+        # command will be executed
+        if type == PV_BUF_TYPE_READONLY :
+            self.__command_queue = [
+                    'setlocal nomodifiable' ,
+                    'setlocal noswapfile' ,
+                    'setlocal buftype=nofile' ,
+                    'setlocal readonly',
+                    'setlocal bufhidden=hide',
+                    'setlocal nobuflisted'
+                    ]
+            #vim.eval( 'setbufvar( %d , "&modifiable" , 0 )' % self.id ) 
+            #vim.eval( 'setbufvar( %d , "&swapfile" , 0 )' % self.id ) 
+            #vim.eval( 'setbufvar( %d , "&buftype" , "nofile" )' % self.id ) 
+            #vim.eval( 'setbufvar( %d , "&readonly" , 1 )' % self.id ) 
+            #vim.eval( 'setbufvar( %d , "&bufhidden" , "hide" )' % self.id ) 
+            #vim.eval( 'setbufvar( %d , "&buflisted" , 0 )' % self.id ) 
+            #
+            # these for local window , not for local buffer
+            #        'setlocal nowrap' , 
+            #        'setlocal nonumber' ,
+            #        'setlocal foldcolumn=0' 
+
+        elif type == PV_BUF_TYPE_NORMAL :
+            self.__command_queue = [ 'setlocal buflisted' ]
+            #vim.eval( 'setbufvar( %d , "&buflisted" , 1 )' % self.id )
 
     def __del__( self ):
         self.wipeout()
@@ -109,30 +120,48 @@ class pvBuffer(object):
     # ================================================================
     #  buffer specific command
     # ================================================================
-    def registerCommand( self , cmd ):
-        self.__buffered_command_list.append( cmd )
+    def registerCommand( self , cmd , flushQueue = False ):
+        self.__command_queue.append( cmd )
 
-        # try to run the command
+        if flushQueue :
+            self.tryFlushCommandQueue()
+
+    def tryFlushCommandQueue( self ):
+        if len( self.__command_queue ) == 0 :
+            return
+
+        # try to run the command , maybe the buffer does not show
         # 1. save the current focus
         current_focus_win = pvWindow()
         # 2. if is shown , focus it and runcommand
         if not self.setFocus(): return 
-        self.__runCommand()
-
-        # 3. recover the focus
+        # 3. run command
+        while self.__command_queue : vim.command( self.__command_queue.pop(0) )
+        # 4. recover the focus
         current_focus_win.setFocus()
 
-    def __runCommand( self ):
-        while self.__buffered_command_list : vim.command( self.__buffered_command_list.pop(0) )
+
 
     #  ===============================================================
     #   UI control
     #  ===============================================================
+    def __enableLazyRedraw(self):
+        self.__lazyredraw = vim.eval('&lazyredraw')
+        vim.command('let &lazyredraw=1')
+
+    def __restoreLazyRedraw( self ):
+        vim.command('let &lazyredraw=' + self.__lazyredraw )
+
     def setFocus( self ):
         show_win_id = int( vim.eval( 'bufwinnr(%d)' % self.id ) )
-        if show_win_id == -1 :
-            return False
 
+        # the buffer is hidden , can't focus to the window
+        if show_win_id == -1 : return False
+
+        # no need to change focus
+        if pvWindow().id  == show_win_id : return True
+
+        # change focus
         vim.command("%dwincmd w" % ( show_win_id , ) )
         return True
 
@@ -143,41 +172,58 @@ class pvBuffer(object):
         # save focus
         current_focus_win = pvWindow()
 
+        # open lazyredraw
+        self.__enableLazyRedraw()
+
         # can not focus the parent win , win is closed maybe
-        if not parentwin.setFocus() : return 
+        if not parentwin.setFocus():
+            self.__restoreLazyRedraw() 
+            return 
             
         # open the buffer on the current window
         vim.command('buffer %d' % self.id )
-
         # run the buffer-specific command
-        self.__runCommand()
+        self.tryFlushCommandQueue()
 
         # restore the focus
         current_focus_win.setFocus()
+        self.__restoreLazyRedraw()
 
 
     def updateBuffer( self , **kwdict ):
         # save current focus win
         current_focus_win = pvWindow()
 
+        # open lazyredraw
+        self.__enableLazyRedraw()
+
         # if not shown , do not update
-        if not self.setFocus() : return
+        if not self.setFocus() : 
+            self.__restoreLazyRedraw()
+            return
 
 
         # close readonly if need to
         if self.__type == PV_BUF_TYPE_READONLY :
-            vim.command('setlocal modifiable')
-            vim.command('setlocal noreadonly')
+            self.registerCommand('setlocal modifiable', True)
+            self.registerCommand('setlocal noreadonly', True)
+            #vim.eval( 'setbufvar( %d , "&modifiable" , 1 )' % self.id ) 
+            #vim.eval( 'setbufvar( %d , "&readonly" , 0 )' % self.id ) 
 
         self.OnUpdate( ** kwdict )
+        self.tryFlushCommandQueue()
 
         # open readonly after update buffer
         if self.__type == PV_BUF_TYPE_READONLY :
-            vim.command('setlocal nomodifiable')
-            vim.command('setlocal readonly')
+            self.registerCommand('setlocal nomodifiable', True)
+            self.registerCommand('setlocal readonly', True)
+            #vim.eval( 'setbufvar( %d , "&modifiable" , 0 )' % self.id ) 
+            #vim.eval( 'setbufvar( %d , "&readonly" , 1 )' % self.id ) 
 
         # restore focus
         current_focus_win.setFocus()
+
+        self.__restoreLazyRedraw()
             
     def OnUpdate(self , ** kwdict ):
         # give the change to user to update the context
@@ -215,8 +261,11 @@ class pvWindow(object):
         # window has been close( destroyed ) 
         if win_id == -1 : return False
 
+        # if the current window is the target window , just return
+        if pvWindow().id == win_id : return True
+
         # focus the win
-        vim.command("%dwincmd w" % ( win_id + 1 , ) )
+        vim.command("%dwincmd w" % ( win_id , ) )
         return True
 
     def closeWindow( self ):
@@ -235,7 +284,7 @@ class pvWindow(object):
         winStr = str( self._window )
         reMatch = re.match( '<window (?P<id>\d+)>' , winStr )
         if reMatch:
-            return int( reMatch.group('id') )
+            return int( reMatch.group('id') ) + 1
 
         reMatch = re.match( 
                 '<window object \(deleted\) at [A-Z0-9]{8}>' ,
