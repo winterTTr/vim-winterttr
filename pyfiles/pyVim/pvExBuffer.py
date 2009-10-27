@@ -21,6 +21,10 @@ class pvListBuffer(pvBuffer):
         self.format = "%-20s"
         self.hilight = 'Search'
 
+        self.registerCommand('setlocal nowrap')
+        self.registerCommand('setlocal nonumber')
+        self.registerCommand('setlocal foldcolumn=0')
+
     def getItemList( self ):
         return self.item
 
@@ -71,13 +75,13 @@ class pvListBuffer(pvBuffer):
 
         # hilight the item
         if len( show_data ) != 0 :
-            vim.command('match %s /\V%s/' % ( hilight ,  show_data[self.selection] ) )
+            self.registerCommand('match %s /\V%s/' % ( hilight ,  show_data[self.selection] ) )
 
         # redraw the content
         self.buffer[0:len(show_data) -1 ] = show_data
 
         # resize window
-        if self.resize : vim.command('resize %d' % len( self.item ) )
+        if self.resize : self.registerCommand('resize %d' % len( self.item ) )
 
 
 class pvTreeNode(object):

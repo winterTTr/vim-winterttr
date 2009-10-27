@@ -123,7 +123,7 @@ class pvKeyMapManager(object):
             }
 
         if buffer : # <buffer> map
-            buffer.registerCommand( vim_cmd )
+            buffer.registerCommand( vim_cmd , True )
         else: # global map
             vim.command( vim_cmd )
 
