@@ -86,28 +86,31 @@ class pvListBuffer(pvBuffer):
 PV_TREE_NODE_TYPE_BRANCH = 0x01
 PV_TREE_NODE_TYPE_LEEF   = 0x02
 
-class pvTreeNode(object):
-    def __init__( self , type ):
-        self.__type = type
-
-    @property
-    def type( self ):
-        return self.__type
-
-    def isOpen( self ):
-        raise NotImplementedError("pvTreeNode::isOpen")
-
-    def hasChildren(self):
-        raise NotImplementedError("pvTreeNode::hasChildren")
-
-    def expand( self ):
-        raise NotImplementedError("pvTreeNode::expand")
-
+#class pvTreeNode(object):
+#    def __init__( self , type ):
+#        self.__type = type
+#
+#    @property
+#    def type( self ):
+#        return self.__type
+#
+#    def isOpen( self ):
+#        raise NotImplementedError("pvTreeNode::isOpen")
+#
+#    def hasChildren(self):
+#        raise NotImplementedError("pvTreeNode::hasChildren")
+#
+#    def expand( self ):
+#        raise NotImplementedError("pvTreeNode::expand")
+#
+#    def getChildrenList( self ):
+#        raise NotImplementedError("pvTreeNode::__iter__")
+#
+#    def __str__( self ):
+#        raise NotImplementedError("pvTreeNode::__iter__")
+class pvTreeDataProvider(object):
     def getChildrenList( self ):
-        raise NotImplementedError("pvTreeNode::__iter__")
-
-    def __str__( self ):
-        raise NotImplementedError("pvTreeNode::__iter__")
+        pass
 
         
 class pvTreeBuffer(pvBuffer):
