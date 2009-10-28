@@ -1,4 +1,4 @@
-*quickref.txt*	For Vim version 7.0.  最近更新: 2006年4月
+*quickref.txt*	For Vim version 7.2.  最近更新: 2009年4月
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -40,10 +40,10 @@ N 用来 (可选) 置于命令之前表示该命令执行的计数。
 |0|	   0		至本行第一个字符 (亦: <Home> 键)
 |^|	   ^		至本行第一个非空白字符
 |$|	N  $		至本行 (加上 N - 1 后续行) 最后一个字符 (亦: <End> 键)
-|g0|	N  g0		至屏幕行第一个字符 (当行回绕时和 "0" 不同)
-|g^|	N  g^		至屏幕行第一个非空白字符 (当行回绕时和 "^" 不同)
+|g0|	   g0		至屏幕行第一个字符 (当行回绕时和 "0" 不同)
+|g^|	   g^		至屏幕行第一个非空白字符 (当行回绕时和 "^" 不同)
 |g$|	N  g$		至屏幕行最后一个字符 (当行回绕时和 "$" 不同)
-|gm|	N  gm		至屏幕行中点
+|gm|	   gm		至屏幕行中点
 |bar|	N  |		至第 N 列 (缺省: 1)
 |f|	N  f{char}	至右边第 N 次出现 {char} 之处 (find)
 |F|	N  F{char}	至左边第 N 次出现 {char} 之处 (Find)
@@ -422,18 +422,29 @@ N 用来 (可选) 置于命令之前表示该命令执行的计数。
 ------------------------------------------------------------------------------
 *Q_to*		文本对象 (仅适用于可视模式或在操作符后)
 
-|v_aw|	N  aw		选择 "一个单词"                   (a word)
-|v_iw|	N  iw		选择 "内含单词"                   (inner word)
-|v_aW|	N  aW		选择 "一个字串"                   (WORD)
-|v_iW|	N  iW		选择 "内含字串"
-|v_as|	N  as		选择 "一个句子"                   (sentence)
-|v_is|	N  is		选择 "内含句子"
-|v_ap|	N  ap		选择 "一个段落"                   (paragraph)
-|v_ip|	N  ip		选择 "内含段落"
-|v_ab|	N  ab		选择 "一个块" (从 "[(" 至 "])")   (block)
-|v_ib|	N  ib		选择 "内含块" (从 "[(" 到 "])")
-|v_aB|	N  aB		选择 "一个大块" (从 "[{" 到 "]}") (Block)
-|v_iB|	N  iB		选择 "内含大块" (从 "[{" 到 "]}")
+|v_aw|	   N  aw	选择 "一个单词"                   (a word)
+|v_iw|	   N  iw	选择 "内含单词"                   (inner word)
+|v_aW|	   N  aW	选择 "一个字串"                   (WORD)
+|v_iW|	   N  iW	选择 "内含字串"
+|v_as|	   N  as	选择 "一个句子"                   (sentence)
+|v_is|	   N  is	选择 "内含句子"
+|v_ap|	   N  ap	选择 "一个段落"                   (paragraph)
+|v_ip|	   N  ip	选择 "内含段落"
+|v_ab|	   N  ab	选择 "一个块" (从 "[(" 至 "])")   (block)
+|v_ib|	   N  ib	选择 "内含块" (从 "[(" 到 "])")
+|v_aB|	   N  aB	选择 "一个大块" (从 "[{" 到 "]}") (Block)
+|v_iB|	   N  iB	选择 "内含大块" (从 "[{" 到 "]}")
+|v_a>|	   N  a>	选择 "一个 <> 块"
+|v_i>|	   N  i>	选择 "内含 <> 块"
+|v_at|	   N  at	选择 "一个标签块" (从 <aaa> 到 </aaa>) (tag)
+|v_it|	   N  it	选择 "内含标签块" (从 <aaa> 到 </aaa>)
+|v_a'|	   N  a'	选择 "一个单引号字符串"
+|v_i'|	   N  i'	选择 "内含单引号字符串"
+|v_aquote| N  a"	选择 "一个双引号字符串"
+|v_iquote| N  i"	选择 "内含双引号字符串"
+|v_a`|	   N  a`	选择 "一个反引号字符串"
+|v_i`|	   N  i`	选择 "内含反引号字符串"
+
 ------------------------------------------------------------------------------
 *Q_re*		重复命令
 
@@ -734,6 +745,7 @@ N 用来 (可选) 置于命令之前表示该命令执行的计数。
 'number'	  'nu'	    行前显示行号
 'numberwidth'	  'nuw'     行号使用的列数
 'omnifunc'	  'ofu'     文件类型特定补全使用的函数
+'opendevice'	  'odev'    MS-Windows 上允许读/写设备
 'operatorfunc'	  'opfunc'  |g@| 操作符调用的函数
 'osfiletype'	  'oft'     操作系统特定的文件格式信息
 'paragraphs'	  'para'    分隔段落的 nroff 宏
@@ -753,9 +765,10 @@ N 用来 (可选) 置于命令之前表示该命令执行的计数。
 'printmbcharset'  'pmbcs'   用于 :hardcopy 的 CJK 字符集
 'printmbfont'	  'pmbfn'   用于 :hardcopy 的 CJK 输出的字体名
 'printoptions'	  'popt'    控制 :hardcopy 输出格式
-'pumheight''	  'ph'	    弹出窗口的最大高度
+'pumheight'	  'ph'	    弹出窗口的最大高度
 'quoteescape'	  'qe'	    字符串里使用的转义字符
 'readonly'	  'ro'	    禁止写入缓冲区
+'redrawtime'	  'rdt'     'hlsearch' 和 |:match| 高亮的超时
 'remap'			    允许映射可以递归调用
 'report'		    报告行改变的行数下限
 'restorescreen'   'rs'	    Win32: 退出时恢复屏幕
@@ -807,7 +820,7 @@ N 用来 (可选) 置于命令之前表示该命令执行的计数。
 'spellsuggest'	  'sps'     提供拼写校正建议的方法
 'splitbelow'	  'sb'	    分割窗口时新窗口在当前窗口之下
 'splitright'	  'spr'     新窗口在当前窗口之右
-'startofline'	  'sol'     命令移动光标到行的第一个空白 (译者注: 应为非空白)
+'startofline'	  'sol'     命令移动光标到行的第一个非空白
 'statusline'	  'stl'     状态行的定制格式
 'suffixes'	  'su'	    多个匹配所忽略的后缀
 'suffixesadd'	  'sua'     搜索文件时附加的后缀
