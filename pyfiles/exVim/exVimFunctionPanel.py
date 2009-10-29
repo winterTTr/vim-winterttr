@@ -36,7 +36,7 @@ class FENodeRoot( pvTreeNode ):
 
     def __iter__( self ):
         for x in string.ascii_uppercase :
-            driver_path = '%s:' % x
+            driver_path = '%s:\\' % x
             if os.path.isdir( driver_path ):
                 yield FENodeDirectory( driver_path )
 
@@ -58,7 +58,8 @@ class FENodeDirectory( pvTreeNode ):
 
     def __str__( self ):
         name = os.path.basename( self.path )
-        return self.path if name == '' else name
+        return_name = self.path if name == '' else name
+        return return_name.decode('gbk').encode('utf8')
 
 class FENodeFile( pvTreeNode ):
     def __init__( self , path ):
@@ -66,7 +67,7 @@ class FENodeFile( pvTreeNode ):
         self.path = path
 
     def __str__( self ):
-        return os.path.basename( self.path )
+        return os.path.basename( self.path).decode('gbk').encode('utf8')
 
 
 class exVimFileExplorer_NodeFactory( pvTreeNodeFactory ):
@@ -86,6 +87,7 @@ class exVimFileExplorer_NodeFactory( pvTreeNodeFactory ):
 class exVimPanel_FileExplorer( pvTabPanelItem ):
     def __init__( self ):
         self.buffer = pvTreeBuffer( exVimFileExplorer_NodeFactory() )
+        self.buffer.registerCommand( 'setlocal fenc=utf-8' )
 
     def getBuffer( self ):
         return self.buffer
