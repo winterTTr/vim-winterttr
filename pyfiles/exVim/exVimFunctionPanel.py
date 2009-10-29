@@ -1,4 +1,4 @@
-from pyVim.pvExBuffer import pvListBuffer
+from pyVim.pvListBuffer import pvListBuffer
 from pyVim.pvTabPanel import pvTabPanelItem
 
 class exVimPanel_ContextComplete( pvTabPanelItem ):

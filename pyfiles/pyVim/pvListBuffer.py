@@ -83,69 +83,6 @@ class pvListBuffer(pvBuffer):
         if self.resize : self.registerCommand('resize %d' % len( self.item ) )
 
 
-PV_TREE_NODE_TYPE_BRANCH = 0x01
-PV_TREE_NODE_TYPE_LEEF   = 0x02
-
-#class pvTreeNode(object):
-#    def __init__( self , type ):
-#        self.__type = type
-#
-#    @property
-#    def type( self ):
-#        return self.__type
-#
-#    def isOpen( self ):
-#        raise NotImplementedError("pvTreeNode::isOpen")
-#
-#    def hasChildren(self):
-#        raise NotImplementedError("pvTreeNode::hasChildren")
-#
-#    def expand( self ):
-#        raise NotImplementedError("pvTreeNode::expand")
-#
-#    def getChildrenList( self ):
-#        raise NotImplementedError("pvTreeNode::__iter__")
-#
-#    def __str__( self ):
-#        raise NotImplementedError("pvTreeNode::__iter__")
-class pvTreeDataProvider(object):
-    def getChildrenList( self ):
-        pass
-
-        
-class pvTreeBuffer(pvBuffer):
-    __level_indent = 2
-    def __init__( self ):
-        pvBuffer.__init__( self , PV_BUF_TYPE_READONLY , GenerateRandomName( 'PV_TREEBUF_' ) )
-
-        self.__root = None
-        self.__show_root = False
-
-        self.registerCommand('setlocal nowrap')
-        self.registerCommand('setlocal nonumber')
-        self.registerCommand('setlocal foldcolumn=0')
-
-    def OnUpdate( **kwdict ) :
-        buffer = kwdict['buffer'] # get vim buffer object
-
-        _format_str = "%(indent)s%(flag)1s %(name)s"
-
-        #try :
-        #    target = kwdict['target']
-        #    assert type(target) == types.ListType
-        #except:
-        #    return 
-
-        self.__root.expand()
-        children_list = self.__root.getChildrenList()
-        show_list = []
-        for x in children_list:
-            if x.hasChildren():
-                show_list.append( str(x) )
-
-
-
-
 
         
 
