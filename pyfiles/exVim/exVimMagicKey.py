@@ -5,7 +5,7 @@ import re
 from pyVim.pvKeyMap import pvKeyMapResolver , pvKeyMapManager
 from pyVim.pvKeyMap import PV_KMM_MODE_INSERT , PV_KMM_MODE_NORMAL , PV_KMM_MODE_SELECT
 from pyVim.pvWrap import pvWindow
-from pyVim.pvExBuffer import pvListBuffer
+from pyVim.pvListBuffer import pvListBuffer
 # exVim
 import exVimMagicKeyConfig 
 
