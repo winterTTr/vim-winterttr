@@ -48,20 +48,20 @@
 #    ]
 #
 #
-#import vim
-#import logging
-#
-#LOG_FILENAME = 'D:\\log.txt'
-#logging.basicConfig(filename=LOG_FILENAME,level=logging.DEBUG,)
-#
-#
-#def pvLogDec( func ):
-#    def ret_func( *argv , **kwdict ):
-#        logging.debug(argv)
-#        return func( *argv , **kwdict )
-#    return ret_func
-#
-#
-#vim.command = pvLogDec( vim.command )
-#vim.eval = pvLogDec( vim.eval )
+import vim
+import logging
+
+LOG_FILENAME = 'D:\\log.txt'
+logging.basicConfig(filename=LOG_FILENAME,level=logging.DEBUG,)
+
+
+def pvLogDec( func ):
+    def ret_func( *argv , **kwdict ):
+        logging.debug(argv)
+        return func( *argv , **kwdict )
+    return ret_func
+
+
+vim.command = pvLogDec( vim.command )
+vim.eval = pvLogDec( vim.eval )
 
