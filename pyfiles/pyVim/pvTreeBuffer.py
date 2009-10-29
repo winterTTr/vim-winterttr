@@ -99,11 +99,9 @@ class pvTreeBuffer(pvBuffer):
     def __switch( self , kwdict ):
         import vim
         #print >> open('D:\\here.txt','a+') , "UPDATE"
-        if 'path' in kwdict :
-            line_no = self.__path2LineNo( kwdict['path'] )
-        else:
-            line_no = vim.current.window.cursor[0] - 1
-
+        line_no = self.__path2LineNo( kwdict['path'] ) \
+                if 'path' in kwdict else \
+                vim.current.window.cursor[0] - 1
 
         if line_no == -1 :
             return
@@ -118,8 +116,9 @@ class pvTreeBuffer(pvBuffer):
                         'indent' : self.__indent_string * ( indent_level + 1 ), 
                         'flag'   : '+' if child.type == PV_TREE_NODE_TYPE_BRANCH else ' ' ,
                         'name'   : str( child ) } )
+            #print >> open( 'E:\\log.txt' , 'a+' ) , show_list
             range = self.buffer.range( line_no + 1 , line_no + 1 )
-            range.append( show_list )
+            if show_list : range.append( show_list )
             range[0] = self.__format_string % {
                         'indent' : self.__indent_string * indent_level ,
                         'flag'   : '-' ,
@@ -174,6 +173,7 @@ class pvTreeBuffer(pvBuffer):
         while cur_indent_level >= 0 :
             line_no -= 1
             indent_level , flag , name = self.__getNodeInfo( self.buffer[line_no] )
+            print >> open( 'E:\\log.txt' , 'a+' ) , indent_level , flag , name
 
             # children item , just pass
             if indent_level > cur_indent_level :
@@ -181,7 +181,7 @@ class pvTreeBuffer(pvBuffer):
 
             # find the parent 
             if indent_level == cur_indent_level : # find the parent
-                indent_level -= 1
+                cur_indent_level -= 1
                 return_path.insert( 0 , name )
                 continue
 
