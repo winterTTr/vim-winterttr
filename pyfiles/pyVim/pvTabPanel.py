@@ -59,10 +59,13 @@ class pvTabPanelManager:
         return panel
 
     def switchPanel( self , name_or_panel ):
+        
         try :
             item_index = self.panel_list.index( name_or_panel )
         except:
             return
+
+
         self.buffer.updateBuffer( selection = item_index , resize = True )
 
         panel_buffer = self.panel_list[item_index].getBuffer()
@@ -71,6 +74,13 @@ class pvTabPanelManager:
 
     def getCurrentPanel( self ):
         return self.panel_list[ self.buffer.getSelection() ]
+
+    def searchPanel( self , panel_or_name ):
+        try :
+            item_index = self.panel_list.index( panel_or_name )
+        except:
+            return None
+        return self.panel_list[ item_index ]
 
     def getTabBuffer( self ):
         return self.buffer

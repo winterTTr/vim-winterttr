@@ -32,6 +32,9 @@ class Application:
         from exVimMagicKey import exVimKey_AcceptSelectionOnPanel
         self.magic_key_list.append( exVimKey_AcceptSelectionOnPanel( self.wm.getWindow('main') , self.tp) )
 
+        from exVimMagicKey import exVimKey_OpenTreeItem
+        self.magic_key_list.append( exVimKey_OpenTreeItem( self.tp ) )
+
         for key in self.magic_key_list :
             key.register()
 
@@ -42,8 +45,9 @@ class Application:
                 self.wm.getWindow('list') ,
                 self.wm.getWindow('panel') )
 
-        from exVimFunctionPanel import exVimPanel_ContextComplete , exVimPanel_BufferExplorer
+        from exVimFunctionPanel import exVimPanel_ContextComplete , exVimPanel_BufferExplorer , exVimPanel_FileExplorer
         self.tp.addPanel( exVimPanel_ContextComplete() )
         self.tp.addPanel( exVimPanel_BufferExplorer() )
+        self.tp.addPanel( exVimPanel_FileExplorer() )
         self.initMagicKey()
 

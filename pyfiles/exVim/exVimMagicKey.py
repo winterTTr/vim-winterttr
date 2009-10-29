@@ -299,6 +299,7 @@ class exVimKey_ChangeSelectonOnPanelList( exVimMagicKeyBase ):
         return True
 
     def runAction( self ):
+
         item_list = self.tab_panel.buffer.getItemList()
         # get selection position and update list
         cursor_line = vim.current.window.cursor[0]
@@ -457,4 +458,21 @@ class exVimKey_AcceptSelectionOnPanel( exVimMagicKeyBase ):
             return ('\<C-W>%s' % complete_buffer.getItemList()[ complete_buffer.getSelection() ] )
         elif self.mode ==  PV_KMM_MODE_SELECT:
             return ""
+
+
+class exVimKey_OpenTreeItem( exVimMagicKeyBase ):
+    def __init__( self , tab_panel ):
+        self.buffer = tab_panel.searchPanel('File Explorer').getBuffer()
+
+    def register( self ):
+        from exVimConfig import appid
+        kmm = pvKeyMapManager( appid )
+        kmm.register( '<2-LeftMouse>' , PV_KMM_MODE_NORMAL , self , self.buffer )
+
+    def checkValidation( self , **kwdict ):
+        return True
+
+    def runAction( self ):
+        from pyVim.pvTreeBuffer import PV_TREE_ACTION_TYPE_SWITCH
+        self.buffer.updateBuffer( type = PV_TREE_ACTION_TYPE_SWITCH )
 
