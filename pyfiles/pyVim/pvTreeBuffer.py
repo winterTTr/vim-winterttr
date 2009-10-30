@@ -15,8 +15,8 @@ class pvTreeNode(object):
     def __iter__( self ):
         raise NotImplementedError("pvTreeNode::__iter__")
 
-    def __str__( self ):
-        raise NotImplementedError("pvTreeNode::__iter__")
+    def __unicode__( self ):
+        raise NotImplementedError("pvTreeNode::__unicode__")
 
 class pvTreeNodeFactory( object ):
     def generateNode ( self , path ):
@@ -82,7 +82,7 @@ class pvTreeBuffer(pvBuffer):
                     show_list.append( self.__format_string % {
                             'indent' : '' , 
                             'flag'   : '+' if child.type == PV_TREE_NODE_TYPE_BRANCH else ' ' ,
-                            'name'   : str( child ) } )
+                            'name'   : unicode( child ).encode('utf-8') } )
                 self.buffer[ 0 : len( show_list ) ] = show_list
 
         if not 'type' in kwdict :
@@ -98,7 +98,6 @@ class pvTreeBuffer(pvBuffer):
         
     def __switch( self , kwdict ):
         import vim
-        #print >> open('D:\\here.txt','a+') , "UPDATE"
         line_no = self.__path2LineNo( kwdict['path'] ) \
                 if 'path' in kwdict else \
                 vim.current.window.cursor[0] - 1
@@ -107,22 +106,41 @@ class pvTreeBuffer(pvBuffer):
             return
 
         indent_level , flag , name = self.__getNodeInfo( self.buffer[line_no] )
+        path = map( lambda x : x.decode('utf8') , self.__lineNo2Path( line_no ) )
+        node = self.__node_factory.generateNode( path )
         if flag == '+': # expand tree
-            path = self.__lineNo2Path( line_no )
-            node = self.__node_factory.generateNode( path )
             show_list = []
             for child in node :
                 show_list.append( self.__format_string % {
                         'indent' : self.__indent_string * ( indent_level + 1 ), 
                         'flag'   : '+' if child.type == PV_TREE_NODE_TYPE_BRANCH else ' ' ,
-                        'name'   : str( child ) } )
-            #print >> open( 'E:\\log.txt' , 'a+' ) , show_list
+                        'name'   : unicode( child ).encode('utf8') } )
             range = self.buffer.range( line_no + 1 , line_no + 1 )
             if show_list : range.append( show_list )
             range[0] = self.__format_string % {
                         'indent' : self.__indent_string * indent_level ,
                         'flag'   : '-' ,
-                        'name'   : str( node ) }
+                        'name'   : unicode( node ).encode('utf8') }
+
+        elif flag == '-':
+            range_start = line_no 
+            range_end = line_no
+            # search children range
+            total_line_count = len( self.buffer )
+            for index in xrange( line_no + 1 , total_line_count ):
+                line_info = self.__getNodeInfo( self.buffer[index] )
+                if line_info[0] > indent_level :
+                    range_end += 1
+                    continue
+                else:
+                    break
+            vim_range = self.buffer.range( range_start + 1 , range_end + 1 )
+            print vim_range
+            if  range_end - range_start > 0 : del vim_range[1:]
+            vim_range[0] = self.__format_string % {
+                        'indent' : self.__indent_string * indent_level ,
+                        'flag'   : '+' ,
+                        'name'   : unicode( node ).encode('utf8') }
 
     def __focus( self , kwdict ):
         pass
@@ -173,7 +191,6 @@ class pvTreeBuffer(pvBuffer):
         while cur_indent_level >= 0 :
             line_no -= 1
             indent_level , flag , name = self.__getNodeInfo( self.buffer[line_no] )
-            print >> open( 'E:\\log.txt' , 'a+' ) , indent_level , flag , name
 
             # children item , just pass
             if indent_level > cur_indent_level :
