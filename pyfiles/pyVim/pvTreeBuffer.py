@@ -1,4 +1,5 @@
 from pvWrap import pvBuffer , GenerateRandomName , PV_BUF_TYPE_READONLY
+from pvUtil import pvString
 import re
 
 PV_TREE_NODE_TYPE_BRANCH = 0x01
@@ -17,6 +18,9 @@ class pvTreeNode(object):
 
     def __unicode__( self ):
         raise NotImplementedError("pvTreeNode::__unicode__")
+
+    def getName( self ):
+        raise NotImplementedError("pvTreeNode::getName")
 
 class pvTreeNodeFactory( object ):
     def generateNode ( self , path ):
@@ -39,11 +43,12 @@ PV_TREE_ACTION_TYPE_UPDATE = 0x04
 
 class pvTreeBuffer(pvBuffer):
     __indent_string = '  '
-    __format_string = "%(indent)s%(flag)1s%(name)s"
+    __format_string = "%(indent)s%(flag)1s %(name)s"
     __format_search_re = re.compile( """
                 ^
                 (?P<indent>\s*)
                 (?P<flag>[-+ ])
+                [ ]
                 (?P<name>.*)
                 $
                 """ , re.VERBOSE )
@@ -82,7 +87,7 @@ class pvTreeBuffer(pvBuffer):
                     show_list.append( self.__format_string % {
                             'indent' : '' , 
                             'flag'   : '+' if child.type == PV_TREE_NODE_TYPE_BRANCH else ' ' ,
-                            'name'   : unicode( child ).encode('utf-8') } )
+                            'name'   :  child.getName().MultibyteString } )
                 self.buffer[ 0 : len( show_list ) ] = show_list
 
         if not 'type' in kwdict :
@@ -106,21 +111,30 @@ class pvTreeBuffer(pvBuffer):
             return
 
         indent_level , flag , name = self.__getNodeInfo( self.buffer[line_no] )
-        path = map( lambda x : x.decode('utf8') , self.__lineNo2Path( line_no ) )
-        node = self.__node_factory.generateNode( path )
+
+        # make pvString for the factory
+        mbstr_path = self.__lineNo2Path( line_no )
+        uni_path = []
+        for x in mbstr_path :
+            uni_item = pvString()
+            uni_item.UnicodeString = x
+            uni_path.append( uni_item )
+
+        node = self.__node_factory.generateNode( uni_path )
+
         if flag == '+': # expand tree
             show_list = []
             for child in node :
                 show_list.append( self.__format_string % {
                         'indent' : self.__indent_string * ( indent_level + 1 ), 
                         'flag'   : '+' if child.type == PV_TREE_NODE_TYPE_BRANCH else ' ' ,
-                        'name'   : unicode( child ).encode('utf8') } )
+                        'name'   :  child.getName().MultibyteString } )
             range = self.buffer.range( line_no + 1 , line_no + 1 )
             if show_list : range.append( show_list )
             range[0] = self.__format_string % {
                         'indent' : self.__indent_string * indent_level ,
                         'flag'   : '-' ,
-                        'name'   : unicode( node ).encode('utf8') }
+                        'name'   :  node.getName().MultibyteString } )
 
         elif flag == '-':
             range_start = line_no 
@@ -135,12 +149,11 @@ class pvTreeBuffer(pvBuffer):
                 else:
                     break
             vim_range = self.buffer.range( range_start + 1 , range_end + 1 )
-            print vim_range
             if  range_end - range_start > 0 : del vim_range[1:]
             vim_range[0] = self.__format_string % {
                         'indent' : self.__indent_string * indent_level ,
                         'flag'   : '+' ,
-                        'name'   : unicode( node ).encode('utf8') }
+                        'name'   :  node.getName().MultibyteString } )
 
     def __focus( self , kwdict ):
         pass
