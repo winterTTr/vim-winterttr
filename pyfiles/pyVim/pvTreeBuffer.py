@@ -16,9 +16,6 @@ class pvTreeNode(object):
     def __iter__( self ):
         raise NotImplementedError("pvTreeNode::__iter__")
 
-    def __unicode__( self ):
-        raise NotImplementedError("pvTreeNode::__unicode__")
-
     def getName( self ):
         raise NotImplementedError("pvTreeNode::getName")
 
@@ -117,7 +114,7 @@ class pvTreeBuffer(pvBuffer):
         uni_path = []
         for x in mbstr_path :
             uni_item = pvString()
-            uni_item.UnicodeString = x
+            uni_item.MultibyteString = x
             uni_path.append( uni_item )
 
         node = self.__node_factory.generateNode( uni_path )
@@ -134,7 +131,7 @@ class pvTreeBuffer(pvBuffer):
             range[0] = self.__format_string % {
                         'indent' : self.__indent_string * indent_level ,
                         'flag'   : '-' ,
-                        'name'   :  node.getName().MultibyteString } )
+                        'name'   :  node.getName().MultibyteString } 
 
         elif flag == '-':
             range_start = line_no 
@@ -153,7 +150,7 @@ class pvTreeBuffer(pvBuffer):
             vim_range[0] = self.__format_string % {
                         'indent' : self.__indent_string * indent_level ,
                         'flag'   : '+' ,
-                        'name'   :  node.getName().MultibyteString } )
+                        'name'   :  node.getName().MultibyteString } 
 
     def __focus( self , kwdict ):
         pass

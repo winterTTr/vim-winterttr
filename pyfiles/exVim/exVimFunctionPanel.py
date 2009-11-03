@@ -2,7 +2,7 @@ import os
 import string
 
 from pyVim.pvListBuffer import pvListBuffer
-from pyVim.pvTabPanel import pvTabPanelItem
+from exVimTabPanel import exVimTabPanelItem
 
 from pyVim.pvTreeBuffer import pvTreeBuffer , pvTreeNode , pvTreeNodeFactory
 from pyVim.pvTreeBuffer import PV_TREE_NODE_TYPE_BRANCH , PV_TREE_NODE_TYPE_LEEF
@@ -10,26 +10,30 @@ from pyVim.pvTreeBuffer import PV_TREE_NODE_TYPE_BRANCH , PV_TREE_NODE_TYPE_LEEF
 from pyVim.pvUtil import pvString
 
 
-class exVimPanel_ContextComplete( pvTabPanelItem ):
+class exVimPanel_ContextComplete( exVimTabPanelItem ):
     def __init__( self ):
         self.buffer = pvListBuffer()
 
     def getBuffer( self ):
         return self.buffer
 
-    def __str__( self ):
-        return 'Context Complete'
+    def DoName( self ):
+        str = pvString()
+        str.UnicodeString = u'Context Complete'
+        return str
 
 
-class exVimPanel_BufferExplorer( pvTabPanelItem ):
+class exVimPanel_BufferExplorer( exVimTabPanelItem ):
     def __init__( self ):
         self.buffer = pvListBuffer()
 
     def getBuffer( self ):
         return self.buffer
 
-    def __str__( self ):
-        return 'Buffer Explorer'
+    def DoName( self ):
+        str = pvString()
+        str.UnicodeString = u'Buffer Explorer'
+        return str
 
 
 class FENodeRoot( pvTreeNode ):
@@ -41,9 +45,6 @@ class FENodeRoot( pvTreeNode ):
             driver_path = u'%s:\\' % x
             if os.path.isdir( driver_path ):
                 yield FENodeDirectory( driver_path )
-
-    def __unicode__( self ):
-        return u''
 
     def getName( self ):
         return pvString()
@@ -61,10 +62,6 @@ class FENodeDirectory( pvTreeNode ):
             else:
                 yield FENodeFile( full_path )
 
-    def __unicode__( self ):
-        name = os.path.basename( self.path )
-        return self.path if name == u'' else name
-
     def getName( self ):
         name = os.path.basename( self.path )
 
@@ -76,9 +73,6 @@ class FENodeFile( pvTreeNode ):
     def __init__( self , path ):
         super( FENodeFile , self ).__init__( PV_TREE_NODE_TYPE_LEEF )
         self.path = path
-
-    def __unicode__( self ):
-        return os.path.basename( self.path)
 
     def getName( self ):
         name = pvString()
@@ -102,13 +96,15 @@ class exVimFileExplorer_NodeFactory( pvTreeNodeFactory ):
                 return None
 
 
-class exVimPanel_FileExplorer( pvTabPanelItem ):
+class exVimPanel_FileExplorer( exVimTabPanelItem ):
     def __init__( self ):
         self.buffer = pvTreeBuffer( exVimFileExplorer_NodeFactory() )
 
     def getBuffer( self ):
         return self.buffer
 
-    def __str__( self ):
-        return 'File Explorer'
+    def DoName( self ):
+        str = pvString()
+        str.UnicodeString = u'File Explorer'
+        return str
 
