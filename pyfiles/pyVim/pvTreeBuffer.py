@@ -2,8 +2,21 @@ from pvWrap import pvBuffer , GenerateRandomName , PV_BUF_TYPE_READONLY
 from pvUtil import pvString
 import re
 
+# type of the node on the tree :
+##  branch : for the node can open and close
 PV_TREE_NODE_TYPE_BRANCH = 0x01
+##  leef   : for the node just a leef for the tree
 PV_TREE_NODE_TYPE_LEEF   = 0x02
+
+# type of the action for the OnUpdate
+PV_TREE_UPDATE_SELECT = 0x01
+PV_TREE_UPDATE_TARGET = 0x02
+
+# type of the action for observer
+PV_TREE_OBSERVER_BRANCH_OPEN = 0x01
+PV_TREE_OBSERVER_BRANCH_CLOSE = 0x02
+PV_TREE_OBSERVER_LEEF_SELECT = 0x03
+
 
 class pvTreeNode(object):
     def __init__( self , type ):
@@ -13,30 +26,24 @@ class pvTreeNode(object):
     def type( self ):
         return self.__type
 
+    @property
+    def name( self ):
+        return self.OnName()
+
     def __iter__( self ):
         raise NotImplementedError("pvTreeNode::__iter__")
 
-    def getName( self ):
-        raise NotImplementedError("pvTreeNode::getName")
+    def OnName( self ):
+        raise NotImplementedError("pvTreeNode::OnName")
 
 class pvTreeNodeFactory( object ):
     def generateNode ( self , path ):
         raise NotImplementedError("pvTreeNodeFactory")
 
 class pvTreeObserver(object):
-    def onBranchOpen( self , path ):
+    def OnUpdate( self , node , action_type ):
         pass
 
-    def onBranchClose( self , path ):
-        pass
-
-    def onLeef( self , path ):
-        pass
-
-
-PV_TREE_ACTION_TYPE_SWITCH = 0x01
-PV_TREE_ACTION_TYPE_FOCUS = 0x02
-PV_TREE_ACTION_TYPE_UPDATE = 0x04
 
 class pvTreeBuffer(pvBuffer):
     __indent_string = '  '
@@ -84,59 +91,65 @@ class pvTreeBuffer(pvBuffer):
                     show_list.append( self.__format_string % {
                             'indent' : '' , 
                             'flag'   : '+' if child.type == PV_TREE_NODE_TYPE_BRANCH else ' ' ,
-                            'name'   :  child.getName().MultibyteString } )
+                            'name'   :  child.name.MultibyteString } )
                 self.buffer[ 0 : len( show_list ) ] = show_list
 
-        if not 'type' in kwdict :
-            return
+        if not 'type' in kwdict : return
 
-        type = kwdict['type']
-        if type == PV_TREE_ACTION_TYPE_SWITCH:
-            self.__switch( kwdict )
-        elif type == PV_TREE_ACTION_TYPE_FOCUS:
-            self.__focus( kwdict )
-        elif type == PV_TREE_ACTION_TYPE_UPDATE:
-            self.__update()
+        # run funciton for the type
+        { 
+                PV_TREE_UPDATE_SELECT : self.__select ,
+                PV_TREE_UPDATE_TARGET : self.__target 
+        }[ kwdict['type'] ]( kwdict )
+          
         
-    def __switch( self , kwdict ):
+    def __select( self , kwdict ):
         import vim
         line_no = self.__path2LineNo( kwdict['path'] ) \
                 if 'path' in kwdict else \
                 vim.current.window.cursor[0] - 1
 
-        if line_no == -1 :
-            return
+        if line_no == -1 : return
 
         indent_level , flag , name = self.__getNodeInfo( self.buffer[line_no] )
 
         # make pvString for the factory
         mbstr_path = self.__lineNo2Path( line_no )
-        uni_path = []
-        for x in mbstr_path :
-            uni_item = pvString()
-            uni_item.MultibyteString = x
-            uni_path.append( uni_item )
-
+        uni_path = [ pvString() for x in xrange( len( mbstr_path ) ) ]
+        for x in xrange( len( mbstr_path ) ):
+            uni_path[x].MultibyteString = mbstr_path[x]
         node = self.__node_factory.generateNode( uni_path )
 
-        if flag == '+': # expand tree
+
+        # open the branch
+        if flag == '+': 
+            ## 1. fetch the children node
             show_list = []
             for child in node :
                 show_list.append( self.__format_string % {
                         'indent' : self.__indent_string * ( indent_level + 1 ), 
                         'flag'   : '+' if child.type == PV_TREE_NODE_TYPE_BRANCH else ' ' ,
-                        'name'   :  child.getName().MultibyteString } )
+                        'name'   :  child.name.MultibyteString } )
+
+            ## 2. make the range object
             range = self.buffer.range( line_no + 1 , line_no + 1 )
+
+            ## 3. append the child
             if show_list : range.append( show_list )
+
+            ## 4. update flag to '-'
             range[0] = self.__format_string % {
                         'indent' : self.__indent_string * indent_level ,
                         'flag'   : '-' ,
-                        'name'   :  node.getName().MultibyteString } 
+                        'name'   :  node.name.MultibyteString } 
 
-        elif flag == '-':
+            self.__notifyObserver( node , PV_TREE_OBSERVER_BRANCH_OPEN )
+
+        # close the branch
+        elif flag == '-': 
             range_start = line_no 
             range_end = line_no
-            # search children range
+            ## 1. search children range
             total_line_count = len( self.buffer )
             for index in xrange( line_no + 1 , total_line_count ):
                 line_info = self.__getNodeInfo( self.buffer[index] )
@@ -145,18 +158,30 @@ class pvTreeBuffer(pvBuffer):
                     continue
                 else:
                     break
+            ## 2. make the range object
             vim_range = self.buffer.range( range_start + 1 , range_end + 1 )
+
+            ## 3. delete the child item
             if  range_end - range_start > 0 : del vim_range[1:]
+
+            ## 4. update the flag to '+'
             vim_range[0] = self.__format_string % {
                         'indent' : self.__indent_string * indent_level ,
                         'flag'   : '+' ,
-                        'name'   :  node.getName().MultibyteString } 
+                        'name'   :  node.name.MultibyteString } 
 
-    def __focus( self , kwdict ):
+            self.__notifyObserver( node , PV_TREE_OBSERVER_BRANCH_CLOSE )
+
+        # select a leef node
+        else:
+            self.__notifyObserver( node , PV_TREE_OBSERVER_LEEF_SELECT )
+
+    def __target( self , kwdict ):
         pass
 
-    def __update( self ):
-        pass
+    def __notifyObserver( self , node , observer_type ):
+        for ob in self.__observer_list :
+            ob.OnUpdate( node , observer_type )
 
     def __path2LineNo( self , path ):
         total_line = len( self.buffer )
