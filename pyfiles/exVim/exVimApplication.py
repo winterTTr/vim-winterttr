@@ -1,7 +1,7 @@
 import vim
+from exVimTabPanel import exVimTabPanelManager
 from pyVim.pvWrap import pvWindowManager 
 from pyVim.pvKeyMap import pvKeyMapManager
-from pyVim.pvTabPanel import pvTabPanelManager
 
 class Application:
     def __init__( self ):
@@ -41,7 +41,7 @@ class Application:
 
     def start( self ):
         self.wm.makeWindows('( 25 , - )panel , ( -,10) list | (-,-)main ')
-        self.tp = pvTabPanelManager( 
+        self.tp = exVimTabPanelManager( 
                 self.wm.getWindow('list') ,
                 self.wm.getWindow('panel') )
 

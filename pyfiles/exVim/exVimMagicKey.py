@@ -462,7 +462,7 @@ class exVimKey_AcceptSelectionOnPanel( exVimMagicKeyBase ):
 
 class exVimKey_OpenTreeItem( exVimMagicKeyBase ):
     def __init__( self , tab_panel ):
-        self.buffer = tab_panel.searchPanel('File Explorer').getBuffer()
+        self.buffer = tab_panel.searchPanel(u'File Explorer').getBuffer()
 
     def register( self ):
         from exVimConfig import appid

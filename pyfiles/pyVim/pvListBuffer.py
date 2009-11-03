@@ -5,11 +5,19 @@ from pvWrap import GenerateRandomName
 from pvWrap import PV_BUF_TYPE_READONLY , PV_BUF_TYPE_NORMAL
 
 class pvListBufferItem(object):
-    def __str__( self ):
-        raise NotImplementedError("pvListBufferItem::__str__")
+    @property
+    def name( self ):
+        return self.DoName()
 
     def __eq__( self , other ):
-        return str( self ) == str( other )
+        if isinstance( other , pvListBufferItem ):
+            return self.name == other.name
+        else:
+            return self.name == other
+
+    def DoName( self ):
+        raise NotImplementedError("pvListBufferItem::DoName")
+
 
 class pvListBuffer(pvBuffer):
     def __init__( self ):
@@ -70,7 +78,7 @@ class pvListBuffer(pvBuffer):
         # deal with internal data
         show_data = []
         for index in xrange( len( self.item ) ):
-            show_data.append( format % str( self.item[index] ) )
+            show_data.append( format % self.item[index].name.MultibyteString  )
 
         # hilight the item
         if len( show_data ) != 0 :
