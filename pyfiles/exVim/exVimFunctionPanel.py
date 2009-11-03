@@ -4,7 +4,7 @@ import string
 from pyVim.pvListBuffer import pvListBuffer
 from exVimTabPanel import exVimTabPanelItem
 
-from pyVim.pvTreeBuffer import pvTreeBuffer , pvTreeNode , pvTreeNodeFactory
+from pyVim.pvTreeBuffer import pvTreeBuffer , pvTreeNode , pvTreeNodeFactory , pvTreeObserver
 from pyVim.pvTreeBuffer import PV_TREE_NODE_TYPE_BRANCH , PV_TREE_NODE_TYPE_LEEF
 
 from pyVim.pvUtil import pvString
@@ -46,7 +46,7 @@ class FENodeRoot( pvTreeNode ):
             if os.path.isdir( driver_path ):
                 yield FENodeDirectory( driver_path )
 
-    def getName( self ):
+    def OnName( self ):
         return pvString()
 
 class FENodeDirectory( pvTreeNode ):
@@ -62,7 +62,7 @@ class FENodeDirectory( pvTreeNode ):
             else:
                 yield FENodeFile( full_path )
 
-    def getName( self ):
+    def OnName( self ):
         name = os.path.basename( self.path )
 
         ret = pvString()
@@ -74,7 +74,7 @@ class FENodeFile( pvTreeNode ):
         super( FENodeFile , self ).__init__( PV_TREE_NODE_TYPE_LEEF )
         self.path = path
 
-    def getName( self ):
+    def OnName( self ):
         name = pvString()
         name.UnicodeString = os.path.basename( self.path)
         return name
@@ -95,10 +95,15 @@ class exVimFileExplorer_NodeFactory( pvTreeNodeFactory ):
             else :
                 return None
 
+class exVimDirectoryObserver( pvTreeObserver ):
+    def OnUpdate( self , node , type ):
+        print node , type
+
 
 class exVimPanel_FileExplorer( exVimTabPanelItem ):
     def __init__( self ):
         self.buffer = pvTreeBuffer( exVimFileExplorer_NodeFactory() )
+        self.buffer.registerObserver( exVimDirectoryObserver() )
 
     def getBuffer( self ):
         return self.buffer

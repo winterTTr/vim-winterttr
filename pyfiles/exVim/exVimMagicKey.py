@@ -473,6 +473,6 @@ class exVimKey_OpenTreeItem( exVimMagicKeyBase ):
         return True
 
     def runAction( self ):
-        from pyVim.pvTreeBuffer import PV_TREE_ACTION_TYPE_SWITCH
-        self.buffer.updateBuffer( type = PV_TREE_ACTION_TYPE_SWITCH )
+        from pyVim.pvTreeBuffer import PV_TREE_UPDATE_SELECT
+        self.buffer.updateBuffer( type = PV_TREE_UPDATE_SELECT )
 
