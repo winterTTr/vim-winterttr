@@ -113,6 +113,7 @@ if !exists("autocommands_loaded")
 		au!
 	augroup END
 
+	autocmd QuickFixCmdPost * cwindow
     autocmd FileType * :set formatoptions=tcql autoindent comments&
     autocmd FileType css :set formatoptions=cql autoindent
     autocmd FileType c,cpp,h,java :set formatoptions=croql smartindent
@@ -694,7 +695,6 @@ if !exists("autoload_python") "{{{2
     augroup PYTHON
         au!
         autocmd FileType PYTHON set expandtab shiftwidth=4
-        autocmd QuickFixCmdPre PYTHON copen
         "autocmd FileType PYTHON inoremap <C-ENTER> <C-R>=Py_CompleteAttributes()<CR>
 
 	   "Set some bindings up for 'compile' of python
