@@ -1,13 +1,14 @@
 import os
 import string
 
+from pyVim.pvUtil import pvString
 from pyVim.pvListBuffer import pvListBuffer
-from pvEditorTabPanel import pvEditorTabPanelItem
-
 from pyVim.pvTreeBuffer import pvTreeBuffer , pvTreeNode , pvTreeNodeFactory , pvTreeObserver
 from pyVim.pvTreeBuffer import PV_TREE_NODE_TYPE_BRANCH , PV_TREE_NODE_TYPE_LEEF
 
-from pyVim.pvUtil import pvString
+from pvEditorTabPanel import pvEditorTabPanelItem
+
+
 
 
 class pvEditorPanel_ContextComplete( pvEditorTabPanelItem ):
