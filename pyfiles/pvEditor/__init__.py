@@ -1,3 +1,3 @@
-from exVimApplication import Application
+from pvEditorApplication import Application
 
 app = Application()
