@@ -1,6 +1,6 @@
 from pyVim.pvListBuffer import pvListBuffer , pvListBufferItem
 
-class exVimTabPanelItem( pvListBufferItem ):
+class pvEditorTabPanelItem( pvListBufferItem ):
     def getBuffer( self ):
         raise RuntimeError('no implement')
 
@@ -8,7 +8,7 @@ class exVimTabPanelItem( pvListBufferItem ):
     # should implement the DoName() method
 
 
-class exVimTabPanelManager:
+class pvEditorTabPanelManager:
     def __init__( self , list_window , panel_window ):
         # make the window manager , used to split window
         self.list_win = list_window
