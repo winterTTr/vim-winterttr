@@ -12,11 +12,6 @@ PV_TREE_NODE_TYPE_LEEF   = 0x02
 PV_TREE_UPDATE_SELECT = 0x01
 PV_TREE_UPDATE_TARGET = 0x02
 
-# type of the action for observer
-PV_TREE_OBSERVER_BRANCH_OPEN = 0x01
-PV_TREE_OBSERVER_BRANCH_CLOSE = 0x02
-PV_TREE_OBSERVER_LEEF_SELECT = 0x03
-
 
 class pvTreeNode(object):
     def __init__( self , type ):
@@ -41,8 +36,14 @@ class pvTreeNodeFactory( object ):
         raise NotImplementedError("pvTreeNodeFactory")
 
 class pvTreeObserver(object):
-    def OnUpdate( self , node , action_type ):
-        pass
+    def OnBranchOpen( self , node ):
+        raise NotImplementedError("pvTreeObserver::OnBranchOpen")
+
+    def OnBranchClose( self , node ):
+        raise NotImplementedError("pvTreeObserver::OnBranchClose")
+
+    def OnLeefSelect( self , node ):
+        raise NotImplementedError("pvTreeObserver::OnLeefSelect")
 
 
 class pvTreeBuffer(pvBuffer):
@@ -143,7 +144,9 @@ class pvTreeBuffer(pvBuffer):
                         'flag'   : '-' ,
                         'name'   :  node.name.MultibyteString } 
 
-            self.__notifyObserver( node , PV_TREE_OBSERVER_BRANCH_OPEN )
+            # notify observer
+            for ob in self.__observer_list:
+                ob.OnBranchOpen( node )
 
         # close the branch
         elif flag == '-': 
@@ -170,18 +173,18 @@ class pvTreeBuffer(pvBuffer):
                         'flag'   : '+' ,
                         'name'   :  node.name.MultibyteString } 
 
-            self.__notifyObserver( node , PV_TREE_OBSERVER_BRANCH_CLOSE )
+            # notify observer
+            for ob in self.__observer_list:
+                ob.OnBranchClose( node )
 
         # select a leef node
         else:
-            self.__notifyObserver( node , PV_TREE_OBSERVER_LEEF_SELECT )
+            # notify observer
+            for ob in self.__observer_list:
+                ob.OnLeefSelect( node )
 
     def __target( self , kwdict ):
         pass
-
-    def __notifyObserver( self , node , observer_type ):
-        for ob in self.__observer_list :
-            ob.OnUpdate( node , observer_type )
 
     def __path2LineNo( self , path ):
         total_line = len( self.buffer )
