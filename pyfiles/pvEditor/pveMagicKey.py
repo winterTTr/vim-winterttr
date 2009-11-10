@@ -6,21 +6,21 @@ from pyVim.pvKeyMap import pvKeyMapResolver , pvKeyMapManager
 from pyVim.pvKeyMap import PV_KMM_MODE_INSERT , PV_KMM_MODE_NORMAL , PV_KMM_MODE_SELECT
 from pyVim.pvWrap import pvWindow
 from pyVim.pvListBuffer import pvListBuffer
-# pvEditor
-import pvEditorMagicKeyConfig 
+# pve
+import pveMagicKeyConfig 
 
 
-class pvEditorMagicKeyBase( pvKeyMapResolver ):
+class pveMagicKeyBase( pvKeyMapResolver ):
     def register( self ):
-        raise NotImplementedError( "pvEditorMagicKeyBase::register" )
+        raise NotImplementedError( "pveMagicKeyBase::register" )
 
 
-class pvEditorKey_ExpandContent( pvEditorMagicKeyBase ):
+class pveKey_ExpandContent( pveMagicKeyBase ):
     def __init__( self , main_window ):
         self.main_window = main_window
 
     def register( self ):
-        from pvEditorConfig import appid
+        from pveConfig import appid
         kmm = pvKeyMapManager( appid )
         kmm.register( '<Tab>' , PV_KMM_MODE_INSERT , self )
 
@@ -41,9 +41,9 @@ class pvEditorKey_ExpandContent( pvEditorMagicKeyBase ):
         lineRightCursor = vim.current.line[cursorCol:]
 
         # make avaliable key list
-        expandKeyList = pvEditorMagicKeyConfig.MagicKeyExpandTemplate['_'].keys()
-        if pvEditorMagicKeyConfig.MagicKeyExpandTemplate.has_key( vim.eval('&ft') ) :
-             expandKeyList.extend( pvEditorMagicKeyConfig.MagicKeyExpandTemplate[ vim.eval('&ft') ].keys() )
+        expandKeyList = pveMagicKeyConfig.MagicKeyExpandTemplate['_'].keys()
+        if pveMagicKeyConfig.MagicKeyExpandTemplate.has_key( vim.eval('&ft') ) :
+             expandKeyList.extend( pveMagicKeyConfig.MagicKeyExpandTemplate[ vim.eval('&ft') ].keys() )
 
         regStr = "(.*\s+|^)(?P<key>" + '|'.join(expandKeyList) + ")$"
         regRet =  re.match( regStr , lineLeftCursor )
@@ -52,10 +52,10 @@ class pvEditorKey_ExpandContent( pvEditorMagicKeyBase ):
 
         begin , end , key = regRet.start('key') , regRet.end('key') , regRet.group('key')
         expandObject = None
-        if pvEditorMagicKeyConfig.MagicKeyExpandTemplate['_'].has_key( key):
-            expandObject = pvEditorMagicKeyConfig.MagicKeyExpandTemplate['_'][key]
+        if pveMagicKeyConfig.MagicKeyExpandTemplate['_'].has_key( key):
+            expandObject = pveMagicKeyConfig.MagicKeyExpandTemplate['_'][key]
         else:
-            expandObject = pvEditorMagicKeyConfig.MagicKeyExpandTemplate[vim.eval('&ft')][key]
+            expandObject = pveMagicKeyConfig.MagicKeyExpandTemplate[vim.eval('&ft')][key]
 
         if callable( expandObject ):
             retStr = expandObject()
@@ -128,8 +128,8 @@ class pvEditorKey_ExpandContent( pvEditorMagicKeyBase ):
             paramListEx = []
             for param in paramList :
                 paramListEx.append( "%(begin)s %(eachone)s %(end)s " % {
-                        "begin" : pvEditorMagicKeyConfig.MagicKeyConfig['AutoFillRegion']['begin'] ,
-                        "end" : pvEditorMagicKeyConfig.MagicKeyConfig['AutoFillRegion']['end'] ,
+                        "begin" : pveMagicKeyConfig.MagicKeyConfig['AutoFillRegion']['begin'] ,
+                        "end" : pveMagicKeyConfig.MagicKeyConfig['AutoFillRegion']['end'] ,
                         "eachone" : param } )
             paramStr = ','.join( paramListEx )
             insertSigList.append( paramStr )
@@ -164,7 +164,7 @@ class pvEditorKey_ExpandContent( pvEditorMagicKeyBase ):
         toLine = cursorRow + 20  if cursorRow + 20 < totalLine else totalLine
 
         # find the AutoFillRegion
-        regStr = "%(begin)s.*?%(end)s" % pvEditorMagicKeyConfig.MagicKeyConfig['AutoFillRegion']
+        regStr = "%(begin)s.*?%(end)s" % pveMagicKeyConfig.MagicKeyConfig['AutoFillRegion']
         regRet = None
         for x in xrange( fromLine , toLine ):
             regRet = re.search( regStr , vim.current.buffer[x] )
@@ -181,7 +181,7 @@ class pvEditorKey_ExpandContent( pvEditorMagicKeyBase ):
         return '\<C-\>\<C-N>v%dl\<C-G>' % ( end - begin - 1 , )
 
 
-pvEditor_pair_map = {
+pve_pair_map = {
         '(' : ')' ,
         '[' : ']' ,
         '{' : '}' ,
@@ -190,14 +190,14 @@ pvEditor_pair_map = {
         '\'' : '\''
         }
 
-class pvEditorKey_AutoAddPair( pvEditorMagicKeyBase ):
+class pveKey_AutoAddPair( pveMagicKeyBase ):
     def __init__( self , main_window ):
         self.main_window = main_window 
 
     def register( self ):
-        from pvEditorConfig import appid
+        from pveConfig import appid
         kmm = pvKeyMapManager( appid )
-        for key in pvEditor_pair_map :
+        for key in pve_pair_map :
             kmm.register( key , PV_KMM_MODE_INSERT , self )
 
     def checkValidation( self , **kwdict ):
@@ -206,22 +206,22 @@ class pvEditorKey_AutoAddPair( pvEditorMagicKeyBase ):
 
     def runAction( self ):
         if self.key == '"' :
-            return_value = '%s\<C-\>\<C-N>i' % ( '\\' + self.key + '\\' + pvEditor_pair_map[ self.key ] , )
+            return_value = '%s\<C-\>\<C-N>i' % ( '\\' + self.key + '\\' + pve_pair_map[ self.key ] , )
         else:
-            return_value = '%s\<C-\>\<C-N>i' % ( self.key + pvEditor_pair_map[ self.key ] , )
+            return_value = '%s\<C-\>\<C-N>i' % ( self.key + pve_pair_map[ self.key ] , )
         return return_value
 
 
-pvEditor_pair_map_revert = dict ( [ ( pvEditor_pair_map[x] , x ) for x in pvEditor_pair_map.keys() if x != pvEditor_pair_map[x] ] ) 
+pve_pair_map_revert = dict ( [ ( pve_pair_map[x] , x ) for x in pve_pair_map.keys() if x != pve_pair_map[x] ] ) 
 
-class pvEditorKey_AutoMoveRightPair( pvEditorMagicKeyBase ):
+class pveKey_AutoMoveRightPair( pveMagicKeyBase ):
     def __init__( self , main_window ):
         self.main_window = main_window 
 
     def register( self ):
-        from pvEditorConfig import appid
+        from pveConfig import appid
         kmm = pvKeyMapManager( appid )
-        for key in pvEditor_pair_map_revert :
+        for key in pve_pair_map_revert :
             kmm.register( key , PV_KMM_MODE_INSERT , self )
 
     def checkValidation( self ,  **kwdict ):
@@ -252,19 +252,19 @@ class pvEditorKey_AutoMoveRightPair( pvEditorMagicKeyBase ):
         left = 0
         right = 0
         for x in line:
-            if x == pvEditor_pair_map_revert[str(key)] :
+            if x == pve_pair_map_revert[str(key)] :
                 left +=1
             elif x == str(key) :
                 right += 1
         return ( left , right )
     
 
-class pvEditorKey_ChangeSelectionOnPanel( pvEditorMagicKeyBase ):
+class pveKey_ChangeSelectionOnPanel( pveMagicKeyBase ):
     def __init__( self , tab_panel ):
         self.tab_panel = tab_panel
 
     def register( self ):
-        from pvEditorConfig import appid
+        from pveConfig import appid
         kmm = pvKeyMapManager( appid )
         kmm.register( '<C-J>' , PV_KMM_MODE_INSERT , self )
         kmm.register( '<C-J>' , PV_KMM_MODE_NORMAL , self )
@@ -286,12 +286,12 @@ class pvEditorKey_ChangeSelectionOnPanel( pvEditorMagicKeyBase ):
         buffer.updateBuffer( selection = ( buffer.getSelection() + offset ) % len( buffer.getItemList() ) )
 
 
-class pvEditorKey_ChangeSelectonOnPanelList( pvEditorMagicKeyBase ):
+class pveKey_ChangeSelectonOnPanelList( pveMagicKeyBase ):
     def __init__ ( self , tab_panel ):
         self.tab_panel = tab_panel
 
     def register( self ):
-        from pvEditorConfig import appid
+        from pveConfig import appid
         kmm = pvKeyMapManager( appid )
         kmm.register( '<2-LeftMouse>' , PV_KMM_MODE_NORMAL , self , self.tab_panel.getTabBuffer() )
 
@@ -310,7 +310,7 @@ class pvEditorKey_ChangeSelectonOnPanelList( pvEditorMagicKeyBase ):
 
 
 
-class pvEditorKey_AutoContextComplete( pvEditorMagicKeyBase ):
+class pveKey_AutoContextComplete( pveMagicKeyBase ):
     re_match_last_word = re.compile( "(.*\W+|^)(?P<word>[\w_]+)$" )
 
     def __init__( self , main_window , tab_panel ):
@@ -318,7 +318,7 @@ class pvEditorKey_AutoContextComplete( pvEditorMagicKeyBase ):
         self.tab_panel = tab_panel
 
     def register( self ):
-        from pvEditorConfig import appid
+        from pveConfig import appid
         kmm = pvKeyMapManager( appid )
 
         import string
@@ -427,14 +427,14 @@ class pvEditorKey_AutoContextComplete( pvEditorMagicKeyBase ):
 
         return self.return_key
 
-class pvEditorKey_AcceptSelectionOnPanel( pvEditorMagicKeyBase ):
+class pveKey_AcceptSelectionOnPanel( pveMagicKeyBase ):
     def __init__( self , main_window , tab_panel ):
         self.main_window = main_window
         self.tab_panel = tab_panel
 
 
     def register( self ):
-        from pvEditorConfig import appid
+        from pveConfig import appid
         kmm = pvKeyMapManager( appid )
 
         kmm.register( '<C-Space>' , PV_KMM_MODE_INSERT , self )
@@ -460,12 +460,12 @@ class pvEditorKey_AcceptSelectionOnPanel( pvEditorMagicKeyBase ):
             return ""
 
 
-class pvEditorKey_OpenTreeItem( pvEditorMagicKeyBase ):
+class pveKey_OpenTreeItem( pveMagicKeyBase ):
     def __init__( self , tab_panel ):
         self.buffer = tab_panel.searchPanel(u'File Explorer').getBuffer()
 
     def register( self ):
-        from pvEditorConfig import appid
+        from pveConfig import appid
         kmm = pvKeyMapManager( appid )
         kmm.register( '<2-LeftMouse>' , PV_KMM_MODE_NORMAL , self , self.buffer )
 

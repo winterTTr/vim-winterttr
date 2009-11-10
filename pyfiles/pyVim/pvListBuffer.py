@@ -54,7 +54,7 @@ class pvListBuffer( pvBuffer , pvKeyMapObserver ):
         if 'selection' in kwdict:
             self.selection = kwdict['selection'] % len( self.items )
         else:
-            self.selection = vim.current.buffer.cursor[0]
+            self.selection = vim.current.window.cursor[0] - 1
         selection = self.selection 
 
         if 'resize' in kwdict:
@@ -88,13 +88,14 @@ class pvListBuffer( pvBuffer , pvKeyMapObserver ):
 
         # resize window
         if self.resize :
-            self.registerCommand('resize %d' % len( self.items ) if len( self.items) else 1 )
+            self.registerCommand('resize %d' % ( len( self.items ) if len( self.items ) else 1 , ) )
 
+        if self.items :
+            for ob in self.ob_list:
+                ob.OnSelectItemChanged( self.items[self.selection] )
 
-    def OnHandleKey( self , **kwdict ):
+    def OnHandleKeyEvent( self , **kwdict ):
         self.updateBuffer()
-        for ob in self.ob_list:
-            ob.OnSelectItemChanged( self.items[self.selection] )
 
 
 

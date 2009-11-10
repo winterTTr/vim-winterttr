@@ -1,3 +1,3 @@
-from pvEditorApplication import Application
+from pveApplication import Application
 
 app = Application()
