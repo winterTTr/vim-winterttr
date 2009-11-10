@@ -6,7 +6,7 @@ import types
 vim.command( """
 if !exists("*PV_KEY_MAP_DISPATCH")
     function PV_KEY_MAP_DISPATCH(uid)
-      exec 'python pyVim.pvKeyMapManager.notifyObserver("'. a:uid . '")'
+      exec 'python pyVim.pvKeyMap.pvKeyMapManager.notifyObserver("'. a:uid . '")'
       return @v
     endfunction
 endif
@@ -80,6 +80,7 @@ class pvKeyMapEvent(object):
         _key = pvKeyName()
         _key.vim_name = key
 
+        self.__buffer = buffer
         # register the python method to internal map
         self.__uid = "%(keyname)s:%(mode)d:%(bufferid)d" % {
                 'keyname' : _key.internal_name , 
@@ -96,7 +97,7 @@ class pvKeyMapEvent(object):
 
     @property
     def key( self ):
-        internal_key , mode , bufferid = uid.split(':')
+        internal_key , mode , bufferid = self.__uid.split(':')
 
         _key = pvKeyName()
         _key.internal_name = internal_key
@@ -104,21 +105,25 @@ class pvKeyMapEvent(object):
 
     @property
     def mode( self ):
-        internal_key , mode , bufferid = uid.split(':')
+        internal_key , mode , bufferid = self.__uid.split(':')
         return int(mode)
 
     @property
     def bufferid( self ):
-        internal_key , mode , bufferid = uid.split(':')
+        internal_key , mode , bufferid = self.__uid.split(':')
         return int(bufferid)
+
+    @property
+    def buffer( self ):
+        return self.__buffer
 
 
 
 
 
 class pvKeyMapObserver(object):
-    def OnHandleKey( self , **kwdict ):
-        raise NotImplementedError('pvKeyMapObserver::OnHandleKey')
+    def OnHandleKeyEvent( self , **kwdict ):
+        raise NotImplementedError('pvKeyMapObserver::OnHandleKeyEvent')
 
 
 
@@ -128,23 +133,22 @@ class pvKeyMapManager(object):
 
     @staticmethod
     def registerObserver( event , ob ):
-        uid = event.uid
 
         # if not exist, create the item, register the command
-        if not uid in pvKeyMapManager.__ob_register:
-            pvKeyMapManager.__ob_register[uid] = []
+        if not event.uid in pvKeyMapManager.__ob_register:
+            pvKeyMapManager.__ob_register[event.uid] = []
             vim_cmd_format = pv_km_vim_keymap_command_map if buffer == None else pv_km_vim_buffered_keymap_command_map
-            vim_cmd = vim_cmd_format[ mode ] % {
-                    'vim_key' : key.vim_name , 
-                    'uid' : uid
+            vim_cmd = vim_cmd_format[ event.mode ] % {
+                    'vim_key' : event.key.vim_name , 
+                    'uid' : event.uid
                     }
 
-            if buffer : # <buffer> map
-                buffer.registerCommand( vim_cmd , True )
+            if event.buffer : # <buffer> map
+                event.buffer.registerCommand( vim_cmd , True )
             else: # global map
                 vim.command( vim_cmd )
 
-        pvKeyMapManager.__ob_register[uid].append( ob )
+        pvKeyMapManager.__ob_register[event.uid].append( ob )
 
     @staticmethod
     def notifyObserver( uid ):
@@ -167,7 +171,7 @@ class pvKeyMapManager(object):
         # clear the return register
         vim.command('let @v=""')
         for ob in pvKeyMapManager.__ob_register[uid]:
-            ret = ob.OnHandleKey( **kwdict )
+            ret = ob.OnHandleKeyEvent( **kwdict )
             if ret != None :
                 # set return value
                 vim.command('let @v="%s"' % str(ret) )

@@ -1,5 +1,10 @@
 from pvWrap import pvBuffer , GenerateRandomName , PV_BUF_TYPE_READONLY
 from pvUtil import pvString
+
+from pvKeyMap import pvKeyMapManager , pvKeyMapEvent , pvKeyMapObserver
+from pvKeyMap import PV_KM_MODE_NORMAL
+
+
 import re
 
 # type of the node on the tree :
@@ -46,7 +51,7 @@ class pvTreeObserver(object):
         raise NotImplementedError("pvTreeObserver::OnLeefSelect")
 
 
-class pvTreeBuffer(pvBuffer):
+class pvTreeBuffer(pvBuffer , pvKeyMapObserver):
     __indent_string = '  '
     __format_string = "%(indent)s%(flag)1s %(name)s"
     __format_search_re = re.compile( """
@@ -68,6 +73,13 @@ class pvTreeBuffer(pvBuffer):
         self.registerCommand('setlocal nonumber')
         self.registerCommand('setlocal foldcolumn=0')
 
+        # double click
+        db_click_event = pvKeyMapEvent( '<2-LeftMouse>' , PV_KM_MODE_NORMAL , self )
+        pvKeyMapManager.registerObserver( db_click_event , self )
+        # enter 
+        enter_event = pvKeyMapEvent( '<Enter>' , PV_KM_MODE_NORMAL , self )
+        pvKeyMapManager.registerObserver( enter_event , self )
+
         self.__observer_list = []
 
 
@@ -79,6 +91,10 @@ class pvTreeBuffer(pvBuffer):
             self.__observer_list.remove( ob )
         except:
             pass
+
+    def OnHandleKeyEvent( self , **kwdict ):
+        # key : <2-LeftMouse> OR <Enter>
+        self.updateBuffer( type = PV_TREE_UPDATE_SELECT )
 
     def OnUpdate( self , **kwdict ) :
         # nothing in the buffer , means the buffer not contain the root
