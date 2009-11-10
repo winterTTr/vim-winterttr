@@ -1,4 +1,4 @@
-from PanelBase import PanelBase
+from _PanelBase_ import PanelBase
 
 from pyVim.pvUtil import pvString
 from pyVim.pvTreeBuffer import pvTreeBuffer , pvTreeNode , pvTreeNodeFactory , pvTreeObserver
@@ -79,7 +79,7 @@ class FENodeFactory( pvTreeNodeFactory ):
 # =============================================================
 # file explorer
 # =============================================================
-class _Panel_( PanelBase , pvTreeObserver ):
+class _class_( PanelBase , pvTreeObserver ):
     def __init__( self , win_mgr ):
         self.__win_mgr = win_mgr
 
