@@ -52,7 +52,10 @@ class pvListBuffer( pvBuffer , pvKeyMapObserver ):
 
         # get selection and resize
         if 'selection' in kwdict:
-            self.selection = kwdict['selection'] % len( self.items )
+            if len( self.items ):
+                self.selection = kwdict['selection'] % len( self.items )
+            else:
+                self.selection = 0
         else:
             self.selection = vim.current.window.cursor[0] - 1
         selection = self.selection 
@@ -69,10 +72,6 @@ class pvListBuffer( pvBuffer , pvKeyMapObserver ):
             self.hilight = kwdict['hilight']
         hilight = self.hilight
 
-
-        # clear the screen
-        self.buffer[:] = None
-
         # deal with internal data
         show_data = []
         for index in xrange( len( self.items ) ):
@@ -84,7 +83,11 @@ class pvListBuffer( pvBuffer , pvKeyMapObserver ):
 
         # redraw the content
         if len( show_data ):
-            self.buffer[0:len(show_data) -1 ] = show_data
+            self.buffer[:]=show_data
+        else:
+            # clear the screen
+            self.buffer[:] = None
+
 
         # resize window
         if self.resize :
