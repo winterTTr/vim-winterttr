@@ -421,35 +421,34 @@ class pvWindowManager(object):
             for index_group in xrange( self.__mainwin_position[0] - 1 , -1 , -1  ):
                 self.__makeColumnWindows( self.__windows_info[index_group] , PV_SPLIT_TYPE_MOST_LEFT )
 
+        index_group = self.__mainwin_position[0]
         if self.__mainwin_position[1] != 0 :
             # split the window up the main one
-            index_group = self.__mainwin_position[0]
-
             prev_win = self.__windows['main']
             for index_win in xrange( self.__mainwin_position[1] - 1 , -1 , -1 ) :
                 info = self.__windows_info[index_group][index_win]
                 self.__windows[info['name']] = pvWinSplitter( 
                         PV_SPLIT_TYPE_CUR_TOP , 
                         info['size'] , 
-                        prev_win )
+                        prev_win ).doSplit()
                 prev_win = self.__windows[info['name']]
 
-            # split the window down the main one
-            prev_win = self.__windows['main']
-            for index_win in xrange( self.__mainwin_position[1] + 1 , len( self.__windows_info[index_group]) ) :
-                info = self.__windows_info[index_group][index_win]
-                self.__windows[info['name']] = pvWinSplitter( 
-                        PV_SPLIT_TYPE_CUR_BOTTOM , 
-                        info['size'] , 
-                        prev_win )
-                prev_win = self.__windows[info['name']]
+        # split the window down the main one
+        prev_win = self.__windows['main']
+        for index_win in xrange( self.__mainwin_position[1] + 1 , len( self.__windows_info[index_group]) ) :
+            info = self.__windows_info[index_group][index_win]
+            self.__windows[info['name']] = pvWinSplitter( 
+                    PV_SPLIT_TYPE_CUR_BOTTOM , 
+                    info['size'] , 
+                    prev_win ).doSplit()
+            prev_win = self.__windows[info['name']]
 
 
         # split the window right the main one
         for index_group in xrange( self.__mainwin_position[0] + 1 , len( self.__windows_info ) ):
             self.__makeColumnWindows( self.__windows_info[index_group] , PV_SPLIT_TYPE_MOST_RIGHT )
 
-        for x in self.__windows.keys():
+        for x in self.__windows:
             self.__windows[x].setFocus()
 
         self.__windows['main'].setFocus()

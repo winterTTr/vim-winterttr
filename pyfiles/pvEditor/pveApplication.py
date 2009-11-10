@@ -38,14 +38,11 @@ class Application:
 
 
     def start( self ):
-        self.wm.makeWindows('( 25 , - )panel , ( -,10) list | (-,-)main ')
+        self.wm.makeWindows('( 25 , - )panel , ( -,10) list | (-,-)main , ( - , 10 )cmd')
 
         from pvePanelLoader import PanelManager
         self.pm = PanelManager( self.wm )
         self.pm.loadPanels()
-        #self.tp = pveTabPanelManager( 
-        #        self.wm.getWindow('list') ,
-        #        self.wm.getWindow('panel') )
 
         #from pveFunctionPanel import pvePanel_ContextComplete , pvePanel_BufferExplorer , pvePanel_FileExplorer
         #self.tp.addPanel( pvePanel_ContextComplete() )
