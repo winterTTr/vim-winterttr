@@ -1,3 +1,4 @@
 load_panels = [
+        'ContentComplete' ,
         'FileExplorer',
-        'ContentComplete' ]
+        'BufferExplorer' ]

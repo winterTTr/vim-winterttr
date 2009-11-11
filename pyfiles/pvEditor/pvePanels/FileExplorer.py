@@ -95,7 +95,7 @@ class _class_( PanelBase , pvTreeObserver ):
         str.UnicodeString = self.__name
         return str
 
-    def OnSelectItemChanged( self , item ):
+    def OnPanelSelected( self , item ):
         if item.UnicodeString != self.__name :
             return
 
