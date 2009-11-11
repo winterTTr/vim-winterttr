@@ -1,6 +1,6 @@
 from pyVim.pvListBuffer import pvListBufferObserver
 
-class PanelBase(pvListBufferObserver):
+class PanelBase(object):
     @property
     def name(self):
         return self.OnName()
@@ -8,5 +8,5 @@ class PanelBase(pvListBufferObserver):
     def OnName(self):
         raise NotImplementedError("PanelBase::OnName")
 
-    def OnSelectItemChanged( self , item ):
-        raise NotImplementedError("PanelBase::OnSelectItemChanged")
+    def OnPanelSelected( self , panel_name ):
+        raise NotImplementedError("PanelBase::OnPanelSelected")

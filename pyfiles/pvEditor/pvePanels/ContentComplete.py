@@ -65,7 +65,7 @@ class _class_( PanelBase , pvKeyMapObserver ):
         str.UnicodeString = self.__name
         return str
 
-    def OnSelectItemChanged( self , item ):
+    def OnPanelSelected( self , item ):
         if item.UnicodeString != self.__name :
             return
 
@@ -77,10 +77,7 @@ class _class_( PanelBase , pvKeyMapObserver ):
         if not self.__buffer.isShown() :
             return ""
 
-        vim.command('set noshowmode')
-
         if len( self.__buffer.items ):
-            print "here"
             offset = 1 if kwdict['key'] == '<C-J>' else -1
             self.__buffer.updateBuffer( selection = ( self.__buffer.selection + offset ) % len( self.__buffer.items ) )
 
