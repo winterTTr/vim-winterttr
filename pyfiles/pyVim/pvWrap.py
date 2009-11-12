@@ -341,7 +341,7 @@ class pvWinSplitter(object):
 
     def __getSplitCmd( self ):
         return self.__split_format % {
-                'width' : 1 , 
+                'width' : 1000 , 
                 'type'  : self.__split_map[self.__type] , 
                 'cmd'   : self.__split_command }
         
