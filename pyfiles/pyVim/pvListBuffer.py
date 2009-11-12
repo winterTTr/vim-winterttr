@@ -79,7 +79,8 @@ class pvListBuffer( pvBuffer , pvKeyMapObserver ):
 
         # hilight the item
         if len( show_data ) != 0 :
-            self.registerCommand('match %s /\V%s/' % ( hilight ,  show_data[self.selection] ) )
+            hilight_str = show_data[self.selection].replace('/','\/')
+            self.registerCommand('match %s /\V%s/' % ( hilight ,  hilight_str ) )
 
         # redraw the content
         if len( show_data ):

@@ -16,6 +16,7 @@ import re
 
 PV_BUF_TYPE_READONLY   = 0x0001
 PV_BUF_TYPE_NORMAL     = 0x0002
+PV_BUF_TYPE_ATTACH     = 0x0004
 
 def GenerateRandomName( base ):
     """
@@ -39,55 +40,63 @@ class pvBuffer(object):
     #  ===============================================================
     #   create and destroy the buffer
     #  ===============================================================
-    def __init__( self ,  type = PV_BUF_TYPE_NORMAL , name = None):
+    def __init__( self ,  type , name = None):
         # ckech & save type
-        if type not in [ PV_BUF_TYPE_READONLY , PV_BUF_TYPE_NORMAL ] :
+        if type not in [ PV_BUF_TYPE_READONLY , PV_BUF_TYPE_NORMAL , PV_BUF_TYPE_ATTACH ] :
             raise RuntimeError("pvBuffer::__init__ invalid type[%d]" % type )
         self.__type = type
 
-        # get name if given , otherwise give the system random name
-        self.__name = name if name != None else GenerateRandomName('PV_BUF_')
+        if type == PV_BUF_TYPE_ATTACH :
+            self.__buffer = None
+            self.__command_queue = []
+        else:
+            # get name if given , otherwise give the system random name
+            _name = name if name != None else GenerateRandomName('PV_BUF_')
 
-        # create buffer, get the buffer id ( which is unique )
-        buffer_id = int( vim.eval('bufnr( "%s" ,1 )' % self.__name ) )
+            # create buffer, get the buffer id ( which is unique )
+            buffer_id = int( vim.eval('bufnr( "%s" ,1 )' % _name ) )
 
-        # get the vim buffer object
-        self.__buffer = filter( lambda x : x.number == buffer_id , vim.buffers )[0]
+            # get the vim buffer object
+            self.__buffer = filter( lambda x : x.number == buffer_id , vim.buffers )[0]
 
-        # save the buffered command , when the buffer is open , the
-        # command will be executed
-        if type == PV_BUF_TYPE_READONLY :
-            self.__command_queue = [
-                    'setlocal nomodifiable' ,
-                    'setlocal noswapfile' ,
-                    'setlocal buftype=nofile' ,
-                    'setlocal readonly',
-                    'setlocal bufhidden=hide',
-                    'setlocal nobuflisted'
-                    ]
-            #vim.eval( 'setbufvar( %d , "&modifiable" , 0 )' % self.id ) 
-            #vim.eval( 'setbufvar( %d , "&swapfile" , 0 )' % self.id ) 
-            #vim.eval( 'setbufvar( %d , "&buftype" , "nofile" )' % self.id ) 
-            #vim.eval( 'setbufvar( %d , "&readonly" , 1 )' % self.id ) 
-            #vim.eval( 'setbufvar( %d , "&bufhidden" , "hide" )' % self.id ) 
-            #vim.eval( 'setbufvar( %d , "&buflisted" , 0 )' % self.id ) 
-            #
-            # these for local window , not for local buffer
-            #        'setlocal nowrap' , 
-            #        'setlocal nonumber' ,
-            #        'setlocal foldcolumn=0' 
+            # save the buffered command , when the buffer is open , the
+            # command will be executed
+            if type == PV_BUF_TYPE_READONLY :
+                self.__command_queue = [
+                        'setlocal nomodifiable' ,
+                        'setlocal noswapfile' ,
+                        'setlocal buftype=nofile' ,
+                        'setlocal readonly',
+                        'setlocal bufhidden=hide',
+                        'setlocal nobuflisted'
+                        ]
 
-        elif type == PV_BUF_TYPE_NORMAL :
-            self.__command_queue = [ 'setlocal buflisted' ]
-            #vim.eval( 'setbufvar( %d , "&buflisted" , 1 )' % self.id )
+            elif type == PV_BUF_TYPE_NORMAL :
+                self.__command_queue = [ 'setlocal buflisted' ]
 
     def __del__( self ):
+        if self.__type == PV_BUF_TYPE_ATTACH : return 
         self.wipeout()
 
     def wipeout( self ):
+        if self.__type == PV_BUF_TYPE_ATTACH : return
         if self.isExist():
             vim.command('bwipeout %d' % self.id )
             self.__buffer = None
+
+    def attach( self , id ):
+        if self.__type != PV_BUF_TYPE_ATTACH :
+            raise RuntimeError('pvBuffer::attach can NOT attach if the type is not PV_BUF_TYPE_ATTACH')
+
+        # search buffer
+        find_buf_list = filter( lambda x : x.number == id , vim.buffers )
+
+        # not find
+        if find_buf_list == []: return False
+
+        # find it
+        self.__buffer = find_buf_list[0]
+        return True
 
     #  ===============================================================
     #   check the status
@@ -191,6 +200,8 @@ class pvBuffer(object):
 
 
     def updateBuffer( self , **kwdict ):
+        if self.__type == PV_BUF_TYPE_ATTACH : return
+
         # save current focus win
         current_focus_win = pvWindow()
 
@@ -207,8 +218,6 @@ class pvBuffer(object):
         if self.__type == PV_BUF_TYPE_READONLY :
             self.registerCommand('setlocal modifiable', True)
             self.registerCommand('setlocal noreadonly', True)
-            #vim.eval( 'setbufvar( %d , "&modifiable" , 1 )' % self.id ) 
-            #vim.eval( 'setbufvar( %d , "&readonly" , 0 )' % self.id ) 
 
         self.OnUpdate( ** kwdict )
         self.tryFlushCommandQueue()
@@ -217,8 +226,6 @@ class pvBuffer(object):
         if self.__type == PV_BUF_TYPE_READONLY :
             self.registerCommand('setlocal nomodifiable', True)
             self.registerCommand('setlocal readonly', True)
-            #vim.eval( 'setbufvar( %d , "&modifiable" , 0 )' % self.id ) 
-            #vim.eval( 'setbufvar( %d , "&readonly" , 1 )' % self.id ) 
 
         # restore focus
         current_focus_win.setFocus()
