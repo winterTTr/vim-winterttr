@@ -3,6 +3,8 @@ from _PanelBase_ import PanelBase
 from pyVim.pvUtil import pvString
 from pyVim.pvTreeBuffer import pvTreeBuffer , pvTreeNode , pvTreeNodeFactory , pvTreeObserver
 from pyVim.pvTreeBuffer import PV_TREE_NODE_TYPE_BRANCH , PV_TREE_NODE_TYPE_LEEF
+from pyVim.pvTreeBuffer import PV_TREE_UPDATE_TARGET , PV_TREE_UPDATE_SELECT
+
 
 import os 
 import string
@@ -99,17 +101,36 @@ class _class_( PanelBase , pvTreeObserver ):
         if item.UnicodeString != self.__name :
             return
 
+        cwd = os.getcwdu() # unicode current work directory
+        
+        cwd_list = []
+        while True:
+            cwd , tail = os.path.split( cwd )
+            if tail == u'': 
+                cwd_u = pvString( UnicodeString = cwd )
+                cwd_list.insert( 0 , cwd_u )
+                break
+
+            tail_u = pvString( UnicodeString = tail )
+            cwd_list.insert( 0 , tail_u )
+        
         self.__buffer.showBuffer( self.__win_mgr.getWindow('panel') )
-        self.__buffer.updateBuffer()
+        self.__buffer.updateBuffer( type = PV_TREE_UPDATE_TARGET , target = cwd_list )
 
 
     # from |pvTreeObserver|
     def OnBranchOpen( self , node ):
-        vim.command( "cd %s" % node.path )
+        os.chdir( node.path )
 
     def OnBranchClose( self , node ):
-        vim.command( "cd %s" % node.path )
+        os.chdir( node.path )
 
     def OnLeefSelect( self , node ):
         dir , fname = os.path.split( node.path )
-        vim.command( "cd %s" % dir )
+        os.chdir( dir )
+
+        from pyVim.pvWrap import pvBuffer , PV_BUF_TYPE_NORMAL
+        buf = pvBuffer( type = PV_BUF_TYPE_NORMAL , name = node.path )
+        buf.showBuffer( self.__win_mgr.getWindow('main') )
+        buf.detach()
+
