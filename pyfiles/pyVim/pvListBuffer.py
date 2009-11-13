@@ -14,7 +14,7 @@ class pvListBufferObserver(object):
 
 class pvListBuffer( pvBuffer , pvKeyMapObserver ):
     def __init__( self ):
-        pvBuffer.__init__( self , PV_BUF_TYPE_READONLY , GenerateRandomName( 'PV_LISTBUF_' ) )
+        super( pvListBuffer , self ).__init__( PV_BUF_TYPE_READONLY , GenerateRandomName( 'PV_LISTBUF_' ) )
         self.items = []
         self.selection = 0
         self.resize = False
