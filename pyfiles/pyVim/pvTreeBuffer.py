@@ -65,7 +65,7 @@ class pvTreeBuffer(pvBuffer , pvKeyMapObserver):
 
 
     def __init__( self , node_factory ):
-        pvBuffer.__init__( self , PV_BUF_TYPE_READONLY , GenerateRandomName( 'PV_TREEBUF_' ) )
+        super( pvTreeBuffer , self ).__init__( PV_BUF_TYPE_READONLY , GenerateRandomName( 'PV_TREEBUF_' ) )
 
         self.__node_factory = node_factory
 
