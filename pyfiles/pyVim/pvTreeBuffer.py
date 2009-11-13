@@ -4,8 +4,8 @@ from pvUtil import pvString
 from pvKeyMap import pvKeyMapManager , pvKeyMapEvent , pvKeyMapObserver
 from pvKeyMap import PV_KM_MODE_NORMAL
 
-
 import re
+import vim
 
 # type of the node on the tree :
 ##  branch : for the node can open and close
@@ -121,30 +121,66 @@ class pvTreeBuffer(pvBuffer , pvKeyMapObserver):
           
         
     def __select( self , kwdict ):
-        import vim
-        line_no = self.__path2LineNo( kwdict['path'] ) \
-                if 'path' in kwdict else \
-                vim.current.window.cursor[0] - 1
-
+        # retrieve the line_no for the path
+        if 'target' in kwdict:
+            path = [ x.MultibyteString for x in kwdict['path'] ]
+            line_no = self.__path2LineNo( path )
+        else:
+            line_no = vim.current.window.cursor[0] - 1
         if line_no == -1 : return
 
-        indent_level , flag , name = self.__getNodeInfo( self.buffer[line_no] )
+        node_indent , node_flag , node_name = self.__getNodeInfo( line_no )
+        {
+                '+' : self.__openItem ,
+                '-' : self.__closeItem ,
+                ' ' : self.__openItem
+        } [ node_flag ]( line_no )
 
+
+    def __target( self , kwdict ):
+        # check the target path should exist
+        if not 'target' in kwdict : return
+
+        # check for the min exist path
+        open_path = [ x.MultibyteString for x in kwdict['target'] ]
+        close_path = []
+        line_no = -1
+
+        while True:
+            # nothing to find
+            if open_path == [] : break
+
+            # find the line
+            line_no = self.__path2LineNo( open_path )
+
+            if line_no == -1 : # not find
+                close_path.insert( 0 , open_path.pop() )
+            else: 
+                break
+
+        # not find event on the root path, must be something wrong
+        if line_no == -1 : return
+
+        line_no = self.__path2LineNo( open_path )
+        self.__openItem( line_no )
+        while close_path :
+            open_path.append( close_path.pop(0) )
+            line_no = self.__path2LineNo( open_path )
+            if line_no == -1 : return
+            self.__openItem( line_no )
+
+    def __openItem( self , line_no ):
+        node_indent , node_flag , node_name = self.__getNodeInfo( line_no )
         # make pvString for the factory
-        mbstr_path = self.__lineNo2Path( line_no )
-        uni_path = [ pvString() for x in xrange( len( mbstr_path ) ) ]
-        for x in xrange( len( mbstr_path ) ):
-            uni_path[x].MultibyteString = mbstr_path[x]
-        node = self.__node_factory.generateNode( uni_path )
+        node = self.__node_factory.generateNode( 
+                [ pvString( MultibyteString = x ) for x in self.__lineNo2Path( line_no ) ] )
 
-
-        # open the branch
-        if flag == '+': 
+        if node_flag == '+':
             ## 1. fetch the children node
             show_list = []
             for child in node :
                 show_list.append( self.__format_string % {
-                        'indent' : self.__indent_string * ( indent_level + 1 ), 
+                        'indent' : self.__indent_string * ( node_indent + 1 ), 
                         'flag'   : '+' if child.type == PV_TREE_NODE_TYPE_BRANCH else ' ' ,
                         'name'   :  child.name.MultibyteString } )
 
@@ -156,51 +192,63 @@ class pvTreeBuffer(pvBuffer , pvKeyMapObserver):
 
             ## 4. update flag to '-'
             range[0] = self.__format_string % {
-                        'indent' : self.__indent_string * indent_level ,
+                        'indent' : self.__indent_string * node_indent ,
                         'flag'   : '-' ,
                         'name'   :  node.name.MultibyteString } 
+
 
             # notify observer
             for ob in self.__observer_list:
                 ob.OnBranchOpen( node )
-
-        # close the branch
-        elif flag == '-': 
-            range_start = line_no 
-            range_end = line_no
-            ## 1. search children range
-            total_line_count = len( self.buffer )
-            for index in xrange( line_no + 1 , total_line_count ):
-                line_info = self.__getNodeInfo( self.buffer[index] )
-                if line_info[0] > indent_level :
-                    range_end += 1
-                    continue
-                else:
-                    break
-            ## 2. make the range object
-            vim_range = self.buffer.range( range_start + 1 , range_end + 1 )
-
-            ## 3. delete the child item
-            if  range_end - range_start > 0 : del vim_range[1:]
-
-            ## 4. update the flag to '+'
-            vim_range[0] = self.__format_string % {
-                        'indent' : self.__indent_string * indent_level ,
-                        'flag'   : '+' ,
-                        'name'   :  node.name.MultibyteString } 
-
-            # notify observer
-            for ob in self.__observer_list:
-                ob.OnBranchClose( node )
-
-        # select a leef node
-        else:
+        elif node_flag == '-':
+            return
+        else : # leef node
             # notify observer
             for ob in self.__observer_list:
                 ob.OnLeefSelect( node )
 
-    def __target( self , kwdict ):
-        pass
+        # focus to the line
+        self.__hilightItem( line_no )
+
+
+    def __closeItem( self , line_no ):
+        node_indent , node_flag , node_name = self.__getNodeInfo( line_no )
+        # make pvString for the factory
+        node = self.__node_factory.generateNode( 
+                [ pvString( MultibyteString = x ) for x in self.__lineNo2Path( line_no ) ] )
+
+        if node_flag == '+' or node_flag == ' ':
+            return
+
+        range_start = line_no + 1
+        range_end = line_no + 1
+        ## 1. search children range
+        for index in xrange( line_no + 1 , len( self.buffer ) ):
+            line_info = self.__getNodeInfo( index )
+            # index > node_indent , means child node 
+            if line_info[0] > node_indent : 
+                range_end += 1
+                continue
+            else:
+                break
+        ## 2. make the range object
+        vim_range = self.buffer.range( range_start , range_end )
+
+        ## 3. delete the child item
+        if  range_end - range_start > 0 : del vim_range[1:]
+
+        ## 4. update the flag to '+'
+        vim_range[0] = self.__format_string % {
+                    'indent' : self.__indent_string * node_indent ,
+                    'flag'   : '+' ,
+                    'name'   :  node.name.MultibyteString } 
+
+        # notify observer
+        for ob in self.__observer_list:
+            ob.OnBranchClose( node )
+
+        # focus to the line
+        self.__hilightItem( line_no )
 
     def __path2LineNo( self , path ):
         total_line = len( self.buffer )
@@ -211,7 +259,7 @@ class pvTreeBuffer(pvBuffer , pvKeyMapObserver):
                 line_index += 1
                 # find all line , but can't find it
                 if line_index >= total_line : return -1
-                level , flag , name = self.__getNodeInfo( self.buffer[line_index] )
+                level , flag , name = self.__getNodeInfo( line_index )
 
                 if level == indent_level and name == path_item : # find it , break to find next level
                     break
@@ -224,8 +272,8 @@ class pvTreeBuffer(pvBuffer , pvKeyMapObserver):
                     continue
         return line_index
 
-    def __getNodeInfo( self , string ):
-        search_result = self.__format_search_re.match( string )
+    def __getNodeInfo( self , line_no ):
+        search_result = self.__format_search_re.match( self.buffer[line_no] )
         indent_level = len ( search_result.group('indent') ) / len( self.__indent_string )
         flag = search_result.group('flag')
         name = search_result.group('name')
@@ -237,14 +285,14 @@ class pvTreeBuffer(pvBuffer , pvKeyMapObserver):
         return_path = []
 
         # analyze the current line
-        cur_indent_level , flag , name = self.__getNodeInfo( self.buffer[line_no] )
+        cur_indent_level , flag , name = self.__getNodeInfo( line_no )
         return_path.insert( 0 , name )
 
         # search parent
         cur_indent_level -= 1
         while cur_indent_level >= 0 :
             line_no -= 1
-            indent_level , flag , name = self.__getNodeInfo( self.buffer[line_no] )
+            indent_level , flag , name = self.__getNodeInfo( line_no )
 
             # children item , just pass
             if indent_level > cur_indent_level :
@@ -262,6 +310,12 @@ class pvTreeBuffer(pvBuffer , pvKeyMapObserver):
                 raise
 
         return return_path
+
+    def __hilightItem( self , line_no ):
+        vim.current.window.cursor = ( line_no + 1 , 0 )
+        line = self.buffer[line_no].replace('/','\/')
+        line = line.replace( '\\' , '\\\\' )
+        self.registerCommand('match %s /\V%s/' % ( 'Search' ,  line ) , True)
 
 
 

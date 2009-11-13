@@ -54,7 +54,7 @@ class pvBuffer(object):
             _name = name if name != None else GenerateRandomName('PV_BUF_')
 
             # create buffer, get the buffer id ( which is unique )
-            buffer_id = int( vim.eval('bufnr( "%s" ,1 )' % _name ) )
+            buffer_id = int( vim.eval('bufnr( \'%s\' ,1 )' % _name ) )
 
             # get the vim buffer object
             self.__buffer = filter( lambda x : x.number == buffer_id , vim.buffers )[0]
@@ -73,6 +73,7 @@ class pvBuffer(object):
 
             elif type == PV_BUF_TYPE_NORMAL :
                 self.__command_queue = [ 'setlocal buflisted' ]
+
 
     def __del__( self ):
         if self.__type == PV_BUF_TYPE_ATTACH : return 
@@ -97,6 +98,9 @@ class pvBuffer(object):
         # find it
         self.__buffer = find_buf_list[0]
         return True
+
+    def detach( self ):
+        self.__buffer = None
 
     #  ===============================================================
     #   check the status

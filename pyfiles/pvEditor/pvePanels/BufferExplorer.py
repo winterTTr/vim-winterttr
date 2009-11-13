@@ -39,28 +39,28 @@ class _class_( PanelBase , pvListBufferObserver ):
         self.__buffer.items = []
         buffer_format = '%(bufferid)3d|[%(buffername)s]%(modifymark)1s'
 
-        buffer_count = int( vim.eval("bufnr('$')") )
-        for index in xrange( buffer_count ):
-            if vim.eval("bufexists(%d)" % ( index +1 , ) ) != '0' :
-                # buffer id
-                buffer_id = index + 1
-                # buffer_name
-                buffer_name = vim.eval('bufname(%d)' % buffer_id )
-                buffer_name = buffer_name if buffer_name else "<NO NAME>"
-                buffer_basename = os.path.basename( buffer_name )
-                # property 
-                is_listed = vim.eval('getbufvar(%d,"&buflisted")' % buffer_id ) != '0'
-                is_modifiable = vim.eval('getbufvar(%d,"&modifiable")' % buffer_id ) != '0'
-                is_readonly = vim.eval('getbufvar(%d,"&readonly")' % buffer_id ) != '0'
-                is_modified = vim.eval('getbufvar(%d,"&modified")' % buffer_id ) != '0'
+        for buffer in vim.buffers :
+            #  buffer exist
+            #if vim.eval("bufexists(%d)" % ( buffer.number , ) ) != '0' :
 
-                if is_listed :
-                    str = pvString()
-                    str.MultibyteString = buffer_format % {
-                            'bufferid' : buffer_id ,
-                            'buffername' : buffer_basename , 
-                            'modifymark' : '*' if is_modified else ' ' }
-                    self.__buffer.items.append( str )
+            # get properties
+            ## buffer id
+            buffer_id = buffer.number
+            ## buffer_name
+            buffer_basename = os.path.basename( buffer.name if buffer.name else "<NO NAME>" )
+            ## internal status
+            is_listed = vim.eval('getbufvar(%d,"&buflisted")' % buffer_id ) != '0'
+            is_modifiable = vim.eval('getbufvar(%d,"&modifiable")' % buffer_id ) != '0'
+            is_readonly = vim.eval('getbufvar(%d,"&readonly")' % buffer_id ) != '0'
+            is_modified = vim.eval('getbufvar(%d,"&modified")' % buffer_id ) != '0'
+
+            if is_listed :
+                str = pvString()
+                str.MultibyteString = buffer_format % {
+                        'bufferid' : buffer_id ,
+                        'buffername' : buffer_basename , 
+                        'modifymark' : '*' if is_modified else ' ' }
+                self.__buffer.items.append( str )
 
 
     def OnSelectItemChanged( self , item ):
@@ -69,9 +69,15 @@ class _class_( PanelBase , pvListBufferObserver ):
         except:
             return
 
+        # show the buffer on main panel
         show_buffer = pvBuffer( PV_BUF_TYPE_ATTACH )
         show_buffer.attach( buffer_id )
         show_buffer.showBuffer( self.__win_mgr.getWindow('main') )
+
+        # sync the cwd
+        if show_buffer.name != None :
+            dir_path , file_name = os.path.split( show_buffer.name )
+            if os.path.isdir( dir_path ): os.chdir( dir_path )
 
 
 

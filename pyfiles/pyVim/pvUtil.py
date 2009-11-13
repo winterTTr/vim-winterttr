@@ -3,8 +3,13 @@ import types
 
 
 class pvString(object):
-    def __init__( self ):
+    def __init__( self , UnicodeString = None , MultibyteString = None ):
         self.__unistring = u""
+
+        if UnicodeString :
+            self.UnicodeString = UnicodeString
+        elif MultibyteString:
+            self.MultibyteString = MultibyteString
 
     @property
     def UnicodeString( self ):
@@ -36,6 +41,8 @@ class pvString(object):
             return self.UnicodeString == other.UnicodeString
         elif type( other ) == types.UnicodeType :
             return self.UnicodeString == other
+        elif type( other ) == types.StringType :
+            return self.MultibyteString == other
         else :
             return False
 
