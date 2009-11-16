@@ -11,7 +11,7 @@ from pyVim.pvKeyMap import PV_KM_MODE_INSERT , PV_KM_MODE_SELECT
 
 from pyVim.pvWrap import pvWindow
 
-import pveMagicKeyConfig
+import ContentCompleteTemplate
 
 
 class _class_( PanelBase , pvKeyMapObserver ):
@@ -103,9 +103,9 @@ class CCExpandContent( pvKeyMapObserver ):
         lineRightCursor = vim.current.line[cursorCol:]
 
         # make avaliable key list
-        expandKeyList = pveMagicKeyConfig.MagicKeyExpandTemplate['_'].keys()
-        if pveMagicKeyConfig.MagicKeyExpandTemplate.has_key( vim.eval('&ft') ) :
-             expandKeyList.extend( pveMagicKeyConfig.MagicKeyExpandTemplate[ vim.eval('&ft') ].keys() )
+        expandKeyList = ContentCompleteTemplate.MagicKeyExpandTemplate['_'].keys()
+        if ContentCompleteTemplate.MagicKeyExpandTemplate.has_key( vim.eval('&ft') ) :
+             expandKeyList.extend( ContentCompleteTemplate.MagicKeyExpandTemplate[ vim.eval('&ft') ].keys() )
 
         regStr = "(.*\s+|^)(?P<key>" + '|'.join(expandKeyList) + ")$"
         regRet =  re.match( regStr , lineLeftCursor )
@@ -114,10 +114,10 @@ class CCExpandContent( pvKeyMapObserver ):
 
         begin , end , key = regRet.start('key') , regRet.end('key') , regRet.group('key')
         expandObject = None
-        if pveMagicKeyConfig.MagicKeyExpandTemplate['_'].has_key( key):
-            expandObject = pveMagicKeyConfig.MagicKeyExpandTemplate['_'][key]
+        if ContentCompleteTemplate.MagicKeyExpandTemplate['_'].has_key( key):
+            expandObject = ContentCompleteTemplate.MagicKeyExpandTemplate['_'][key]
         else:
-            expandObject = pveMagicKeyConfig.MagicKeyExpandTemplate[vim.eval('&ft')][key]
+            expandObject = ContentCompleteTemplate.MagicKeyExpandTemplate[vim.eval('&ft')][key]
 
         if callable( expandObject ):
             retStr = expandObject()
@@ -190,8 +190,8 @@ class CCExpandContent( pvKeyMapObserver ):
             paramListEx = []
             for param in paramList :
                 paramListEx.append( "%(begin)s %(eachone)s %(end)s " % {
-                        "begin" : pveMagicKeyConfig.MagicKeyConfig['AutoFillRegion']['begin'] ,
-                        "end" : pveMagicKeyConfig.MagicKeyConfig['AutoFillRegion']['end'] ,
+                        "begin" : ContentCompleteTemplate.MagicKeyConfig['AutoFillRegion']['begin'] ,
+                        "end" : ContentCompleteTemplate.MagicKeyConfig['AutoFillRegion']['end'] ,
                         "eachone" : param } )
             paramStr = ','.join( paramListEx )
             insertSigList.append( paramStr )
@@ -226,7 +226,7 @@ class CCExpandContent( pvKeyMapObserver ):
         toLine = cursorRow + 20  if cursorRow + 20 < totalLine else totalLine
 
         # find the AutoFillRegion
-        regStr = "%(begin)s.*?%(end)s" % pveMagicKeyConfig.MagicKeyConfig['AutoFillRegion']
+        regStr = "%(begin)s.*?%(end)s" % ContentCompleteTemplate.MagicKeyConfig['AutoFillRegion']
         regRet = None
         for x in xrange( fromLine , toLine ):
             regRet = re.search( regStr , vim.current.buffer[x] )
