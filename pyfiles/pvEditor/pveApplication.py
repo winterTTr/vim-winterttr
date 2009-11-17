@@ -6,7 +6,7 @@ class Application:
         self.wm = pvWindowManager()
 
     def start( self ):
-        self.wm.makeWindows('( 25 , 10 ) list , ( 25 , - )panel | (-,-)main , ( - , 10 )shell')
+        self.wm.makeWindows('( 25 , 10 ) list , ( 25 , - )panel | (-,-)main')
 
         from pvePanelLoader import PanelManager
         self.pm = PanelManager( self.wm )

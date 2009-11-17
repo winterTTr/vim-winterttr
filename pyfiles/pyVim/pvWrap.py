@@ -80,7 +80,6 @@ class pvBuffer(object):
         self.wipeout()
 
     def wipeout( self ):
-        if self.__type == PV_BUF_TYPE_ATTACH : return
         if self.isExist():
             vim.command('bwipeout %d' % self.id )
             self.__buffer = None
@@ -304,6 +303,12 @@ class pvWindow(object):
             return -1
 
         raise RuntimeError('pvWindow::id invalid window despcription')
+
+    @property
+    def bufferid( self ):
+        win_id = self.id
+        if win_id == -1 : return -1
+        return int( vim.eval('winbufnr(%d)' % win_id ) )
     
     #  ===============================================================
     #   status check

@@ -59,6 +59,7 @@ class _class_( PanelBase , pvKeyMapObserver ):
         pvKeyMapManager.registerObserver( pvKeyMapEvent( '<C-Space>' , PV_KM_MODE_SELECT ) , _ob )
 
 
+
     # from |PanelBase|
     def OnName( self ):
         str = pvString()

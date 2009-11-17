@@ -201,7 +201,7 @@ class pvTreeBuffer(pvBuffer , pvKeyMapObserver):
             for ob in self.__observer_list:
                 ob.OnBranchOpen( node )
         elif node_flag == '-':
-            return
+            pass
         else : # leef node
             # notify observer
             for ob in self.__observer_list:
@@ -218,6 +218,8 @@ class pvTreeBuffer(pvBuffer , pvKeyMapObserver):
                 [ pvString( MultibyteString = x ) for x in self.__lineNo2Path( line_no ) ] )
 
         if node_flag == '+' or node_flag == ' ':
+            # just focus to the line
+            self.__hilightItem( line_no )
             return
 
         range_start = line_no + 1
@@ -315,7 +317,7 @@ class pvTreeBuffer(pvBuffer , pvKeyMapObserver):
         vim.current.window.cursor = ( line_no + 1 , 0 )
         line = self.buffer[line_no].replace('/','\/')
         line = line.replace( '\\' , '\\\\' )
-        self.registerCommand('match %s /\V%s/' % ( 'Search' ,  line ) , True)
+        self.registerCommand('match %s /\V\^%s\$/' % ( 'Search' ,  line ) , True)
 
 
 

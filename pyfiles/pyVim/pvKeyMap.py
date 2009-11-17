@@ -133,11 +133,10 @@ class pvKeyMapManager(object):
 
     @staticmethod
     def registerObserver( event , ob ):
-
         # if not exist, create the item, register the command
         if not event.uid in pvKeyMapManager.__ob_register:
             pvKeyMapManager.__ob_register[event.uid] = []
-            vim_cmd_format = pv_km_vim_keymap_command_map if buffer == None else pv_km_vim_buffered_keymap_command_map
+            vim_cmd_format = pv_km_vim_keymap_command_map if event.buffer == None else pv_km_vim_buffered_keymap_command_map
             vim_cmd = vim_cmd_format[ event.mode ] % {
                     'vim_key' : event.key.vim_name , 
                     'uid' : event.uid
