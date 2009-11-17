@@ -1,6 +1,7 @@
 from _PanelBase_ import PanelBase
 
 from pyVim.pvUtil import pvString
+from pyVim.pvWrap import pvBuffer , PV_BUF_TYPE_ATTACH
 from pyVim.pvTreeBuffer import pvTreeBuffer , pvTreeNode , pvTreeNodeFactory , pvTreeObserver
 from pyVim.pvTreeBuffer import PV_TREE_NODE_TYPE_BRANCH , PV_TREE_NODE_TYPE_LEEF
 from pyVim.pvTreeBuffer import PV_TREE_UPDATE_TARGET , PV_TREE_UPDATE_SELECT
@@ -101,18 +102,26 @@ class _class_( PanelBase , pvTreeObserver ):
         if item.UnicodeString != self.__name :
             return
 
-        cwd = os.getcwdu() # unicode current work directory
-        
+        buf_no = self.__win_mgr.getWindow('main').bufferid
+        if buf_no == -1 :
+            cwd = os.getcwdu() # unicode current work directory
+        else:
+            buf = pvBuffer( PV_BUF_TYPE_ATTACH )
+            buf.attach( buf_no )
+            cwd = pvString( MultibyteString = buf.name ).UnicodeString
+            if cwd == u"" :
+                cwd = os.getcwdu() # unicode current work directory
+
         cwd_list = []
         while True:
             cwd , tail = os.path.split( cwd )
             if tail == u'': 
-                cwd_u = pvString( UnicodeString = cwd )
-                cwd_list.insert( 0 , cwd_u )
+                if cwd[-1] == '/': cwd = cwd[:-1] + '\\'
+                cwd_list.insert( 0 , pvString( UnicodeString = cwd ) )
                 break
 
-            tail_u = pvString( UnicodeString = tail )
-            cwd_list.insert( 0 , tail_u )
+            cwd_list.insert( 0 ,  pvString( UnicodeString = tail ) )
+
         
         self.__buffer.showBuffer( self.__win_mgr.getWindow('panel') )
         self.__buffer.updateBuffer( type = PV_TREE_UPDATE_TARGET , target = cwd_list )
@@ -126,6 +135,9 @@ class _class_( PanelBase , pvTreeObserver ):
         os.chdir( node.path )
 
     def OnLeefSelect( self , node ):
+        #vim.command('redir @a | verbose inoremap a | redir END')
+        #print >> open("D:\\log.txt" , 'a+') , "OnLeefSelect" , vim.eval('@a')
+
         dir , fname = os.path.split( node.path )
         os.chdir( dir )
 
