@@ -41,6 +41,15 @@ class pvTreeNodeFactory( object ):
         raise NotImplementedError("pvTreeNodeFactory")
 
 class pvTreeObserver(object):
+    def BranchOpen( self , node ):
+        self.OnBranchOpen( node )
+
+    def BranchClose( self , node ):
+        self.OnBranchClose( node )
+
+    def LeefSelect( self , node ):
+        self.OnLeefSelect( node )
+
     def OnBranchOpen( self , node ):
         raise NotImplementedError("pvTreeObserver::OnBranchOpen")
 
@@ -81,6 +90,11 @@ class pvTreeBuffer(pvBuffer , pvKeyMapObserver):
         pvKeyMapManager.registerObserver( enter_event , self )
 
         self.__observer_list = []
+
+
+        self.__notifyInfo = {}
+        self.__notifyInfo['func'] = None
+        self.__notifyInfo['node'] = None
 
 
     def registerObserver( self , ob ):
@@ -198,14 +212,15 @@ class pvTreeBuffer(pvBuffer , pvKeyMapObserver):
 
 
             # notify observer
-            for ob in self.__observer_list:
-                ob.OnBranchOpen( node )
+            self.__notifyInfo['func'] = pvTreeObserver.BranchOpen
+            self.__notifyInfo['node'] = node
+
         elif node_flag == '-':
             pass
         else : # leef node
             # notify observer
-            for ob in self.__observer_list:
-                ob.OnLeefSelect( node )
+            self.__notifyInfo['func'] = pvTreeObserver.LeefSelect
+            self.__notifyInfo['node'] = node
 
         # focus to the line
         self.__hilightItem( line_no )
@@ -246,8 +261,8 @@ class pvTreeBuffer(pvBuffer , pvKeyMapObserver):
                     'name'   :  node.name.MultibyteString } 
 
         # notify observer
-        for ob in self.__observer_list:
-            ob.OnBranchClose( node )
+        self.__notifyInfo['func'] = pvTreeObserver.BranchClose
+        self.__notifyInfo['node'] = node
 
         # focus to the line
         self.__hilightItem( line_no )
@@ -318,6 +333,16 @@ class pvTreeBuffer(pvBuffer , pvKeyMapObserver):
         line = self.buffer[line_no].replace('/','\/')
         line = line.replace( '\\' , '\\\\' )
         self.registerCommand('match %s /\V\^%s\$/' % ( 'Search' ,  line ) , True)
+
+
+    def OnNotifyObserver( self ):
+        if not self.__notifyInfo['func'] : return
+
+        for ob in self.__observer_list:
+            self.__notifyInfo['func']( ob , self.__notifyInfo['node'] )
+
+        self.__notifyInfo['func'] = None
+        self.__notifyInfo['node'] = None
 
 
 

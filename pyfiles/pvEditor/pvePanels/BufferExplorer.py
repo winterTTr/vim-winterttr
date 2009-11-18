@@ -41,6 +41,8 @@ class _class_( PanelBase , pvListBufferObserver , pvKeyMapObserver ):
         self.__buffer.showBuffer( self.__win_mgr.getWindow('panel') )
         self.__buffer.updateBuffer( selection = self.analyzeBufferInfo() )
 
+        self.__win_mgr.getWindow('panel').setFocus()
+
 
     def analyzeBufferInfo( self ):
         # get main window buffer
@@ -89,6 +91,8 @@ class _class_( PanelBase , pvListBufferObserver , pvKeyMapObserver ):
         show_buffer = pvBuffer( PV_BUF_TYPE_ATTACH )
         show_buffer.attach( buffer_id )
         show_buffer.showBuffer( self.__win_mgr.getWindow('main') )
+
+        self.__win_mgr.getWindow('main').setFocus()
 
         # sync the cwd
         if show_buffer.name != None :
