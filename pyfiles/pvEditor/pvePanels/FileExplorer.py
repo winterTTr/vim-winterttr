@@ -126,6 +126,8 @@ class _class_( PanelBase , pvTreeObserver ):
         self.__buffer.showBuffer( self.__win_mgr.getWindow('panel') )
         self.__buffer.updateBuffer( type = PV_TREE_UPDATE_TARGET , target = cwd_list )
 
+        self.__win_mgr.getWindow('panel').setFocus()
+
 
     # from |pvTreeObserver|
     def OnBranchOpen( self , node ):
@@ -145,4 +147,7 @@ class _class_( PanelBase , pvTreeObserver ):
         buf = pvBuffer( type = PV_BUF_TYPE_NORMAL , name = node.path )
         buf.showBuffer( self.__win_mgr.getWindow('main') )
         buf.detach()
+
+
+        self.__win_mgr.getWindow('main').setFocus()
 

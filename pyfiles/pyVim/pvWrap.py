@@ -232,11 +232,15 @@ class pvBuffer(object):
 
         # restore focus
         current_focus_win.setFocus()
-
         self.__restoreLazyRedraw()
+
+        self.OnNotifyObserver()
             
     def OnUpdate(self , ** kwdict ):
         # give the change to user to update the context
+        pass
+
+    def OnNotifyObserver( self ):
         pass
 
 

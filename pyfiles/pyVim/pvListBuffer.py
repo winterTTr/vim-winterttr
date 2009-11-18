@@ -94,9 +94,12 @@ class pvListBuffer( pvBuffer , pvKeyMapObserver ):
         if self.resize :
             self.registerCommand('resize %d' % ( len( self.items ) if len( self.items ) else 1 , ) )
 
+
+    def OnNotifyObserver( self ):
         if self.items :
             for ob in self.ob_list:
                 ob.OnSelectItemChanged( self.items[self.selection] )
+
 
     def OnHandleKeyEvent( self , **kwdict ):
         self.updateBuffer()
