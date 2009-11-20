@@ -61,13 +61,12 @@ class pvTreeObserver(object):
 
 
 class pvTreeBuffer(pvBuffer , pvKeyMapObserver):
-    __indent_string = '  '
-    __format_string = "%(indent)s%(flag)1s %(name)s"
+    __indent_string = '| '
+    __format_string = "%(indent)s%(flag)1s%(name)s"
     __format_search_re = re.compile( """
                 ^
-                (?P<indent>\s*)
+                (?P<indent>(\|\ )*)
                 (?P<flag>[-+ ])
-                [ ]
                 (?P<name>.*)
                 $
                 """ , re.VERBOSE )
@@ -193,10 +192,7 @@ class pvTreeBuffer(pvBuffer , pvKeyMapObserver):
             ## 1. fetch the children node
             show_list = []
             for child in node :
-                show_list.append( self.__format_string % {
-                        'indent' : self.__indent_string * ( node_indent + 1 ), 
-                        'flag'   : '+' if child.type == PV_TREE_NODE_TYPE_BRANCH else ' ' ,
-                        'name'   :  child.name.MultibyteString } )
+                show_list.append( self.__makeItemLine( child , node_indent + 1 , False ) )
 
             ## 2. make the range object
             range = self.buffer.range( line_no + 1 , line_no + 1 )
@@ -205,11 +201,7 @@ class pvTreeBuffer(pvBuffer , pvKeyMapObserver):
             if show_list : range.append( show_list )
 
             ## 4. update flag to '-'
-            range[0] = self.__format_string % {
-                        'indent' : self.__indent_string * node_indent ,
-                        'flag'   : '-' ,
-                        'name'   :  node.name.MultibyteString } 
-
+            range[0] = self.__makeItemLine( node , node_indent , True )
 
             # notify observer
             self.__notifyInfo['func'] = pvTreeObserver.BranchOpen
@@ -255,10 +247,7 @@ class pvTreeBuffer(pvBuffer , pvKeyMapObserver):
         if  range_end - range_start > 0 : del vim_range[1:]
 
         ## 4. update the flag to '+'
-        vim_range[0] = self.__format_string % {
-                    'indent' : self.__indent_string * node_indent ,
-                    'flag'   : '+' ,
-                    'name'   :  node.name.MultibyteString } 
+        vim_range[0] = self.__makeItemLine( node , node_indent , False )
 
         # notify observer
         self.__notifyInfo['func'] = pvTreeObserver.BranchClose
@@ -296,6 +285,18 @@ class pvTreeBuffer(pvBuffer , pvKeyMapObserver):
         name = search_result.group('name')
 
         return ( indent_level , flag , name )
+
+    def __makeItemLine( self , node , indent_level , is_open = False ):
+        if node.type == PV_TREE_NODE_TYPE_BRANCH:
+            flag = '-' if is_open else '+'
+        else:
+            flag = ' '
+
+        return self.__format_string % {
+            'indent' : self.__indent_string * indent_level ,
+            'flag'   : flag , 
+            'name'   :  node.name.MultibyteString } 
+
 
     def __lineNo2Path( self , line_no ):
         # result for the path list

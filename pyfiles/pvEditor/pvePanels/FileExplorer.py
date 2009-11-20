@@ -37,10 +37,14 @@ class FENodeDirectory( pvTreeNode ):
     def __iter__( self ):
         for x in os.listdir( self.path ):
             full_path = os.path.join( self.path , x )
+            if not os.path.isdir( full_path ):
+                yield FENodeFile( full_path )
+
+        for x in os.listdir( self.path ):
+            full_path = os.path.join( self.path , x )
             if os.path.isdir( full_path ):
                 yield FENodeDirectory( full_path )
-            else:
-                yield FENodeFile( full_path )
+
 
     def OnName( self ):
         name = os.path.basename( self.path )
@@ -144,7 +148,7 @@ class _class_( PanelBase , pvTreeObserver ):
         os.chdir( dir )
 
         from pyVim.pvWrap import pvBuffer , PV_BUF_TYPE_NORMAL
-        buf = pvBuffer( type = PV_BUF_TYPE_NORMAL , name = node.path )
+        buf = pvBuffer( type = PV_BUF_TYPE_NORMAL , name = pvString( UnicodeString = node.path ).MultibyteString )
         buf.showBuffer( self.__win_mgr.getWindow('main') )
         buf.detach()
 
