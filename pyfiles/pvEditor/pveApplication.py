@@ -9,7 +9,13 @@ class Application( pvKeyMapManager ):
         self.wm = pvWindowManager()
 
     def start( self ):
-        self.wm.makeWindows('( 25 , 10 ) list , ( 25 , - )panel | (-,-)main')
+        # make all windows
+        self.wm.makeWindows(' ( 25 , - )panel , ( 25 , 10 ) list|  (-,-)main , ( - , 1 )tab')
+
+        # make tab buffer
+        from pveBufferExplorer import TabbedBufferExplorer
+        self.tab_buf = TabbedBufferExplorer( self.wm )
+        self.tab_buf.show()
 
         from pvePanelLoader import PanelManager
         self.pm = PanelManager( self.wm )

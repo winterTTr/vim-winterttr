@@ -2,23 +2,25 @@ import vim
 import os
 import re
 
-from _PanelBase_ import PanelBase
-
-from pyVim.pvListBuffer import pvListBuffer , pvListBufferObserver
-from pyVim.pvUtil import pvString
-
+# basic buffer
 from pyVim.pvWrap import pvBuffer , PV_BUF_TYPE_ATTACH
+# tab buffer
+from pyVim.pvTabBuffer import pvTabBuffer , pvTabBufferObserver
+from pyVim.pvUtil import pvString
+# for key map
 from pyVim.pvKeyMap import pvKeyMapEvent , pvKeyMapObserver , pvKeyMapManager
 from pyVim.pvKeyMap import PV_KM_MODE_NORMAL
+# for autocmd
+from pyVim.pvAutocmd import pvAUEvent , pvAUObserver , pvAUManager
 
 
 
-class _class_( PanelBase , pvListBufferObserver , pvKeyMapObserver ):
+
+class TabbedBufferExplorer( pvTabBufferObserver , pvKeyMapObserver , pvAUObserver ):
     def __init__( self , win_mgr ):
         self.__win_mgr = win_mgr
-        self.__name = u"Buffer Explorer"
 
-        self.__buffer = pvListBuffer()
+        self.__buffer = pvTabBuffer()
         self.__buffer.registerObserver( self )
 
         refresh_event = pvKeyMapEvent( "<F5>" , PV_KM_MODE_NORMAL , self.__buffer )
@@ -27,22 +29,11 @@ class _class_( PanelBase , pvListBufferObserver , pvKeyMapObserver ):
         dbuffer_event = pvKeyMapEvent( "D" , PV_KM_MODE_NORMAL , self.__buffer )
         pvKeyMapManager.registerObserver( dbuffer_event , self )
 
+        buffer_enter_event = pvAUEvent( 'BufEnter' , '*' )
+        pvAUManager.registerObserver( buffer_enter_event , self )
 
-    # from |PanelBase|
-    def OnName( self ):
-        str = pvString()
-        str.UnicodeString = self.__name
-        return str
-
-    def OnPanelSelected( self , item ):
-        if item.UnicodeString != self.__name :
-            return
-
-        self.__buffer.showBuffer( self.__win_mgr.getWindow('panel') )
-        self.__buffer.updateBuffer( selection = self.analyzeBufferInfo() )
-
-        self.__win_mgr.getWindow('panel').setFocus()
-
+        buffer_delete_event = pvAUEvent( 'BufDelete' , '*')
+        pvAUManager.registerObserver( buffer_delete_event , self )
 
     def analyzeBufferInfo( self ):
         # get main window buffer
@@ -51,7 +42,7 @@ class _class_( PanelBase , pvListBufferObserver , pvKeyMapObserver ):
 
         # init the buffer info
         self.__buffer.items = []
-        buffer_format = '%(bufferid)3d|[%(buffername)s]%(modifymark)1s'
+        buffer_format = '%(bufferid)3d|%(buffername)s'
 
         for buffer in vim.buffers :
             #  buffer exist
@@ -80,8 +71,12 @@ class _class_( PanelBase , pvListBufferObserver , pvKeyMapObserver ):
 
         return update_selection
 
+    def show( self ):
+        self.__buffer.showBuffer( self.__win_mgr.getWindow('tab') )
+        self.__buffer.updateBuffer( selection = self.analyzeBufferInfo() )
 
-    def OnSelectItemChanged( self , item ):
+
+    def OnSelectTabChanged( self , item ):
         try :
             buffer_id = int( re.match('^(?P<id>\s*\d+)\|.*$' , item.MultibyteString ).group('id') )
         except:
@@ -104,9 +99,11 @@ class _class_( PanelBase , pvListBufferObserver , pvKeyMapObserver ):
         if kwdict['key'] == '<F5>':
             self.__buffer.updateBuffer( selection = self.analyzeBufferInfo() )
         elif kwdict['key'] == 'D' :
-            if len ( self.__buffer.items ) == 1:
-                return
-            current_item_index = vim.current.window.cursor[0] - 1
+            # on buffer , can't delete it
+            if len ( self.__buffer.items ) == 1: return
+            # check if select a valid item
+            current_item_index = self.__buffer.searchIndexByCursor()
+            if current_item_index == -1 : return
             current_item = self.__buffer.items[ current_item_index ]
 
             # if delete the current selected one , just move down on item
@@ -134,6 +131,16 @@ class _class_( PanelBase , pvListBufferObserver , pvKeyMapObserver ):
             del self.__buffer.items[current_item_index]
 
             self.__buffer.updateBuffer( selection = after_selection )
+
+
+    def OnHandleAUEvent( self , **kwdict ):
+        #if kwdict['event'] == 'bufdelete' :
+        #    print "delete"
+        #elif kwdict['event'] == 'bufenter' :
+        #    print "enter"
+
+
+        self.__buffer.updateBuffer( selection = self.analyzeBufferInfo() )
 
             
 
