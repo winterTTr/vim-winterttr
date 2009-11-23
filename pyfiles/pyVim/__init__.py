@@ -1,67 +1,13 @@
-#from pvWrap import *
-#from pvFrameBase import *
-#from pvExBuffer import *
-#from pvExFrame import *
-#from pvFramework import *
-#
-#__all__ = [
-#        # pvWrap
-#        "pvBuffer",
-#        "pvWindow",
-#        "pvWinSplitter",
-#        "pv_BUF_TYPE_READONLY",
-#        "pv_BUF_TYPE_NORMAL",
-#        "pv_SPLIT_TYPE_MOST_TOP",
-#        "pv_SPLIT_TYPE_MOST_BOTTOM",
-#        "pv_SPLIT_TYPE_MOST_RIGHT",
-#        "pv_SPLIT_TYPE_MOST_LEFT",
-#        "pv_SPLIT_TYPE_CUR_TOP",
-#        "pv_SPLIT_TYPE_CUR_BOTTOM",
-#        "pv_SPLIT_TYPE_CUR_LEFT",
-#        "pv_SPLIT_TYPE_CUR_RIGHT",
-#        # pvFrameBase
-#        "pvFrame",
-#        "pvChildWindow",
-#        "pv_FRAME_TYPE_TOP",
-#        "pv_FRAME_TYPE_BOTTOM",
-#        "pv_FRAME_TYPE_LEFT",
-#        "pv_FRAME_TYPE_RIGHT",
-#        "pv_FRAME_TYPE_FIXSIZE",
-#        "pv_CHILDWIN_TYPE_TOP",
-#        "pv_CHILDWIN_TYPE_BOTTOM",
-#        "pv_CHILDWIN_TYPE_LEFT",
-#        "pv_CHILDWIN_TYPE_RIGHT",
-#        # pvExBuffer
-#        "pvBufferException",
-#        "PTNT_BRANCH",
-#        "PTNT_LEEF",
-#        "pvTreeNode",
-#        "PTB_ADD_FIRST",
-#        "PTB_ADD_LAST",
-#        "PTB_ADD_ALPHA",
-#        "pvTreeBuffer",
-#        "pvTabBuffer",
-#        # pvExFrame
-#        "pvTabFrame",
-#        # pvFramework
-#        "pvFramework"
-#    ]
-#
-#
-import vim
 import logging
+import logging.config
+import os
+import vim
 
-LOG_FILENAME = 'D:\\log.txt'
-logging.basicConfig(filename=LOG_FILENAME,level=logging.DEBUG,)
+# make the log path
+if 'PYVIM_LOG_PATH' in os.environ:
+    logging.PYVIM_LOG_PATH=os.environ['PYVIM_LOG_PATH']
+else:
+    logging.PYVIM_LOG_PATH=os.path.join( os.path.expanduser("~") , 'pyvim.log' )
 
-
-def pvLogDec( func ):
-    def ret_func( *argv , **kwdict ):
-        logging.debug(argv)
-        return func( *argv , **kwdict )
-    return ret_func
-
-
-vim.command = pvLogDec( vim.command )
-vim.eval = pvLogDec( vim.eval )
+logging.config.fileConfig( os.path.join( os.path.split( __file__ )[0] , 'pvLogging.ini') )
 

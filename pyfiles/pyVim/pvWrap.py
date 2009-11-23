@@ -13,21 +13,30 @@ the python object, which contains
 
 import vim
 import re
+import logging
+import random
+
+_logger = logging.getLogger('pyVim.pvWrap')
 
 PV_BUF_TYPE_READONLY   = 0x0001
 PV_BUF_TYPE_NORMAL     = 0x0002
 PV_BUF_TYPE_ATTACH     = 0x0004
 
 def GenerateRandomName( base ):
+
     """
     @brief Generate a random name, for example , used for a readonly buffer
            whose name is not importance to be given by user.
     @param[in] base as the base string where the random number is
                     appended to 
     """
-    import random
     random_ext = random.randint( 0 , 9999999999 )
-    return '%s%10d' % ( base , random_ext )
+    _logger.debug('GenerateRandomName() Create Random number[%d]' % random_ext )
+
+    random_name =  '%s%10d' % ( base , random_ext )
+    _logger.info('GenerateRandomName() create random name[%s]' % random_name )
+
+    return random_name
 
 
 class pvBuffer(object):
@@ -41,23 +50,30 @@ class pvBuffer(object):
     #   create and destroy the buffer
     #  ===============================================================
     def __init__( self ,  type , name = None):
+        _logger.debug('pvBuffer::__init__() type[%d] name[%s]' % ( type , name ) )
+
         # ckech & save type
         if type not in [ PV_BUF_TYPE_READONLY , PV_BUF_TYPE_NORMAL , PV_BUF_TYPE_ATTACH ] :
-            raise RuntimeError("pvBuffer::__init__ invalid type[%d]" % type )
+            _logger.critical('pvBuffer::__init__() invalid buffer type[%d]' % type )
+            raise RuntimeError("pvBuffer::__init__() invalid type[%d]" % type )
         self.__type = type
 
         if type == PV_BUF_TYPE_ATTACH :
+            _logger.info('pvBuffer::__init__() create ATTACH buffer')
             self.__buffer = None
             self.__command_queue = []
         else:
             # get name if given , otherwise give the system random name
             _name = name if name != None else GenerateRandomName('PV_BUF_')
+            _logger.debug('pvBuffer::__init__() create buffer name[%s]' % _name )
 
             # create buffer, get the buffer id ( which is unique )
             buffer_id = int( vim.eval('bufnr( \'%s\' ,1 )' % _name ) )
+            #_logger.debug('pvBuffer::__init__() EVAL{ bufnr(\'%s\',1) } ==> %d' % ( _name , buffer_id ) )
 
             # get the vim buffer object
             self.__buffer = filter( lambda x : x.number == buffer_id , vim.buffers )[0]
+            _logger.debug('pvBuffer::__init__() get buffer object[%s]' % str( self.__buffer ) )
 
             # save the buffered command , when the buffer is open , the
             # command will be executed
