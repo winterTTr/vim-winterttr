@@ -2,6 +2,9 @@ import vim
 import urllib
 import types
 
+import logging
+_logger = logging.getLogger('pyVim.pvAutoCmd')
+
 vim.command("""
 augroup PYVIM_AUTOCOMMAND
 augroup END""")
@@ -61,17 +64,18 @@ class pvAUManager(object):
     @staticmethod
     def notifyObserver( uid ):
         if not uid in pvAUManager.__ob_register:
+            _logger.debug('pvAUManager::notifyObserver() no key for event[%s], do nothing.' % uid )
             return
 
-        vim.command( 'set eventignore=all')
-        try :
-            event = pvAUEvent()
-            event.uid = uid
+        event = pvAUEvent()
+        event.uid = uid
+        kwdict = {}
+        kwdict['event'] = event.event
+        kwdict['pattern'] = event.pattern
+        _logger.debug('pvAUManager::notifyObserver() make param[%s]' % str( kwdict ) ) 
 
-            kwdict = {}
-            kwdict['event'] = event.event
-            kwdict['pattern'] = event.pattern
-            
+        vim.command( 'set eventignore=all' )
+        try :
             for ob in pvAUManager.__ob_register[uid] :
                 ob.OnHandleAUEvent( **kwdict )
         finally:

@@ -1,7 +1,11 @@
 import logging
 import logging.config
 import os
-import vim
+
+try:
+    import vim
+except ImportError:
+    raise RuntimeError('You must use this module in the vim internal environment!')
 
 # make the log path
 if 'PYVIM_LOG_PATH' in os.environ:
@@ -11,3 +15,25 @@ else:
 
 logging.config.fileConfig( os.path.join( os.path.split( __file__ )[0] , 'pvLogging.ini') )
 
+# change the vim.command and vim.eval, let to can log
+def vimCommandDecorator( vimCommandFunc ):
+    _logger = logging.getLogger('vim.command')
+    def newVimCommand( command ):
+        _logger.debug( '{%s}' % command )
+        vimCommandFunc( command )
+        return ""
+    newVimCommand.name = 'command'
+    return newVimCommand
+
+vim.command = vimCommandDecorator( vim.command )
+
+
+def vimEvalDecorator( vimEvalFunc ):
+    _logger = logging.getLogger('vim.eval')
+    def newVimEval( command ):
+        ret = vimEvalFunc( command )
+        _logger.debug('{%s} ==> %s' %( command , ret ) )
+        return ret
+    newVimEval.name = 'eval'
+    return newVimEval
+vim.eval = vimEvalDecorator( vim.eval )

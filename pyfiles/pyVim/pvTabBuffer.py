@@ -1,12 +1,18 @@
 import vim
 import re
 
+
 from pvWrap import pvBuffer
 from pvWrap import GenerateRandomName
 from pvWrap import PV_BUF_TYPE_READONLY , PV_BUF_TYPE_NORMAL
 
 from pvKeyMap import pvKeyMapEvent , pvKeyMapObserver , pvKeyMapManager
 from pvKeyMap import PV_KM_MODE_NORMAL
+
+
+import logging
+_logger = logging.getLogger('pyVim.pvTabBuffer')
+
 
 class pvTabBufferObserver(object):
     def OnSelectTabChanged( self , item ):
@@ -15,6 +21,7 @@ class pvTabBufferObserver(object):
 
 class pvTabBuffer( pvBuffer , pvKeyMapObserver ):
     def __init__( self ):
+        _logger.debug('pvTabBuffer::__init__() create buffer')
         super( pvTabBuffer , self ).__init__( PV_BUF_TYPE_READONLY , GenerateRandomName( 'PV_TABBUF_' ) )
         self.items = []
         self.selection = 0
@@ -23,11 +30,14 @@ class pvTabBuffer( pvBuffer , pvKeyMapObserver ):
         self.ob_list = []
         self.registerCommand( 'setlocal wrap')
         self.registerCommand( 'setlocal nonumber')
-        self.registerCommand('setlocal foldcolumn=0')
+        self.registerCommand( 'setlocal nolinebreak' )
+        self.registerCommand( 'setlocal foldcolumn=0')
 
+        _logger.debug('pvTabBuffer::__init__() register DoubleClick event')
         db_click_event = pvKeyMapEvent( '<2-LeftMouse>' , PV_KM_MODE_NORMAL , self )
         pvKeyMapManager.registerObserver( db_click_event , self )
 
+        _logger.debug('pvTabBuffer::__init__() register <Enter> event')
         enter_event = pvKeyMapEvent( '<Enter>' , PV_KM_MODE_NORMAL , self )
         pvKeyMapManager.registerObserver( enter_event , self )
 
@@ -44,6 +54,7 @@ class pvTabBuffer( pvBuffer , pvKeyMapObserver ):
                 ob.OnSelectTabChanged( self.items[self.selection] )
 
     def OnHandleKeyEvent( self , **kwdict ):
+        _logger.debug('pvTabBuffer::OnHandleKeyEvent() refresh buffer')
         self.updateBuffer()
 
     def OnUpdate( self , **kwdict ):
@@ -63,6 +74,7 @@ class pvTabBuffer( pvBuffer , pvKeyMapObserver ):
 
         # generate the data
         show_data_list = [ self.__makeTabItem( index , value ) for index , value in enumerate( self.items ) ]
+        _logger.debug('pvTabBuffer::OnUpdate() show data[%s]' % str( show_data_list ) )
         self.buffer[0] = ' '.join( show_data_list )
 
         # hilight the item
@@ -88,13 +100,11 @@ class pvTabBuffer( pvBuffer , pvKeyMapObserver ):
         search_index = 0 
         for each in search_item_re.finditer( self.buffer[0] ):
             if each.start() <= cursor_row < each.end():
-                break
+                return search_index
             search_index += 1
         else:
-            #raise RuntimeError('pvTabBuffer::searchIndexByCursor ouf of range !?')
             return -1
 
-        return search_index
 
 
 
