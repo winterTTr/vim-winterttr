@@ -707,6 +707,8 @@ endif "}}}2
 " }}}1
 "=============================================================================
 " Doxygen {{{1
+ let load_doxygen_syntax=1
+ let doxygen_use_bitsream_vera=1
 
 " DgFileHeader {{{2
 function! DgExpandFileHeader() "{{{ 2
