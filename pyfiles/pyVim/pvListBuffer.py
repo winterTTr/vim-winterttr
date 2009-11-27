@@ -95,7 +95,9 @@ class pvListBuffer( pvBuffer , pvKeyMapObserver ):
             self.registerCommand('resize %d' % ( len( self.items ) if len( self.items ) else 1 , ) )
 
 
-    def OnNotifyObserver( self ):
+    def OnNotifyObserver( self , run ):
+        if not run : return 
+
         if self.items :
             for ob in self.ob_list:
                 ob.OnSelectItemChanged( self.items[self.selection] )
