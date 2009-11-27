@@ -301,7 +301,7 @@ class pvBuffer(object):
         self.__restoreLazyRedraw()
 
         _logger.debug('pvBuffer::updateBuffer() notify observer about the update')
-        self.OnNotifyObserver()
+        self.OnNotifyObserver( kwdict.get('notify' , True) )
             
     def OnUpdate(self , ** kwdict ):
         # give the change to user to update the context

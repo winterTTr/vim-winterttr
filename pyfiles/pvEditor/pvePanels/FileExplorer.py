@@ -2,14 +2,19 @@ from _PanelBase_ import PanelBase
 
 from pyVim.pvUtil import pvString
 from pyVim.pvWrap import pvBuffer , PV_BUF_TYPE_ATTACH
+from pyVim.pvWrap import pvWindow
 from pyVim.pvTreeBuffer import pvTreeBuffer , pvTreeNode , pvTreeNodeFactory , pvTreeObserver
 from pyVim.pvTreeBuffer import PV_TREE_NODE_TYPE_BRANCH , PV_TREE_NODE_TYPE_LEEF
 from pyVim.pvTreeBuffer import PV_TREE_UPDATE_TARGET , PV_TREE_UPDATE_SELECT
+from pyVim.pvAutocmd import pvAUEvent , pvAUManager , pvAUObserver 
 
 
 import os 
 import string
 import vim
+
+import logging
+_logger = logging.getLogger('pve.FileExplorer')
 
 
 # =============================================================
@@ -86,7 +91,7 @@ class FENodeFactory( pvTreeNodeFactory ):
 # =============================================================
 # file explorer
 # =============================================================
-class _class_( PanelBase , pvTreeObserver ):
+class _class_( PanelBase , pvTreeObserver , pvAUObserver ):
     def __init__( self , win_mgr ):
         self.__win_mgr = win_mgr
 
@@ -95,17 +100,54 @@ class _class_( PanelBase , pvTreeObserver ):
 
         self.__name = u"File Explorer"
 
+        buffer_enter_event = pvAUEvent( 'BufEnter' , '*' )
+        pvAUManager.registerObserver( buffer_enter_event , self )
 
     # from |PanelBase|
     def OnName( self ):
-        str = pvString()
-        str.UnicodeString = self.__name
+        str = pvString( UnicodeString = self.__name )
         return str
 
     def OnPanelSelected( self , item ):
-        if item.UnicodeString != self.__name :
-            return
+        if item.UnicodeString != self.__name : return
+        self.__buffer.showBuffer( self.__win_mgr.getWindow('panel') )
+        self.syncWithMainWindow()
+        self.__win_mgr.getWindow('panel').setFocus()
 
+
+
+    # from |pvTreeObserver|
+    def OnBranchOpen( self , **kwdict ):
+        os.chdir( kwdict['node'].path )
+
+    def OnBranchClose( self , **kwdict ):
+        os.chdir( kwdict['node'].path )
+
+    def OnLeefSelect( self , **kwdict ):
+        _logger.debug('OnLeefSelect() kwdict = %s' % str( kwdict ) )
+        node = kwdict['node']
+        _logger.debug('OnLeefSelect() path = %s' % node.path )
+        dir , fname = os.path.split( node.path )
+        os.chdir( dir )
+
+        if kwdict['type'] == PV_TREE_UPDATE_SELECT:
+            from pyVim.pvWrap import pvBuffer , PV_BUF_TYPE_NORMAL
+            buf = pvBuffer( type = PV_BUF_TYPE_NORMAL , name = pvString( UnicodeString = node.path ).MultibyteString )
+            buf.showBuffer( self.__win_mgr.getWindow('main') )
+            buf.detach()
+
+
+        self.__win_mgr.getWindow('main').setFocus()
+
+
+    # from |pvAUObserver|
+    def OnHandleAUEvent( self , **kwdict ):
+        if not self.__buffer.isShown(): return
+        if kwdict['event'] == 'bufenter' and self.__win_mgr.getWindow('main') == pvWindow() :
+            self.syncWithMainWindow()
+
+
+    def syncWithMainWindow( self ):
         buf_no = self.__win_mgr.getWindow('main').bufferid
         if buf_no == -1 :
             cwd = os.getcwdu() # unicode current work directory
@@ -126,32 +168,5 @@ class _class_( PanelBase , pvTreeObserver ):
 
             cwd_list.insert( 0 ,  pvString( UnicodeString = tail ) )
 
-        
-        self.__buffer.showBuffer( self.__win_mgr.getWindow('panel') )
         self.__buffer.updateBuffer( type = PV_TREE_UPDATE_TARGET , target = cwd_list )
-
-        self.__win_mgr.getWindow('panel').setFocus()
-
-
-    # from |pvTreeObserver|
-    def OnBranchOpen( self , node ):
-        os.chdir( node.path )
-
-    def OnBranchClose( self , node ):
-        os.chdir( node.path )
-
-    def OnLeefSelect( self , node ):
-        #vim.command('redir @a | verbose inoremap a | redir END')
-        #print >> open("D:\\log.txt" , 'a+') , "OnLeefSelect" , vim.eval('@a')
-
-        dir , fname = os.path.split( node.path )
-        os.chdir( dir )
-
-        from pyVim.pvWrap import pvBuffer , PV_BUF_TYPE_NORMAL
-        buf = pvBuffer( type = PV_BUF_TYPE_NORMAL , name = pvString( UnicodeString = node.path ).MultibyteString )
-        buf.showBuffer( self.__win_mgr.getWindow('main') )
-        buf.detach()
-
-
-        self.__win_mgr.getWindow('main').setFocus()
 

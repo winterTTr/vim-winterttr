@@ -46,3 +46,6 @@ class pvString(object):
         else :
             return False
 
+    def __repr__( self ):
+        return u"pvString:\"%s\"" % self.__unistring
+

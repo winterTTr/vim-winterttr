@@ -18,6 +18,10 @@ PV_TREE_UPDATE_SELECT = 0x01
 PV_TREE_UPDATE_TARGET = 0x02
 
 
+import logging
+_logger = logging.getLogger('pyVim.pvTreeBuffer')
+
+
 class pvTreeNode(object):
     def __init__( self , type ):
         self.__type = type
@@ -41,22 +45,22 @@ class pvTreeNodeFactory( object ):
         raise NotImplementedError("pvTreeNodeFactory")
 
 class pvTreeObserver(object):
-    def BranchOpen( self , node ):
-        self.OnBranchOpen( node )
+    def BranchOpen( self , **kwdict ):
+        self.OnBranchOpen( **kwdict )
 
-    def BranchClose( self , node ):
-        self.OnBranchClose( node )
+    def BranchClose( self , **kwdict ):
+        self.OnBranchClose( **kwdict )
 
-    def LeefSelect( self , node ):
-        self.OnLeefSelect( node )
+    def LeefSelect( self , **kwdict ):
+        self.OnLeefSelect( **kwdict )
 
-    def OnBranchOpen( self , node ):
+    def OnBranchOpen( self , **kwdict ):
         raise NotImplementedError("pvTreeObserver::OnBranchOpen")
 
-    def OnBranchClose( self , node ):
+    def OnBranchClose( self , **kwdict ):
         raise NotImplementedError("pvTreeObserver::OnBranchClose")
 
-    def OnLeefSelect( self , node ):
+    def OnLeefSelect( self , **kwdict ):
         raise NotImplementedError("pvTreeObserver::OnLeefSelect")
 
 
@@ -91,9 +95,7 @@ class pvTreeBuffer(pvBuffer , pvKeyMapObserver):
         self.__observer_list = []
 
 
-        self.__notifyInfo = {}
-        self.__notifyInfo['func'] = None
-        self.__notifyInfo['node'] = None
+        self.__notifyInfo = []
 
 
     def registerObserver( self , ob ):
@@ -110,6 +112,8 @@ class pvTreeBuffer(pvBuffer , pvKeyMapObserver):
         self.updateBuffer( type = PV_TREE_UPDATE_SELECT )
 
     def OnUpdate( self , **kwdict ) :
+        self.__notifyInfo.append( {} )
+
         # nothing in the buffer , means the buffer not contain the root
         # children , and maybe the first time of opening the buffer ,
         # need update the root child to the buffer
@@ -125,8 +129,10 @@ class pvTreeBuffer(pvBuffer , pvKeyMapObserver):
                 self.buffer[ 0 : len( show_list ) ] = show_list
 
         if not 'type' in kwdict : return
+        _logger.debug('pvTreeBuffer::OnUpdate() kwdict=%s' % str( kwdict) )
 
         # run funciton for the type
+        self.__notifyInfo[-1]['param'] = kwdict
         { 
                 PV_TREE_UPDATE_SELECT : self.__select ,
                 PV_TREE_UPDATE_TARGET : self.__target 
@@ -204,15 +210,15 @@ class pvTreeBuffer(pvBuffer , pvKeyMapObserver):
             range[0] = self.__makeItemLine( node , node_indent , True )
 
             # notify observer
-            self.__notifyInfo['func'] = pvTreeObserver.BranchOpen
-            self.__notifyInfo['node'] = node
+            self.__notifyInfo[-1]['func'] = pvTreeObserver.BranchOpen
+            self.__notifyInfo[-1]['param']['node'] = node
 
         elif node_flag == '-':
             pass
         else : # leef node
             # notify observer
-            self.__notifyInfo['func'] = pvTreeObserver.LeefSelect
-            self.__notifyInfo['node'] = node
+            self.__notifyInfo[-1]['func'] = pvTreeObserver.LeefSelect
+            self.__notifyInfo[-1]['param']['node'] = node
 
         # focus to the line
         self.__hilightItem( line_no )
@@ -250,8 +256,8 @@ class pvTreeBuffer(pvBuffer , pvKeyMapObserver):
         vim_range[0] = self.__makeItemLine( node , node_indent , False )
 
         # notify observer
-        self.__notifyInfo['func'] = pvTreeObserver.BranchClose
-        self.__notifyInfo['node'] = node
+        self.__notifyInfo[-1]['func'] = pvTreeObserver.BranchClose
+        self.__notifyInfo[-1]['param']['node'] = node
 
         # focus to the line
         self.__hilightItem( line_no )
@@ -336,16 +342,12 @@ class pvTreeBuffer(pvBuffer , pvKeyMapObserver):
         self.registerCommand('match %s /\V\^%s\$/' % ( 'Search' ,  line ) , True)
 
 
-    def OnNotifyObserver( self ):
-        if not self.__notifyInfo['func'] : return
+    def OnNotifyObserver( self , run ):
+        info = self.__notifyInfo.pop()
+        if run == False or 'func' not in info : return
 
         for ob in self.__observer_list:
-            self.__notifyInfo['func']( ob , self.__notifyInfo['node'] )
-
-        self.__notifyInfo['func'] = None
-        self.__notifyInfo['node'] = None
-
-
+            info['func']( ob , ** info['param'] )
 
         
 

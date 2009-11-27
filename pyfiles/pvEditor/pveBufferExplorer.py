@@ -2,12 +2,14 @@ import vim
 import os
 import re
 
+# for log
 import logging
-_logger = logging.getLogger('pvEditor.pveBufferExplorer')
+_logger = logging.getLogger('pve.BufferExplorer')
 
 
 # basic buffer
 from pyVim.pvWrap import pvBuffer , PV_BUF_TYPE_ATTACH
+from pyVim.pvWrap import pvWindow
 # tab buffer
 from pyVim.pvTabBuffer import pvTabBuffer , pvTabBufferObserver
 from pyVim.pvUtil import pvString
@@ -87,7 +89,7 @@ class TabbedBufferExplorer( pvTabBufferObserver , pvKeyMapObserver , pvAUObserve
     def show( self ):
         _logger.debug('TabbedBufferExplorer::show()')
         self.__buffer.showBuffer( self.__win_mgr.getWindow('tab') )
-        self.__buffer.updateBuffer( selection = self.analyzeBufferInfo() )
+        self.__buffer.updateBuffer( selection = self.analyzeBufferInfo() , notify = False )
 
 
     def OnSelectTabChanged( self , item ):
@@ -95,6 +97,13 @@ class TabbedBufferExplorer( pvTabBufferObserver , pvKeyMapObserver , pvAUObserve
         try :
             buffer_id = int( re.match('^(?P<id>\s*\d+)\|.*$' , item.MultibyteString ).group('id') )
         except:
+            # not find valid buffer id, just do nothing
+            return
+
+        # buffer show at main window is just the buffer to show, do
+        # nothing
+        if buffer_id == self.__win_mgr.getWindow('main').bufferid: 
+            self.__win_mgr.getWindow('main').setFocus()
             return
 
         # show the buffer on main panel
@@ -102,7 +111,7 @@ class TabbedBufferExplorer( pvTabBufferObserver , pvKeyMapObserver , pvAUObserve
         show_buffer.attach( buffer_id )
         show_buffer.showBuffer( self.__win_mgr.getWindow('main') )
 
-        #self.__win_mgr.getWindow('main').setFocus()
+        self.__win_mgr.getWindow('main').setFocus()
 
         # sync the cwd
         if show_buffer.name != None :
@@ -113,7 +122,7 @@ class TabbedBufferExplorer( pvTabBufferObserver , pvKeyMapObserver , pvAUObserve
     def OnHandleKeyEvent( self , **kwdict ):
         _logger.debug('TabbedBufferExplorer::OnHandleKeyEvent()')
         if kwdict['key'] == '<F5>':
-            self.__buffer.updateBuffer( selection = self.analyzeBufferInfo() )
+            self.__buffer.updateBuffer( selection = self.analyzeBufferInfo() , notify = False )
         elif kwdict['key'] == 'D' :
             # on buffer , can't delete it
             if len ( self.__buffer.items ) == 1: return
@@ -146,12 +155,14 @@ class TabbedBufferExplorer( pvTabBufferObserver , pvKeyMapObserver , pvAUObserve
             # delete list item
             del self.__buffer.items[current_item_index]
 
-            self.__buffer.updateBuffer( selection = after_selection )
+            self.__buffer.updateBuffer( selection = after_selection , notify = False )
 
 
     def OnHandleAUEvent( self , **kwdict ):
         _logger.debug('TabbedBufferExplorer::OnHandleAUEvent()')
-        self.__buffer.updateBuffer( selection = self.analyzeBufferInfo() )
+        if ( kwdict['event'] == 'bufenter' and self.__win_mgr.getWindow('main') == pvWindow() )\
+                or kwdict['event'] == 'bufdelete' :
+                self.__buffer.updateBuffer( selection = self.analyzeBufferInfo() , notify = False )
 
             
 

@@ -48,7 +48,8 @@ class pvTabBuffer( pvBuffer , pvKeyMapObserver ):
     def removeObserver( self , ob ):
         self.ob_list.remove( ob )
 
-    def OnNotifyObserver( self ):
+    def OnNotifyObserver( self , run ):
+        if not run : return
         if self.items :
             for ob in self.ob_list:
                 ob.OnSelectTabChanged( self.items[self.selection] )
