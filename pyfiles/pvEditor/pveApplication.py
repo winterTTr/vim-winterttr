@@ -1,40 +1,86 @@
 import vim
-from pyVim.pvWrap import pvWindowManager 
+
+from pyVim.pvWrap import pvWindow , pvWinSplitter
 
 from pyVim.pvKeyMap import pvKeyMapEvent , pvKeyMapManager , pvKeyMapObserver
 from pyVim.pvKeyMap import PV_KM_MODE_NORMAL 
 
 class Application( pvKeyMapManager ):
     def __init__( self ):
-        self.wm = pvWindowManager()
+        self.__key_event = []
+        self.__key_event.append( pvKeyMapEvent( "<M-1>" , PV_KM_MODE_NORMAL ) )
+        self.__key_event.append( pvKeyMapEvent( "<M-2>" , PV_KM_MODE_NORMAL ) )
+
+        self.__ui = {}
+        # info about "TabExplorer"
+        self.__ui['TabExplorer'] = {}
+        self.__ui['TabExplorer']['window'] = None
+        self.__ui['TabExplorer']['buffer'] = None
+        # info about "FileExplorer"
+        self.__ui['FileExplorer'] = {}
+        self.__ui['FileExplorer']['window'] = None
+        self.__ui['FileExplorer']['buffer'] = None
 
     def start( self ):
-        # make all windows
-        self.wm.makeWindows(' ( 25 , - )panel , ( 25 , 10 ) list|  (-,-)main , ( - , 1 )tab')
+        for event in self.__key_event:
+            pvKeyMapManager.registerObserver( event , self )
 
-        # make tab buffer
+    def stop( self ):
+        for event in self.__key_event:
+            pvKeyMapManager.removeObserver( event , self )
+
+    def switchTabExplorer( self ):
+        if_window_open = False
+        if self.__ui['TabExplorer']['buffer']:
+            if_window_open = self.__ui['TabExplorer']['window'].isShown()
+
+            # destroy buffer
+            self.__ui['TabExplorer']['buffer'].destroy()
+            self.__ui['TabExplorer']['buffer'] = None
+
+            # close(destroy) window
+            self.__ui['TabExplorer']['window'].closeWindow()
+            self.__ui['TabExplorer']['window'] = None
+
+        if if_window_open : return
+
+        _target_win = pvWindow()
+        # split window
+        from pyVim.pvWrap import PV_SPLIT_TYPE_CUR_BOTTOM
+        self.__ui['TabExplorer']['window'] = pvWinSplitter( PV_SPLIT_TYPE_CUR_BOTTOM , ( -1 , 1 ) , _target_win ).doSplit()
+
         from pveBufferExplorer import TabbedBufferExplorer
-        self.tab_buf = TabbedBufferExplorer( self.wm )
-        self.tab_buf.show()
+        self.__ui['TabExplorer']['buffer'] = TabbedBufferExplorer( _target_win )
+        self.__ui['TabExplorer']['buffer'].showBuffer( self.__ui['TabExplorer']['window'] )
 
-        from pvePanelLoader import PanelManager
-        self.pm = PanelManager( self.wm )
-        self.pm.loadPanels()
-        
-        move_list_event = pvKeyMapEvent( "<M-1>" , PV_KM_MODE_NORMAL )
-        pvKeyMapManager.registerObserver( move_list_event , self)
+    def switchFileExplorer( self ):
+        if_window_open = False
+        if self.__ui['FileExplorer']['buffer']:
+            if_window_open = self.__ui['FileExplorer']['window'].isShown()
 
-        move_panel_event = pvKeyMapEvent( "<M-2>" , PV_KM_MODE_NORMAL )
-        pvKeyMapManager.registerObserver( move_panel_event , self )
+            # destroy buffer
+            self.__ui['FileExplorer']['buffer'].destroy()
+            self.__ui['FileExplorer']['buffer'] = None
 
-        move_main_event = pvKeyMapEvent( "<M-3>" , PV_KM_MODE_NORMAL )
-        pvKeyMapManager.registerObserver( move_main_event , self )
+            # close(destroy) window
+            self.__ui['FileExplorer']['window'].closeWindow()
+            self.__ui['FileExplorer']['window'] = None
+
+        if if_window_open : return
+
+        _target_win = pvWindow()
+        # split window
+        from pyVim.pvWrap import PV_SPLIT_TYPE_MOST_LEFT
+        self.__ui['FileExplorer']['window'] = pvWinSplitter( PV_SPLIT_TYPE_MOST_LEFT , ( 25 , -1 ) ).doSplit()
+
+        from pveFileExplorer import FileExplorer
+        self.__ui['FileExplorer']['buffer'] = FileExplorer( _target_win )
+        self.__ui['FileExplorer']['buffer'].showBuffer( self.__ui['FileExplorer']['window'] )
+
 
 
     def OnHandleKeyEvent( self , **kwdict ):
         if kwdict['key'] == "<M-1>":
-            self.wm.getWindow('list').setFocus()
+            self.switchTabExplorer()
         elif kwdict['key'] == "<M-2>":
-            self.wm.getWindow('panel').setFocus()
-        elif kwdict['key'] == "<M-3>":
-            self.wm.getWindow('main').setFocus()
+            self.switchFileExplorer()

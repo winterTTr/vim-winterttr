@@ -32,21 +32,34 @@ class pvTabBuffer( pvBuffer , pvKeyMapObserver ):
         self.registerCommand( 'setlocal nonumber')
         self.registerCommand( 'setlocal nolinebreak' )
         self.registerCommand( 'setlocal foldcolumn=0')
+        self.registerCommand( 'setlocal winfixheight')
 
-        _logger.debug('pvTabBuffer::__init__() register DoubleClick event')
-        db_click_event = pvKeyMapEvent( '<2-LeftMouse>' , PV_KM_MODE_NORMAL , self )
-        pvKeyMapManager.registerObserver( db_click_event , self )
+        self.__event_list = []
+        self.__event_list.append( pvKeyMapEvent( '<2-LeftMouse>' , PV_KM_MODE_NORMAL , self ) )
+        self.__event_list.append( pvKeyMapEvent( '<Enter>' , PV_KM_MODE_NORMAL , self ) )
 
-        _logger.debug('pvTabBuffer::__init__() register <Enter> event')
-        enter_event = pvKeyMapEvent( '<Enter>' , PV_KM_MODE_NORMAL , self )
-        pvKeyMapManager.registerObserver( enter_event , self )
+        _logger.debug('pvTabBuffer::__init__() register event')
+        for event in self.__event_list:
+            pvKeyMapManager.registerObserver( event , self )
+
+    def wipeout( self ):
+        # remove event
+        for event in self.__event_list:
+            pvKeyMapManager.removeObserver( event , self )
+
+        # delete buffer
+        super( pvTabBuffer , self ).wipeout()
+
 
 
     def registerObserver( self , ob ):
         self.ob_list.append( ob )
 
     def removeObserver( self , ob ):
-        self.ob_list.remove( ob )
+        try :
+            self.ob_list.remove( ob )
+        except:
+            pass
 
     def OnNotifyObserver( self , run ):
         if not run : return

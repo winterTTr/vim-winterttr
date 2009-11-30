@@ -83,8 +83,20 @@ class pvAUManager(object):
 
 
     @staticmethod
-    def removeObserver():
-        pass
+    def removeObserver( event , ob ):
+        # no slot for the event , just return
+        if not event.uid in pvAUManager.__ob_register:
+            return 
+
+        try :
+            pvAUManager.__ob_register[ event.uid ].remove( ob )
+        except:
+            # not register
+            return
+
+        # clear the slot if no ob in it
+        if pvAUManager.__ob_register[ event.uid ] is [] :
+            del pvAUManager.__ob_register[ event.uid ]
 
 
 
