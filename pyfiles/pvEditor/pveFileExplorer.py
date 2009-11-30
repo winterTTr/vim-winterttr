@@ -1,5 +1,3 @@
-from _PanelBase_ import PanelBase
-
 from pyVim.pvUtil import pvString
 from pyVim.pvWrap import pvBuffer , PV_BUF_TYPE_ATTACH
 from pyVim.pvWrap import pvWindow
@@ -91,30 +89,28 @@ class FENodeFactory( pvTreeNodeFactory ):
 # =============================================================
 # file explorer
 # =============================================================
-class _class_( PanelBase , pvTreeObserver , pvAUObserver ):
-    def __init__( self , win_mgr ):
-        self.__win_mgr = win_mgr
+class FileExplorer( pvTreeObserver , pvAUObserver ):
+    def __init__( self , target_win ):
+        self.__target_win = target_win
 
         self.__buffer = pvTreeBuffer( FENodeFactory() )
         self.__buffer.registerObserver( self )
 
-        self.__name = u"File Explorer"
+        self.__evet_list = []
+        self.__evet_list.append( pvAUEvent( 'BufEnter' , '*' ) )
+        for event in self.__evet_list:
+            pvAUManager.registerObserver( event , self )
 
-        buffer_enter_event = pvAUEvent( 'BufEnter' , '*' )
-        pvAUManager.registerObserver( buffer_enter_event , self )
+    def destroy( self ):
+        for event in self.__evet_list:
+            pvAUManager.removeObserver( event , self )
+        self.__buffer.removeObserver( self )
+        self.__buffer.wipeout()
 
-    # from |PanelBase|
-    def OnName( self ):
-        str = pvString( UnicodeString = self.__name )
-        return str
-
-    def OnPanelSelected( self , item ):
-        if item.UnicodeString != self.__name : return
-        self.__buffer.showBuffer( self.__win_mgr.getWindow('panel') )
+    def showBuffer( self , show_win ):
+        self.__buffer.showBuffer( show_win )
         self.syncWithMainWindow()
-        self.__win_mgr.getWindow('panel').setFocus()
-
-
+        self.__target_win.setFocus()
 
     # from |pvTreeObserver|
     def OnBranchOpen( self , **kwdict ):
@@ -133,22 +129,21 @@ class _class_( PanelBase , pvTreeObserver , pvAUObserver ):
         if kwdict['type'] == PV_TREE_UPDATE_SELECT:
             from pyVim.pvWrap import pvBuffer , PV_BUF_TYPE_NORMAL
             buf = pvBuffer( type = PV_BUF_TYPE_NORMAL , name = pvString( UnicodeString = node.path ).MultibyteString )
-            buf.showBuffer( self.__win_mgr.getWindow('main') )
+            buf.showBuffer( self.__target_win )
             buf.detach()
 
 
-        self.__win_mgr.getWindow('main').setFocus()
+        self.__target_win.setFocus()
 
 
     # from |pvAUObserver|
     def OnHandleAUEvent( self , **kwdict ):
         if not self.__buffer.isShown(): return
-        if kwdict['event'] == 'bufenter' and self.__win_mgr.getWindow('main') == pvWindow() :
+        if kwdict['event'] == 'bufenter' and self.__target_win == pvWindow() :
             self.syncWithMainWindow()
 
-
     def syncWithMainWindow( self ):
-        buf_no = self.__win_mgr.getWindow('main').bufferid
+        buf_no = self.__target_win.bufferid
         if buf_no == -1 :
             cwd = os.getcwdu() # unicode current work directory
         else:

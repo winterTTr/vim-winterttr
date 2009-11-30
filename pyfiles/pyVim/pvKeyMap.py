@@ -134,18 +134,17 @@ class pvKeyMapManager(object):
     @staticmethod
     def registerObserver( event , ob ):
         # if not exist, create the item, register the command
-        if not event.uid in pvKeyMapManager.__ob_register:
-            pvKeyMapManager.__ob_register[event.uid] = []
-            vim_cmd_format = pv_km_vim_keymap_command_map if event.buffer == None else pv_km_vim_buffered_keymap_command_map
-            vim_cmd = vim_cmd_format[ event.mode ] % {
-                    'vim_key' : event.key.vim_name , 
-                    'uid' : event.uid
-                    }
+        pvKeyMapManager.__ob_register[ event.uid ] = pvKeyMapManager.__ob_register.get( event.uid , [] )
+        vim_cmd_format = pv_km_vim_keymap_command_map if event.buffer == None else pv_km_vim_buffered_keymap_command_map
+        vim_cmd = vim_cmd_format[ event.mode ] % {
+                'vim_key' : event.key.vim_name , 
+                'uid' : event.uid
+                }
 
-            if event.buffer : # <buffer> map
-                event.buffer.registerCommand( vim_cmd , True )
-            else: # global map
-                vim.command( vim_cmd )
+        if event.buffer : # <buffer> map
+            event.buffer.registerCommand( vim_cmd , True )
+        else: # global map
+            vim.command( vim_cmd )
 
         pvKeyMapManager.__ob_register[event.uid].append( ob )
 
@@ -175,8 +174,21 @@ class pvKeyMapManager(object):
                 # set return value
                 vim.command('let @v="%s"' % str(ret) )
 
-    def removeObserver():
-        pass
+    @staticmethod
+    def removeObserver( event , ob ):
+        # no slot for the event , just return
+        if not event.uid in pvKeyMapManager.__ob_register:
+            return 
+
+        try :
+            pvKeyMapManager.__ob_register[ event.uid ].remove( ob )
+        except:
+            # not register
+            return
+
+        # clear the slot if no ob in it
+        if pvKeyMapManager.__ob_register[ event.uid ] is [] :
+            del pvKeyMapManager.__ob_register[ event.uid ]
 
 
 

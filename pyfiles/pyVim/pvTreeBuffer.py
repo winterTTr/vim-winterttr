@@ -84,18 +84,24 @@ class pvTreeBuffer(pvBuffer , pvKeyMapObserver):
         self.registerCommand('setlocal nowrap')
         self.registerCommand('setlocal nonumber')
         self.registerCommand('setlocal foldcolumn=0')
+        self.registerCommand('setlocal winfixwidth')
 
         # double click
-        db_click_event = pvKeyMapEvent( '<2-LeftMouse>' , PV_KM_MODE_NORMAL , self )
-        pvKeyMapManager.registerObserver( db_click_event , self )
-        # enter 
-        enter_event = pvKeyMapEvent( '<Enter>' , PV_KM_MODE_NORMAL , self )
-        pvKeyMapManager.registerObserver( enter_event , self )
+        self.__event_list = []
+        self.__event_list.append( pvKeyMapEvent( '<2-LeftMouse>' , PV_KM_MODE_NORMAL , self ) )
+        self.__event_list.append( pvKeyMapEvent( '<Enter>' , PV_KM_MODE_NORMAL , self ) )
+
+        for event in self.__event_list:
+            pvKeyMapManager.registerObserver( event , self )
 
         self.__observer_list = []
-
-
         self.__notifyInfo = []
+
+
+    def wipeout( self ):
+        for event in self.__event_list:
+            pvKeyMapManager.removeObserver( event , self )
+        super( pvTreeBuffer , self ).wipeout()
 
 
     def registerObserver( self , ob ):
