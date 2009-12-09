@@ -114,13 +114,16 @@ class FileExplorer( pvTreeObserver , pvAUObserver ):
 
     # from |pvTreeObserver|
     def OnBranchOpen( self , **kwdict ):
-        os.chdir( kwdict['node'].path )
+        if kwdict['node'] :
+            os.chdir( kwdict['node'].path )
 
     def OnBranchClose( self , **kwdict ):
-        os.chdir( kwdict['node'].path )
+        if kwdict['node'] :
+            os.chdir( kwdict['node'].path )
 
     def OnLeefSelect( self , **kwdict ):
-        _logger.debug('OnLeefSelect() kwdict = %s' % str( kwdict ) )
+        if not kwdict['node'] : return
+
         node = kwdict['node']
         _logger.debug('OnLeefSelect() path = %s' % node.path )
         dir , fname = os.path.split( node.path )

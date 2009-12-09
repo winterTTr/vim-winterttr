@@ -312,6 +312,9 @@ class pvBuffer(object):
         _logger.debug('pvBuffer::OnNotifyObserver() do nothing')
 
 
+PV_WINDOW_ID_CLOSED = -1
+PV_WINDOW_ID_OTHER_TAB = -2
+
 class pvWindow(object):
     """
     pvWindow is the wrap to a vim-window-object(VWO)
@@ -329,12 +332,18 @@ class pvWindow(object):
         self._window = winObj if winObj else vim.current.window
 
     def __eq__( self , other ):
-        if isinstance( other , pvWindow ):
-            self_id = self.id
-            other_id = other.id
-            return self_id != -1 and other_id != -1 and self_id == other_id
+        if not isinstance( other , pvWindow ): return False
 
-        return False
+        # get window id
+        self_id = self.id
+        other_id = other.id
+
+        # if close or on other tab , alwalys not equal
+        if self_id in [ PV_WINDOW_ID_CLOSED , PV_WINDOW_ID_OTHER_TAB ] : return False
+        if other_id in [ PV_WINDOW_ID_CLOSED , PV_WINDOW_ID_OTHER_TAB ] : return False
+
+        return self_id == other_id
+
 
     #  ===============================================================
     #   UI control
@@ -369,18 +378,28 @@ class pvWindow(object):
     def id( self ):
         # no window object is attach
         if self._window == None :
-            return -1
+            return PV_WINDOW_ID_CLOSED
 
         winStr = str( self._window )
+
+        # <window 0>  ==> window exist
         reMatch = re.match( '<window (?P<id>\d+)>' , winStr )
         if reMatch:
             return int( reMatch.group('id') ) + 1
 
+        # <window object (deleted) at XXXXXXXX>  ==> window closed
         reMatch = re.match( 
                 '<window object \(deleted\) at [A-Z0-9]{8}>' ,
                 winStr)
         if reMatch:
-            return -1
+            return PV_WINDOW_ID_CLOSED
+
+        # <window object (unknown) at 00EC7350> ==> window maybe on another tab
+        reMatch = re.match( 
+                '<window object \(unknown\) at [A-Z0-9]{8}>' ,
+                winStr)
+        if reMatch:
+            return PV_WINDOW_ID_OTHER_TAB
 
         raise RuntimeError('pvWindow::id invalid window despcription')
 
@@ -396,7 +415,7 @@ class pvWindow(object):
     #   status check
     #  ===============================================================
     def isShown( self ):
-        return self.id != -1
+        return self.id not in [ PV_WINDOW_ID_CLOSED , PV_WINDOW_ID_OTHER_TAB ]
 
 
 PV_SPLIT_TYPE_MOST_TOP     = 0x01
