@@ -22,7 +22,7 @@ let g:pyfiles_loaded = 1
 
 " check if the base folder exists
 if !exists( "g:pyfiles_basepath" )
-	let g:pyfiles_basepath = $VIM . '/pyfiles'
+	let g:pyfiles_basepath = $VIMRUNTIME . '/pyfiles'
 endif
 if !isdirectory( g:pyfiles_basepath )
 	echomsg "pyfiles base folder does not exist , load nothing"
