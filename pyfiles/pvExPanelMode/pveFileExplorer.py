@@ -1,7 +1,7 @@
 from pyVim.pvUtil import pvString
 from pyVim.pvWrap import pvBuffer , PV_BUF_TYPE_ATTACH
 from pyVim.pvWrap import pvWindow
-from pyVim.pvTreeBuffer import pvTreeBuffer , pvTreeNode , pvTreeNodeFactory , pvTreeObserver
+from pyVim.pvTreeBuffer import pvTreeBuffer , pvTreeNode , pvTreeNodeFactory , pvTreeBufferObserver
 from pyVim.pvTreeBuffer import PV_TREE_NODE_TYPE_BRANCH , PV_TREE_NODE_TYPE_LEEF
 from pyVim.pvTreeBuffer import PV_TREE_UPDATE_TARGET , PV_TREE_UPDATE_SELECT
 from pyVim.pvAutocmd import pvAUEvent , pvAUManager , pvAUObserver 
@@ -89,7 +89,7 @@ class FENodeFactory( pvTreeNodeFactory ):
 # =============================================================
 # file explorer
 # =============================================================
-class FileExplorer( pvTreeObserver , pvAUObserver ):
+class FileExplorer( pvTreeBufferObserver , pvAUObserver ):
     def __init__( self , target_win ):
         self.__target_win = target_win
 
@@ -112,7 +112,7 @@ class FileExplorer( pvTreeObserver , pvAUObserver ):
         self.syncWithMainWindow()
         self.__target_win.setFocus()
 
-    # from |pvTreeObserver|
+    # from |pvTreeBufferObserver|
     def OnBranchOpen( self , **kwdict ):
         if kwdict['node'] :
             os.chdir( kwdict['node'].path )

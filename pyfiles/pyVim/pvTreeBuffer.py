@@ -44,7 +44,7 @@ class pvTreeNodeFactory( object ):
     def generateNode ( self , path ):
         raise NotImplementedError("pvTreeNodeFactory")
 
-class pvTreeObserver(object):
+class pvTreeBufferObserver(object):
     def BranchOpen( self , **kwdict ):
         self.OnBranchOpen( **kwdict )
 
@@ -55,13 +55,13 @@ class pvTreeObserver(object):
         self.OnLeefSelect( **kwdict )
 
     def OnBranchOpen( self , **kwdict ):
-        raise NotImplementedError("pvTreeObserver::OnBranchOpen")
+        raise NotImplementedError("pvTreeBufferObserver::OnBranchOpen")
 
     def OnBranchClose( self , **kwdict ):
-        raise NotImplementedError("pvTreeObserver::OnBranchClose")
+        raise NotImplementedError("pvTreeBufferObserver::OnBranchClose")
 
     def OnLeefSelect( self , **kwdict ):
-        raise NotImplementedError("pvTreeObserver::OnLeefSelect")
+        raise NotImplementedError("pvTreeBufferObserver::OnLeefSelect")
 
 
 class pvTreeBuffer(pvBuffer , pvKeyMapObserver):
@@ -216,14 +216,14 @@ class pvTreeBuffer(pvBuffer , pvKeyMapObserver):
             range[0] = self.__makeItemLine( node , node_indent , True )
 
             # notify observer
-            self.__notifyInfo[-1]['func'] = pvTreeObserver.BranchOpen
+            self.__notifyInfo[-1]['func'] = pvTreeBufferObserver.BranchOpen
             self.__notifyInfo[-1]['param']['node'] = node
 
         elif node_flag == '-':
             pass
         else : # leef node
             # notify observer
-            self.__notifyInfo[-1]['func'] = pvTreeObserver.LeefSelect
+            self.__notifyInfo[-1]['func'] = pvTreeBufferObserver.LeefSelect
             self.__notifyInfo[-1]['param']['node'] = node
 
         # focus to the line
@@ -262,7 +262,7 @@ class pvTreeBuffer(pvBuffer , pvKeyMapObserver):
         vim_range[0] = self.__makeItemLine( node , node_indent , False )
 
         # notify observer
-        self.__notifyInfo[-1]['func'] = pvTreeObserver.BranchClose
+        self.__notifyInfo[-1]['func'] = pvTreeBufferObserver.BranchClose
         self.__notifyInfo[-1]['param']['node'] = node
 
         # focus to the line
