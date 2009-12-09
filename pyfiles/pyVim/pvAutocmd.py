@@ -74,12 +74,12 @@ class pvAUManager(object):
         kwdict['pattern'] = event.pattern
         _logger.debug('pvAUManager::notifyObserver() make param[%s]' % str( kwdict ) ) 
 
-        vim.command( 'set eventignore=all' )
+        vim.command( 'set eventignore+=%s' % ( event.event ,  ) )
         try :
             for ob in pvAUManager.__ob_register[uid] :
                 ob.OnHandleAUEvent( **kwdict )
         finally:
-            vim.command( 'set eventignore=')
+            vim.command( 'set eventignore-=%s' % ( event.event ,  ) )
 
 
     @staticmethod
