@@ -11,7 +11,7 @@ _logger = logging.getLogger('pve.BufferExplorer')
 from pyvim.pvWrap import pvBuffer , PV_BUF_TYPE_ATTACH
 from pyvim.pvWrap import pvWindow
 # tab buffer
-from pyvim.pvTabBuffer import pvTabBuffer , pvTabBufferObserver
+from pyvim.pvTab import pvTabBuffer , pvTabBufferObserver
 from pyvim.pvUtil import pvString
 # for key map
 from pyvim.pvKeymap import pvKeymapEvent , pvKeymapObserver , pvKeymapManager

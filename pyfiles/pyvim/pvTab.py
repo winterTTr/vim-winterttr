@@ -11,7 +11,7 @@ from pvKeymap import PV_KM_MODE_NORMAL
 
 
 import logging
-_logger = logging.getLogger('pyvim.pvTabBuffer')
+_logger = logging.getLogger('pyvim.pvTab')
 
 
 class pvTabBufferObserver(object):
