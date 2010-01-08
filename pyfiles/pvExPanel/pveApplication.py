@@ -21,13 +21,13 @@ class Application( pvKeyMapObserver ):
         self.__ui['FileExplorer']['window'] = None
         self.__ui['FileExplorer']['buffer'] = None
 
-        vim.command('nnoremenu <silent> pyfiles.\ pvExPanelMode :py pvExPanelMode.app.start()<CR>')
+        vim.command('nnoremenu <silent> pyfiles.\ pvExPanelMode :py pvExPanel.app.start()<CR>')
 
     def start( self ):
         for event in self.__key_event:
             pvKeyMapManager.registerObserver( event , self )
         vim.command('nunmenu pyfiles.\ pvExPanelMode')
-        vim.command('nnoremenu <silent> pyfiles.*pvExPanelMode :py pvExPanelMode.app.stop()<CR>')
+        vim.command('nnoremenu <silent> pyfiles.*pvExPanelMode :py pvExPanel.app.stop()<CR>')
 
     def stop( self ):
         if self.__ui['TabExplorer']['buffer']:
