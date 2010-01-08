@@ -1,6 +1,6 @@
 import vim
 
-from pyvim.pvWrap import pvWindow , pvWinSplitter
+from pyvim.pvBase import pvWindow , pvWinSplitter
 
 from pyvim.pvKeymap import pvKeymapEvent , pvKeymapManager , pvKeymapObserver
 from pyvim.pvKeymap import PV_KM_MODE_NORMAL 
@@ -71,7 +71,7 @@ class Application( pvKeymapObserver ):
 
         _target_win = pvWindow()
         # split window
-        from pyvim.pvWrap import PV_SPLIT_TYPE_CUR_BOTTOM
+        from pyvim.pvBase import PV_SPLIT_TYPE_CUR_BOTTOM
         self.__ui['TabExplorer']['window'] = pvWinSplitter( PV_SPLIT_TYPE_CUR_BOTTOM , ( -1 , 1 ) , _target_win ).doSplit()
 
         from pveBufferExplorer import TabbedBufferExplorer
@@ -95,7 +95,7 @@ class Application( pvKeymapObserver ):
 
         _target_win = pvWindow()
         # split window
-        from pyvim.pvWrap import PV_SPLIT_TYPE_MOST_LEFT
+        from pyvim.pvBase import PV_SPLIT_TYPE_MOST_LEFT
         self.__ui['FileExplorer']['window'] = pvWinSplitter( PV_SPLIT_TYPE_MOST_LEFT , ( 25 , -1 ) ).doSplit()
 
         from pveFileExplorer import FileExplorer
