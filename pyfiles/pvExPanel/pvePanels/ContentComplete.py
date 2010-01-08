@@ -3,7 +3,7 @@ import re
 
 from _PanelBase_ import PanelBase
 
-from pyvim.pvListBuffer import pvListBuffer
+from pyvim.pvList import pvListBuffer
 from pyvim.pvUtil import pvString
 
 from pyvim.pvKeymap import pvKeymapEvent , pvKeymapManager , pvKeymapObserver

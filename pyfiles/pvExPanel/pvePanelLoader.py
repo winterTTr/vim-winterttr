@@ -1,4 +1,4 @@
-from pyvim.pvListBuffer import pvListBuffer , pvListBufferObserver
+from pyvim.pvList import pvListBuffer , pvListBufferObserver
 
 class PanelSwitcher(pvListBufferObserver):
     def __init__( self , list_buffer ):
