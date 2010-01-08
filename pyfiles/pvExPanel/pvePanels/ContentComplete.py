@@ -6,15 +6,15 @@ from _PanelBase_ import PanelBase
 from pyvim.pvListBuffer import pvListBuffer
 from pyvim.pvUtil import pvString
 
-from pyvim.pvKeyMap import pvKeyMapEvent , pvKeyMapManager , pvKeyMapObserver
-from pyvim.pvKeyMap import PV_KM_MODE_INSERT , PV_KM_MODE_SELECT
+from pyvim.pvKeymap import pvKeymapEvent , pvKeymapManager , pvKeymapObserver
+from pyvim.pvKeymap import PV_KM_MODE_INSERT , PV_KM_MODE_SELECT
 
 from pyvim.pvWrap import pvWindow
 
 import ContentCompleteTemplate
 
 
-class _class_( PanelBase , pvKeyMapObserver ):
+class _class_( PanelBase , pvKeymapObserver ):
     def __init__( self , win_mgr ):
         self.__win_mgr = win_mgr
         self.__buffer = pvListBuffer()
@@ -25,38 +25,38 @@ class _class_( PanelBase , pvKeyMapObserver ):
 
         # <tab>
         _ob = CCExpandContent( self.__win_mgr.getWindow('main') )
-        _event = pvKeyMapEvent( '<Tab>' ,  PV_KM_MODE_INSERT )
-        pvKeyMapManager.registerObserver( _event , _ob )
+        _event = pvKeymapEvent( '<Tab>' ,  PV_KM_MODE_INSERT )
+        pvKeymapManager.registerObserver( _event , _ob )
 
         # <pairs>
         _ob = CCAutoAddPair( self.__win_mgr.getWindow('main') )
         for key in pve_pair_map :
-            _event = pvKeyMapEvent( key ,  PV_KM_MODE_INSERT )
-            pvKeyMapManager.registerObserver( _event , _ob )
+            _event = pvKeymapEvent( key ,  PV_KM_MODE_INSERT )
+            pvKeymapManager.registerObserver( _event , _ob )
 
         # <pair move>
         _ob = CCAutoMoveRightPair( self.__win_mgr.getWindow('main') )
         for key in pve_pair_map_revert :
-            _event = pvKeyMapEvent( key ,  PV_KM_MODE_INSERT )
-            pvKeyMapManager.registerObserver( _event , _ob )
+            _event = pvKeymapEvent( key ,  PV_KM_MODE_INSERT )
+            pvKeymapManager.registerObserver( _event , _ob )
 
         # < move item on panel >
         _ob = CCChangeSelecton( self.__win_mgr.getWindow('main') , self.__buffer )
-        pvKeyMapManager.registerObserver( pvKeyMapEvent( '<C-J>' , PV_KM_MODE_INSERT ) , _ob )
-        pvKeyMapManager.registerObserver( pvKeyMapEvent( '<C-K>' , PV_KM_MODE_INSERT ) , _ob )
+        pvKeymapManager.registerObserver( pvKeymapEvent( '<C-J>' , PV_KM_MODE_INSERT ) , _ob )
+        pvKeymapManager.registerObserver( pvKeymapEvent( '<C-K>' , PV_KM_MODE_INSERT ) , _ob )
 
         # < auto complete >
         _ob = CCAutoContextComplete( self.__win_mgr.getWindow('main') , self.__buffer )
         import string
         for letter in string.ascii_letters:
-            pvKeyMapManager.registerObserver( pvKeyMapEvent( letter , PV_KM_MODE_INSERT ) , _ob )
-        pvKeyMapManager.registerObserver( pvKeyMapEvent( '_' , PV_KM_MODE_INSERT ) , _ob )
-        pvKeyMapManager.registerObserver( pvKeyMapEvent( '<backspace>' , PV_KM_MODE_INSERT ) , _ob )
+            pvKeymapManager.registerObserver( pvKeymapEvent( letter , PV_KM_MODE_INSERT ) , _ob )
+        pvKeymapManager.registerObserver( pvKeymapEvent( '_' , PV_KM_MODE_INSERT ) , _ob )
+        pvKeymapManager.registerObserver( pvKeymapEvent( '<backspace>' , PV_KM_MODE_INSERT ) , _ob )
 
         # < accept complete >
         _ob = CCAcceptSelection( self.__win_mgr.getWindow('main') , self.__buffer )
-        pvKeyMapManager.registerObserver( pvKeyMapEvent( '<C-Space>' , PV_KM_MODE_INSERT ) , _ob )
-        pvKeyMapManager.registerObserver( pvKeyMapEvent( '<C-Space>' , PV_KM_MODE_SELECT ) , _ob )
+        pvKeymapManager.registerObserver( pvKeymapEvent( '<C-Space>' , PV_KM_MODE_INSERT ) , _ob )
+        pvKeymapManager.registerObserver( pvKeymapEvent( '<C-Space>' , PV_KM_MODE_SELECT ) , _ob )
 
 
 
@@ -73,8 +73,8 @@ class _class_( PanelBase , pvKeyMapObserver ):
         self.__buffer.showBuffer( self.__win_mgr.getWindow('panel') )
         self.__buffer.updateBuffer()
 
-    # from |pvKeyMapObserver|
-    def OnHandleKeyEvent( self , **kwdict ):
+    # from |pvKeymapObserver|
+    def OnHandleKeymapEvent( self , **kwdict ):
         if not self.__buffer.isShown() :
             return ""
 
@@ -83,11 +83,11 @@ class _class_( PanelBase , pvKeyMapObserver ):
             self.__buffer.updateBuffer( selection = ( self.__buffer.selection + offset ) % len( self.__buffer.items ) )
 
 
-class CCExpandContent( pvKeyMapObserver ):
+class CCExpandContent( pvKeymapObserver ):
     def __init__( self , main_window ):
         self.main_window = main_window
 
-    def OnHandleKeyEvent( self  , **kwdict ):
+    def OnHandleKeymapEvent( self  , **kwdict ):
         if not pvWindow() == self.main_window:
             return '\<Tab>'
 
@@ -252,11 +252,11 @@ pve_pair_map = {
         '\'' : '\''
         }
 
-class CCAutoAddPair( pvKeyMapObserver ):
+class CCAutoAddPair( pvKeymapObserver ):
     def __init__( self , main_window ):
         self.main_window = main_window 
 
-    def OnHandleKeyEvent( self , **kwdict ):
+    def OnHandleKeymapEvent( self , **kwdict ):
         self.key = str( kwdict['key'] )
 
         if not pvWindow() == self.main_window :
@@ -271,11 +271,11 @@ class CCAutoAddPair( pvKeyMapObserver ):
 
 pve_pair_map_revert = dict ( [ ( pve_pair_map[x] , x ) for x in pve_pair_map if x != pve_pair_map[x] ] ) 
 
-class CCAutoMoveRightPair( pvKeyMapObserver ):
+class CCAutoMoveRightPair( pvKeymapObserver ):
     def __init__( self , main_window ):
         self.main_window = main_window 
 
-    def OnHandleKeyEvent( self , **kwdict ):
+    def OnHandleKeymapEvent( self , **kwdict ):
         self.key = str( kwdict['key'] )
 
         if not pvWindow() == self.main_window:
@@ -310,14 +310,14 @@ class CCAutoMoveRightPair( pvKeyMapObserver ):
         return ( left , right )
 
 
-class CCAutoContextComplete( pvKeyMapObserver ):
+class CCAutoContextComplete( pvKeymapObserver ):
     re_match_last_word = re.compile( "(.*\W+|^)(?P<word>[\w_]+)$" )
 
     def __init__( self , main_window , complete_buffer ):
         self.main_window = main_window
         self.complete_buffer = complete_buffer
 
-    def OnHandleKeyEvent( self , **kwdict ):
+    def OnHandleKeymapEvent( self , **kwdict ):
         print "here"
 
         self.key = kwdict['key']
@@ -429,12 +429,12 @@ class CCAutoContextComplete( pvKeyMapObserver ):
         return self.return_key
 
 
-class CCAcceptSelection( pvKeyMapObserver ):
+class CCAcceptSelection( pvKeymapObserver ):
     def __init__( self , main_window , complete_buffer ):
         self.main_window = main_window
         self.complete_buffer = complete_buffer
 
-    def OnHandleKeyEvent( self , **kwdict ):
+    def OnHandleKeymapEvent( self , **kwdict ):
         self.mode = kwdict['mode']
         if not pvWindow() == self.main_window : return ""
         if not self.complete_buffer.isShown(): return ""
@@ -449,12 +449,12 @@ class CCAcceptSelection( pvKeyMapObserver ):
             return ""
 
 
-class CCChangeSelecton( pvKeyMapObserver ):
+class CCChangeSelecton( pvKeymapObserver ):
     def __init__( self , main_window , complete_buffer ):
         self.main_window = main_window
         self.complete_buffer = complete_buffer
 
-    def OnHandleKeyEvent( self , **kwdict ):
+    def OnHandleKeymapEvent( self , **kwdict ):
         if not pvWindow() == self.main_window : return ""
         if not self.complete_buffer.isShown() : return ""
 

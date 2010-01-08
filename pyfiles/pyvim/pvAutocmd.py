@@ -16,10 +16,12 @@ class pvAutocmdEvent(object):
     def __init__( self , event = None, pattern = None , uid = None ):
         if uid:
             self.__uid = uid
-        else:
+        elif event and pattern:
             self.__uid = "%(event)s:%(pat)s" % {
                     'event' : event.lower() , 
                     'pat'   : urllib.quote( pattern ) }
+        else:
+            raise RuntimeError("pvAutocmdEvent::__init__ invalid parameter")
 
     @property
     def uid( self ):
@@ -61,9 +63,6 @@ class pvAutocmdManager(object):
 
     @staticmethod
     def notifyObserver( uid ):
-        if not uid in pvAutocmdManager.__ob_register:
-            raise RuntimeError('pvAutocmdManager::notifyObserver() no key found for event[%s]!' % uid )
-
         event = pvAutocmdEvent( uid = uid )
         kwdict = {}
         kwdict['event'] = event.event
@@ -90,7 +89,7 @@ class pvAutocmdManager(object):
             return
 
         # clear the slot if no ob in it
-        if pvAutocmdManager.__ob_register[ event.uid ] == [] :
+        if len ( pvAutocmdManager.__ob_register[ event.uid ] ) == 0 :
             del pvAutocmdManager.__ob_register[ event.uid ]
 
 

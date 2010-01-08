@@ -14,15 +14,15 @@ from pyvim.pvWrap import pvWindow
 from pyvim.pvTabBuffer import pvTabBuffer , pvTabBufferObserver
 from pyvim.pvUtil import pvString
 # for key map
-from pyvim.pvKeyMap import pvKeyMapEvent , pvKeyMapObserver , pvKeyMapManager
-from pyvim.pvKeyMap import PV_KM_MODE_NORMAL
+from pyvim.pvKeymap import pvKeymapEvent , pvKeymapObserver , pvKeymapManager
+from pyvim.pvKeymap import PV_KM_MODE_NORMAL
 # for autocmd
 from pyvim.pvAutocmd import pvAutocmdEvent , pvAutocmdObserver , pvAutocmdManager
 
 
 
 
-class TabbedBufferExplorer( pvTabBufferObserver , pvKeyMapObserver , pvAutocmdObserver ):
+class TabbedBufferExplorer( pvTabBufferObserver , pvKeymapObserver , pvAutocmdObserver ):
     def __init__( self , target_win ):
         self.__target_win = target_win
 
@@ -33,22 +33,22 @@ class TabbedBufferExplorer( pvTabBufferObserver , pvKeyMapObserver , pvAutocmdOb
         self.__buffer.registerObserver( self )
 
         self.__key_event = []
-        self.__key_event.append( pvKeyMapEvent( "<F5>" , PV_KM_MODE_NORMAL , self.__buffer ) )
-        self.__key_event.append( pvKeyMapEvent( "D" , PV_KM_MODE_NORMAL , self.__buffer ) )
+        self.__key_event.append( pvKeymapEvent( "<F5>" , PV_KM_MODE_NORMAL , self.__buffer ) )
+        self.__key_event.append( pvKeymapEvent( "D" , PV_KM_MODE_NORMAL , self.__buffer ) )
 
         self.__auto_event = []
         self.__auto_event.append( pvAutocmdEvent( 'BufEnter' , '*' ) )
         self.__auto_event.append( pvAutocmdEvent( 'BufDelete' , '*') )
 
         #register event
-        for event in self.__key_event: pvKeyMapManager.registerObserver( event , self )
+        for event in self.__key_event: pvKeymapManager.registerObserver( event , self )
         for event in self.__auto_event : pvAutocmdManager.registerObserver( event , self )
 
 
     def destroy( self ):
         #unregister event
         for event in self.__auto_event : pvAutocmdManager.removeObserver( event , self )
-        for event in self.__key_event: pvKeyMapManager.removeObserver( event , self )
+        for event in self.__key_event: pvKeymapManager.removeObserver( event , self )
         self.__buffer.removeObserver( self )
         # remove observer
         self.__buffer.wipeout()
@@ -126,8 +126,8 @@ class TabbedBufferExplorer( pvTabBufferObserver , pvKeyMapObserver , pvAutocmdOb
             if os.path.isdir( dir_path ): os.chdir( dir_path )
 
 
-    def OnHandleKeyEvent( self , **kwdict ):
-        _logger.debug('TabbedBufferExplorer::OnHandleKeyEvent()')
+    def OnHandleKeymapEvent( self , **kwdict ):
+        _logger.debug('TabbedBufferExplorer::OnHandleKeymapEvent()')
         if kwdict['key'] == '<F5>':
             self.__buffer.updateBuffer( selection = self.analyzeBufferInfo() , notify = False )
         elif kwdict['key'] == 'D' :

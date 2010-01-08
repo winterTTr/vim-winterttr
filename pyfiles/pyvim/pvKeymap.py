@@ -6,7 +6,7 @@ import types
 vim.command( """
 if !exists("*PV_KEY_MAP_DISPATCH")
     function PV_KEY_MAP_DISPATCH(uid)
-      exec 'python pyvim.pvKeyMap.pvKeyMapManager.notifyObserver("'. a:uid . '")'
+      exec 'python pyvim.pvKeymap.pvKeymapManager.notifyObserver("'. a:uid . '")'
       return @v
     endfunction
 endif
@@ -34,32 +34,32 @@ pv_km_vim_buffered_keymap_command_map = {
         }
 
 class pvKeyName(object):
-    def __init__( self ):
-        self.vim_key = None
+    def __init__( self , vim_name = None , internal_name = None):
+        self.__name = None
+        "store the vim-version key name, if contains <> , convert to lower."
+
+        if internal_name:
+            self.__name =  urllib.unquote( internal_name )
+        elif vim_name:
+            if vim_name.find('<') != -1 and vim_name.find('>') != -1 :
+                self.__name = vim_name.lower()
+            else:
+                self.__name = vim_name
+        else:
+            raise RuntimeError("pvKeyName::__init__ invalid parameter")
+
 
     @property
     def vim_name( self ):
-        return self.vim_key
-
-    @vim_name.setter
-    def vim_name( self , key ):
-        if key.find('<') != -1 and key.find('>') != -1 :
-            self.vim_key = key.lower()
-        else:
-            self.vim_key = key
+        return self.__name
 
     @property
     def internal_name( self ):
-        return urllib.quote( self.vim_key )
-
-    @internal_name.setter
-    def internal_name( self , key ):
-        self.vim_name =  urllib.unquote( key )
+        return urllib.quote( self.__name )
 
     def __eq__( self , other ):
         if type( other ) in types.StringTypes :
-            other_key = pvKeyName()
-            other_key.vim_name = other
+            other_key = pvKeyName( vim_name = other )
             return self.vim_name == other_key.vim_name
 
         if isinstance( other , pvKeyName ):
@@ -68,73 +68,60 @@ class pvKeyName(object):
         return False
 
     def __str__( self ):
-        return self.vim_name
+        return self.__name
 
 
-class pvKeyMapEvent(object):
-    def __init__( self , key = None , mode = None , buffer = None ):
-        if key == None and mode == None:
-            self.__uid = None
-            return
-
-        _key = pvKeyName()
-        _key.vim_name = key
-
-        self.__buffer = buffer
-        # register the python method to internal map
-        self.__uid = "%(keyname)s:%(mode)d:%(bufferid)d" % {
-                'keyname' : _key.internal_name , 
-                'mode'    : mode , 
-                'bufferid': buffer.id if buffer else 0 }
+class pvKeymapEvent(object):
+    def __init__( self , key = None , mode = None , buffer = None , uid = None ):
+        if uid :
+            self.__uid = uid
+        elif key and mode: 
+            self.__buffer = buffer
+            # register the python method to internal map
+            self.__uid = "%(keyname)s:%(mode)d:%(bufferid)d" % {
+                    'keyname' : pvKeyName( vim_name = key ).internal_name , 
+                    'mode'    : mode , 
+                    'bufferid': buffer.id if buffer else 0 }
+        else:
+            raise RuntimeError("pvKeymapEvent::__init__ invalid parameter")
 
     @property
     def uid( self ):
         return self.__uid
 
-    @uid.setter
-    def uid( self , uid ):
-        self.__uid = uid 
-
     @property
     def key( self ):
-        internal_key , mode , bufferid = self.__uid.split(':')
-
-        _key = pvKeyName()
-        _key.internal_name = internal_key
-        return _key
+        return pvKeyName( internal_name = self.__uid.split(':')[0] )
 
     @property
     def mode( self ):
-        internal_key , mode , bufferid = self.__uid.split(':')
-        return int(mode)
+        return int( self.__uid.split(':')[1] )
 
     @property
     def bufferid( self ):
-        internal_key , mode , bufferid = self.__uid.split(':')
-        return int(bufferid)
+        return int( self.__uid.split(':')[2] )
 
     @property
     def buffer( self ):
         return self.__buffer
 
 
+class pvKeymapObserver(object):
+    def OnHandleKeymapEvent( self , **kwdict ):
+        raise NotImplementedError('pvKeymapObserver::OnHandleKeymapEvent')
 
 
-
-class pvKeyMapObserver(object):
-    def OnHandleKeyEvent( self , **kwdict ):
-        raise NotImplementedError('pvKeyMapObserver::OnHandleKeyEvent')
-
-
-
-
-class pvKeyMapManager(object):
+class pvKeymapManager(object):
     __ob_register = {}
 
     @staticmethod
     def registerObserver( event , ob ):
+        if not isinstance( ob , pvKeymapObserver ):
+            raise RuntimeError("pvKeymapManager::registerObserver() not a valid keymap observer.")
+
         # if not exist, create the item, register the command
-        pvKeyMapManager.__ob_register[ event.uid ] = pvKeyMapManager.__ob_register.get( event.uid , [] )
+        pvKeymapManager.__ob_register[ event.uid ] = pvKeymapManager.__ob_register.get( event.uid , [] )
+
         vim_cmd_format = pv_km_vim_keymap_command_map if event.buffer == None else pv_km_vim_buffered_keymap_command_map
         vim_cmd = vim_cmd_format[ event.mode ] % {
                 'vim_key' : event.key.vim_name , 
@@ -146,13 +133,11 @@ class pvKeyMapManager(object):
         else: # global map
             vim.command( vim_cmd )
 
-        pvKeyMapManager.__ob_register[event.uid].append( ob )
+        pvKeymapManager.__ob_register[event.uid].append( ob )
 
     @staticmethod
     def notifyObserver( uid ):
-        event = pvKeyMapEvent()
-        event.uid = uid
-
+        event = pvKeymapEvent( uid = uid )
         # make key
         kwdict = {}
         kwdict['key'] = event.key
@@ -168,27 +153,32 @@ class pvKeyMapManager(object):
 
         # clear the return register
         vim.command('let @v=""')
-        for ob in pvKeyMapManager.__ob_register[uid]:
-            ret = ob.OnHandleKeyEvent( **kwdict )
-            if ret != None :
-                # set return value
-                vim.command('let @v="%s"' % str(ret) )
+        try:
+            for ob in pvKeymapManager.__ob_register[uid]:
+                ret = ob.OnHandleKeymapEvent( **kwdict )
+                if ret != None :
+                    # set return value
+                    vim.command('let @v="%s"' % str(ret) )
+        except:
+            vim.command('let @v=""')
+
+
 
     @staticmethod
     def removeObserver( event , ob ):
         # no slot for the event , just return
-        if not event.uid in pvKeyMapManager.__ob_register:
+        if not event.uid in pvKeymapManager.__ob_register:
             return 
 
         try :
-            pvKeyMapManager.__ob_register[ event.uid ].remove( ob )
+            pvKeymapManager.__ob_register[ event.uid ].remove( ob )
         except:
             # not register
             return
 
         # clear the slot if no ob in it
-        if pvKeyMapManager.__ob_register[ event.uid ] is [] :
-            del pvKeyMapManager.__ob_register[ event.uid ]
+        if len( pvKeymapManager.__ob_register[ event.uid ] ) == 0 :
+            del pvKeymapManager.__ob_register[ event.uid ]
 
 
 
