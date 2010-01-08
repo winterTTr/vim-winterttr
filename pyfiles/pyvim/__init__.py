@@ -9,9 +9,10 @@ except ImportError:
 
 # make the log path
 if 'PYVIM_LOG_PATH' in os.environ:
-    logging.PYVIM_LOG_PATH=os.environ['PYVIM_LOG_PATH']
+    logging.PYVIM_LOG_PATH= os.path.join( os.environ['PYVIM_LOG_PATH'] , 'pyvim.log' )
 else:
     logging.PYVIM_LOG_PATH=os.path.join( os.path.expanduser("~") , 'pyvim.log' )
+
 
 logging.config.fileConfig( os.path.join( os.path.split( __file__ )[0] , 'pvLogging.ini') )
 
@@ -24,15 +25,15 @@ def vimCommandDecorator( vimCommandFunc ):
         return ""
     newVimCommand.name = 'command'
     return newVimCommand
-
 vim.command = vimCommandDecorator( vim.command )
 
 
 def vimEvalDecorator( vimEvalFunc ):
     _logger = logging.getLogger('vim.eval')
     def newVimEval( command ):
+        _logger.debug('{%s}' %( command , ) )
         ret = vimEvalFunc( command )
-        _logger.debug('{%s} ==> %s' %( command , ret ) )
+        _logger.debug('==> %s' %( ret,) )
         return ret
     newVimEval.name = 'eval'
     return newVimEval

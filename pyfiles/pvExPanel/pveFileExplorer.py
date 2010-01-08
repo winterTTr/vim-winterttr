@@ -4,7 +4,7 @@ from pyvim.pvWrap import pvWindow
 from pyvim.pvTreeBuffer import pvTreeBuffer , pvTreeNode , pvTreeNodeFactory , pvTreeBufferObserver
 from pyvim.pvTreeBuffer import PV_TREE_NODE_TYPE_BRANCH , PV_TREE_NODE_TYPE_LEEF
 from pyvim.pvTreeBuffer import PV_TREE_UPDATE_TARGET , PV_TREE_UPDATE_SELECT
-from pyvim.pvAutocmd import pvAUEvent , pvAUManager , pvAUObserver 
+from pyvim.pvAutocmd import pvAutocmdEvent , pvAutocmdManager , pvAutocmdObserver 
 
 
 import os 
@@ -89,7 +89,7 @@ class FENodeFactory( pvTreeNodeFactory ):
 # =============================================================
 # file explorer
 # =============================================================
-class FileExplorer( pvTreeBufferObserver , pvAUObserver ):
+class FileExplorer( pvTreeBufferObserver , pvAutocmdObserver ):
     def __init__( self , target_win ):
         self.__target_win = target_win
 
@@ -97,13 +97,13 @@ class FileExplorer( pvTreeBufferObserver , pvAUObserver ):
         self.__buffer.registerObserver( self )
 
         self.__evet_list = []
-        self.__evet_list.append( pvAUEvent( 'BufEnter' , '*' ) )
+        self.__evet_list.append( pvAutocmdEvent( 'BufEnter' , '*' ) )
         for event in self.__evet_list:
-            pvAUManager.registerObserver( event , self )
+            pvAutocmdManager.registerObserver( event , self )
 
     def destroy( self ):
         for event in self.__evet_list:
-            pvAUManager.removeObserver( event , self )
+            pvAutocmdManager.removeObserver( event , self )
         self.__buffer.removeObserver( self )
         self.__buffer.wipeout()
 
@@ -139,8 +139,8 @@ class FileExplorer( pvTreeBufferObserver , pvAUObserver ):
         self.__target_win.setFocus()
 
 
-    # from |pvAUObserver|
-    def OnHandleAUEvent( self , **kwdict ):
+    # from |pvAutocmdObserver|
+    def OnHandleAutocmdEvent( self , **kwdict ):
         if not self.__buffer.isShown(): return
         if kwdict['event'] == 'bufenter' and self.__target_win == pvWindow() :
             self.syncWithMainWindow()
