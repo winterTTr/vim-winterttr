@@ -8,8 +8,8 @@ _logger = logging.getLogger('pve.BufferExplorer')
 
 
 # basic buffer
-from pyvim.pvWrap import pvBuffer , PV_BUF_TYPE_ATTACH
-from pyvim.pvWrap import pvWindow
+from pyvim.pvBase import pvBuffer , PV_BUF_TYPE_ATTACH
+from pyvim.pvBase import pvWindow
 # tab buffer
 from pyvim.pvTab import pvTabBuffer , pvTabBufferObserver
 from pyvim.pvUtil import pvString

@@ -1,6 +1,6 @@
 from pyvim.pvUtil import pvString
-from pyvim.pvWrap import pvBuffer , PV_BUF_TYPE_ATTACH
-from pyvim.pvWrap import pvWindow
+from pyvim.pvBase import pvBuffer , PV_BUF_TYPE_ATTACH
+from pyvim.pvBase import pvWindow
 from pyvim.pvTree import pvTreeBuffer , pvTreeNode , pvTreeNodeFactory , pvTreeBufferObserver
 from pyvim.pvTree import PV_TREE_NODE_TYPE_BRANCH , PV_TREE_NODE_TYPE_LEEF
 from pyvim.pvTree import PV_TREE_UPDATE_TARGET , PV_TREE_UPDATE_SELECT
@@ -130,7 +130,7 @@ class FileExplorer( pvTreeBufferObserver , pvAutocmdObserver ):
         os.chdir( dir )
 
         if kwdict['type'] == PV_TREE_UPDATE_SELECT:
-            from pyvim.pvWrap import pvBuffer , PV_BUF_TYPE_NORMAL
+            from pyvim.pvBase import pvBuffer , PV_BUF_TYPE_NORMAL
             buf = pvBuffer( type = PV_BUF_TYPE_NORMAL , name = pvString( UnicodeString = node.path ).MultibyteString )
             buf.showBuffer( self.__target_win )
             buf.detach()

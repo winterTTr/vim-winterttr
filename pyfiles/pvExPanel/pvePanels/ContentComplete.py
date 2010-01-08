@@ -9,7 +9,7 @@ from pyvim.pvUtil import pvString
 from pyvim.pvKeymap import pvKeymapEvent , pvKeymapManager , pvKeymapObserver
 from pyvim.pvKeymap import PV_KM_MODE_INSERT , PV_KM_MODE_SELECT
 
-from pyvim.pvWrap import pvWindow
+from pyvim.pvBase import pvWindow
 
 import ContentCompleteTemplate
 

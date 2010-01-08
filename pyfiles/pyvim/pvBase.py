@@ -1,5 +1,5 @@
 """
-@file     pvWrap.py
+@file     pvBase.py
 @brief    wrap the basic vim elements
 @author   winterTTr
 
@@ -16,7 +16,7 @@ import re
 import logging
 import random
 
-_logger = logging.getLogger('pyvim.pvWrap')
+_logger = logging.getLogger('pyvim.pvBase')
 
 PV_BUF_TYPE_READONLY   = 0x0001
 PV_BUF_TYPE_NORMAL     = 0x0002

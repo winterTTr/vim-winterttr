@@ -1,8 +1,8 @@
 import vim
 import types
-from pvWrap import pvBuffer
-from pvWrap import GenerateRandomName
-from pvWrap import PV_BUF_TYPE_READONLY , PV_BUF_TYPE_NORMAL
+from pvBase import pvBuffer
+from pvBase import GenerateRandomName
+from pvBase import PV_BUF_TYPE_READONLY , PV_BUF_TYPE_NORMAL
 
 from pvKeymap import pvKeymapEvent , pvKeymapObserver , pvKeymapManager
 from pvKeymap import PV_KM_MODE_NORMAL
