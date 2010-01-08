@@ -1,9 +1,9 @@
 from pyvim.pvUtil import pvString
 from pyvim.pvWrap import pvBuffer , PV_BUF_TYPE_ATTACH
 from pyvim.pvWrap import pvWindow
-from pyvim.pvTreeBuffer import pvTreeBuffer , pvTreeNode , pvTreeNodeFactory , pvTreeBufferObserver
-from pyvim.pvTreeBuffer import PV_TREE_NODE_TYPE_BRANCH , PV_TREE_NODE_TYPE_LEEF
-from pyvim.pvTreeBuffer import PV_TREE_UPDATE_TARGET , PV_TREE_UPDATE_SELECT
+from pyvim.pvTree import pvTreeBuffer , pvTreeNode , pvTreeNodeFactory , pvTreeBufferObserver
+from pyvim.pvTree import PV_TREE_NODE_TYPE_BRANCH , PV_TREE_NODE_TYPE_LEEF
+from pyvim.pvTree import PV_TREE_UPDATE_TARGET , PV_TREE_UPDATE_SELECT
 from pyvim.pvAutocmd import pvAutocmdEvent , pvAutocmdManager , pvAutocmdObserver 
 
 
