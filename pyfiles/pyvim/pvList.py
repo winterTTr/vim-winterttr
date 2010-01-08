@@ -4,15 +4,15 @@ from pvWrap import pvBuffer
 from pvWrap import GenerateRandomName
 from pvWrap import PV_BUF_TYPE_READONLY , PV_BUF_TYPE_NORMAL
 
-from pvKeyMap import pvKeyMapEvent , pvKeyMapObserver , pvKeyMapManager
-from pvKeyMap import PV_KM_MODE_NORMAL
+from pvKeymap import pvKeymapEvent , pvKeymapObserver , pvKeymapManager
+from pvKeymap import PV_KM_MODE_NORMAL
 
 
 class pvListBufferObserver(object):
     def OnSelectItemChanged( self , item ):
         raise NotImplementedError("pvListBufferObserver::OnSelectItemChanged")
 
-class pvListBuffer( pvBuffer , pvKeyMapObserver ):
+class pvListBuffer( pvBuffer , pvKeymapObserver ):
     def __init__( self ):
         super( pvListBuffer , self ).__init__( PV_BUF_TYPE_READONLY , GenerateRandomName( 'PV_LISTBUF_' ) )
         self.items = []
@@ -28,16 +28,16 @@ class pvListBuffer( pvBuffer , pvKeyMapObserver ):
         self.registerCommand('setlocal foldcolumn=0')
 
         self.__event_list = []
-        self.__event_list.append( pvKeyMapEvent( '<2-LeftMouse>' , PV_KM_MODE_NORMAL , self ) )
-        self.__event_list.append( pvKeyMapEvent( '<Enter>' , PV_KM_MODE_NORMAL , self ) )
+        self.__event_list.append( pvKeymapEvent( '<2-LeftMouse>' , PV_KM_MODE_NORMAL , self ) )
+        self.__event_list.append( pvKeymapEvent( '<Enter>' , PV_KM_MODE_NORMAL , self ) )
 
         for event in self.__event_list:
-            pvKeyMapManager.registerObserver( event , self )
+            pvKeymapManager.registerObserver( event , self )
 
 
     def wipeout( self ):
         for event in self.__event_list:
-            pvKeyMapManager.removeObserver( event , self )
+            pvKeymapManager.removeObserver( event , self )
         super( pvListBuffer , self ).wipeout()
 
 
@@ -114,7 +114,7 @@ class pvListBuffer( pvBuffer , pvKeyMapObserver ):
                 ob.OnSelectItemChanged( self.items[self.selection] )
 
 
-    def OnHandleKeyEvent( self , **kwdict ):
+    def OnHandleKeymapEvent( self , **kwdict ):
         self.updateBuffer()
 
 

@@ -6,8 +6,8 @@ from pvWrap import pvBuffer
 from pvWrap import GenerateRandomName
 from pvWrap import PV_BUF_TYPE_READONLY , PV_BUF_TYPE_NORMAL
 
-from pvKeyMap import pvKeyMapEvent , pvKeyMapObserver , pvKeyMapManager
-from pvKeyMap import PV_KM_MODE_NORMAL
+from pvKeymap import pvKeymapEvent , pvKeymapObserver , pvKeymapManager
+from pvKeymap import PV_KM_MODE_NORMAL
 
 
 import logging
@@ -19,7 +19,7 @@ class pvTabBufferObserver(object):
         raise NotImplementedError("pvTabBufferObserver::OnSelectTabChanged")
 
 
-class pvTabBuffer( pvBuffer , pvKeyMapObserver ):
+class pvTabBuffer( pvBuffer , pvKeymapObserver ):
     def __init__( self ):
         _logger.debug('pvTabBuffer::__init__() create buffer')
         super( pvTabBuffer , self ).__init__( PV_BUF_TYPE_READONLY , GenerateRandomName( 'PV_TABBUF_' ) )
@@ -35,17 +35,17 @@ class pvTabBuffer( pvBuffer , pvKeyMapObserver ):
         self.registerCommand( 'setlocal winfixheight')
 
         self.__event_list = []
-        self.__event_list.append( pvKeyMapEvent( '<2-LeftMouse>' , PV_KM_MODE_NORMAL , self ) )
-        self.__event_list.append( pvKeyMapEvent( '<Enter>' , PV_KM_MODE_NORMAL , self ) )
+        self.__event_list.append( pvKeymapEvent( '<2-LeftMouse>' , PV_KM_MODE_NORMAL , self ) )
+        self.__event_list.append( pvKeymapEvent( '<Enter>' , PV_KM_MODE_NORMAL , self ) )
 
         _logger.debug('pvTabBuffer::__init__() register event')
         for event in self.__event_list:
-            pvKeyMapManager.registerObserver( event , self )
+            pvKeymapManager.registerObserver( event , self )
 
     def wipeout( self ):
         # remove event
         for event in self.__event_list:
-            pvKeyMapManager.removeObserver( event , self )
+            pvKeymapManager.removeObserver( event , self )
 
         # delete buffer
         super( pvTabBuffer , self ).wipeout()
@@ -67,8 +67,8 @@ class pvTabBuffer( pvBuffer , pvKeyMapObserver ):
             for ob in self.ob_list:
                 ob.OnSelectTabChanged( self.items[self.selection] )
 
-    def OnHandleKeyEvent( self , **kwdict ):
-        _logger.debug('pvTabBuffer::OnHandleKeyEvent() refresh buffer')
+    def OnHandleKeymapEvent( self , **kwdict ):
+        _logger.debug('pvTabBuffer::OnHandleKeymapEvent() refresh buffer')
         self.updateBuffer()
 
     def OnUpdate( self , **kwdict ):

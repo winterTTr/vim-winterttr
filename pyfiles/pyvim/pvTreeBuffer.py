@@ -1,8 +1,8 @@
 from pvWrap import pvBuffer , GenerateRandomName , PV_BUF_TYPE_READONLY
 from pvUtil import pvString
 
-from pvKeyMap import pvKeyMapManager , pvKeyMapEvent , pvKeyMapObserver
-from pvKeyMap import PV_KM_MODE_NORMAL
+from pvKeymap import pvKeymapManager , pvKeymapEvent , pvKeymapObserver
+from pvKeymap import PV_KM_MODE_NORMAL
 
 import re
 import vim
@@ -64,7 +64,7 @@ class pvTreeBufferObserver(object):
         raise NotImplementedError("pvTreeBufferObserver::OnLeefSelect")
 
 
-class pvTreeBuffer(pvBuffer , pvKeyMapObserver):
+class pvTreeBuffer(pvBuffer , pvKeymapObserver):
     __indent_string = '| '
     __format_string = "%(indent)s%(flag)1s%(name)s"
     __format_search_re = re.compile( """
@@ -88,11 +88,11 @@ class pvTreeBuffer(pvBuffer , pvKeyMapObserver):
 
         # double click
         self.__event_list = []
-        self.__event_list.append( pvKeyMapEvent( '<2-LeftMouse>' , PV_KM_MODE_NORMAL , self ) )
-        self.__event_list.append( pvKeyMapEvent( '<Enter>' , PV_KM_MODE_NORMAL , self ) )
+        self.__event_list.append( pvKeymapEvent( '<2-LeftMouse>' , PV_KM_MODE_NORMAL , self ) )
+        self.__event_list.append( pvKeymapEvent( '<Enter>' , PV_KM_MODE_NORMAL , self ) )
 
         for event in self.__event_list:
-            pvKeyMapManager.registerObserver( event , self )
+            pvKeymapManager.registerObserver( event , self )
 
         self.__observer_list = []
         self.__notifyInfo = []
@@ -100,7 +100,7 @@ class pvTreeBuffer(pvBuffer , pvKeyMapObserver):
 
     def wipeout( self ):
         for event in self.__event_list:
-            pvKeyMapManager.removeObserver( event , self )
+            pvKeymapManager.removeObserver( event , self )
         super( pvTreeBuffer , self ).wipeout()
 
 
@@ -113,7 +113,7 @@ class pvTreeBuffer(pvBuffer , pvKeyMapObserver):
         except:
             pass
 
-    def OnHandleKeyEvent( self , **kwdict ):
+    def OnHandleKeymapEvent( self , **kwdict ):
         # key : <2-LeftMouse> OR <Enter>
         self.updateBuffer( type = PV_TREE_UPDATE_SELECT )
 

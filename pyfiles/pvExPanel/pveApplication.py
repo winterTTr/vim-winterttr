@@ -2,14 +2,14 @@ import vim
 
 from pyvim.pvWrap import pvWindow , pvWinSplitter
 
-from pyvim.pvKeyMap import pvKeyMapEvent , pvKeyMapManager , pvKeyMapObserver
-from pyvim.pvKeyMap import PV_KM_MODE_NORMAL 
+from pyvim.pvKeymap import pvKeymapEvent , pvKeymapManager , pvKeymapObserver
+from pyvim.pvKeymap import PV_KM_MODE_NORMAL 
 
-class Application( pvKeyMapObserver ):
+class Application( pvKeymapObserver ):
     def __init__( self ):
         self.__key_event = []
-        self.__key_event.append( pvKeyMapEvent( "<M-1>" , PV_KM_MODE_NORMAL ) )
-        self.__key_event.append( pvKeyMapEvent( "<M-2>" , PV_KM_MODE_NORMAL ) )
+        self.__key_event.append( pvKeymapEvent( "<M-1>" , PV_KM_MODE_NORMAL ) )
+        self.__key_event.append( pvKeymapEvent( "<M-2>" , PV_KM_MODE_NORMAL ) )
 
         self.__ui = {}
         # info about "TabExplorer"
@@ -25,7 +25,7 @@ class Application( pvKeyMapObserver ):
 
     def start( self ):
         for event in self.__key_event:
-            pvKeyMapManager.registerObserver( event , self )
+            pvKeymapManager.registerObserver( event , self )
         vim.command('nunmenu pyfiles.\ pvExPanelMode')
         vim.command('nnoremenu <silent> pyfiles.*pvExPanelMode :py pvExPanel.app.stop()<CR>')
 
@@ -49,7 +49,7 @@ class Application( pvKeyMapObserver ):
             self.__ui['FileExplorer']['window'] = None
 
         for event in self.__key_event:
-            pvKeyMapManager.removeObserver( event , self )
+            pvKeymapManager.removeObserver( event , self )
 
         vim.command('nunmenu pyfiles.*pvExPanelMode')
         vim.command('nnoremenu <silent> pyfiles.\ pvExPanelMode :py pvExPanelMode.app.start()<CR>')
@@ -104,7 +104,7 @@ class Application( pvKeyMapObserver ):
 
 
 
-    def OnHandleKeyEvent( self , **kwdict ):
+    def OnHandleKeymapEvent( self , **kwdict ):
         if kwdict['key'] == "<M-1>":
             self.switchTabExplorer()
         elif kwdict['key'] == "<M-2>":
