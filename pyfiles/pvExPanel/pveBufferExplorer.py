@@ -17,12 +17,12 @@ from pyvim.pvUtil import pvString
 from pyvim.pvKeyMap import pvKeyMapEvent , pvKeyMapObserver , pvKeyMapManager
 from pyvim.pvKeyMap import PV_KM_MODE_NORMAL
 # for autocmd
-from pyvim.pvAutocmd import pvAUEvent , pvAUObserver , pvAUManager
+from pyvim.pvAutocmd import pvAutocmdEvent , pvAutocmdObserver , pvAutocmdManager
 
 
 
 
-class TabbedBufferExplorer( pvTabBufferObserver , pvKeyMapObserver , pvAUObserver ):
+class TabbedBufferExplorer( pvTabBufferObserver , pvKeyMapObserver , pvAutocmdObserver ):
     def __init__( self , target_win ):
         self.__target_win = target_win
 
@@ -37,17 +37,17 @@ class TabbedBufferExplorer( pvTabBufferObserver , pvKeyMapObserver , pvAUObserve
         self.__key_event.append( pvKeyMapEvent( "D" , PV_KM_MODE_NORMAL , self.__buffer ) )
 
         self.__auto_event = []
-        self.__auto_event.append( pvAUEvent( 'BufEnter' , '*' ) )
-        self.__auto_event.append( pvAUEvent( 'BufDelete' , '*') )
+        self.__auto_event.append( pvAutocmdEvent( 'BufEnter' , '*' ) )
+        self.__auto_event.append( pvAutocmdEvent( 'BufDelete' , '*') )
 
         #register event
         for event in self.__key_event: pvKeyMapManager.registerObserver( event , self )
-        for event in self.__auto_event : pvAUManager.registerObserver( event , self )
+        for event in self.__auto_event : pvAutocmdManager.registerObserver( event , self )
 
 
     def destroy( self ):
         #unregister event
-        for event in self.__auto_event : pvAUManager.removeObserver( event , self )
+        for event in self.__auto_event : pvAutocmdManager.removeObserver( event , self )
         for event in self.__key_event: pvKeyMapManager.removeObserver( event , self )
         self.__buffer.removeObserver( self )
         # remove observer
@@ -165,8 +165,8 @@ class TabbedBufferExplorer( pvTabBufferObserver , pvKeyMapObserver , pvAUObserve
             self.__buffer.updateBuffer( selection = after_selection , notify = False )
 
 
-    def OnHandleAUEvent( self , **kwdict ):
-        _logger.debug('TabbedBufferExplorer::OnHandleAUEvent()')
+    def OnHandleAutocmdEvent( self , **kwdict ):
+        _logger.debug('TabbedBufferExplorer::OnHandleAutocmdEvent()')
         if ( kwdict['event'] == 'bufenter' and self.__target_win == pvWindow() )\
                 or kwdict['event'] == 'bufdelete' :
                 self.__buffer.updateBuffer( selection = self.analyzeBufferInfo() , notify = False )

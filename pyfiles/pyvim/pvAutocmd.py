@@ -3,53 +3,51 @@ import urllib
 import types
 
 import logging
-_logger = logging.getLogger('pyvim.pvAutoCmd')
+_logger = logging.getLogger('pyvim.pvAutocmd')
 
 vim.command("""
 augroup PYVIM_AUTOCOMMAND
 augroup END""")
 
-_command_format = 'autocmd PYVIM_AUTOCOMMAND %(event)s %(pat)s py pyvim.pvAutocmd.pvAUManager.notifyObserver("%(uid)s")'
+_command_format = 'autocmd PYVIM_AUTOCOMMAND %(event)s %(pat)s py pyvim.pvAutocmd.pvAutocmdManager.notifyObserver("%(uid)s")'
 
 
-class pvAUEvent(object):
-    def __init__( self , event = None, pattern = None ):
-        if event == None and pattern == None :
-            self.__uid = None
-            return
-
-        self.__uid = "%(event)s:%(pat)s" % {
-                'event' : event.lower() , 
-                'pat'   : urllib.quote( pattern ) }
+class pvAutocmdEvent(object):
+    def __init__( self , event = None, pattern = None , uid = None ):
+        if uid:
+            self.__uid = uid
+        else:
+            self.__uid = "%(event)s:%(pat)s" % {
+                    'event' : event.lower() , 
+                    'pat'   : urllib.quote( pattern ) }
 
     @property
     def uid( self ):
         return self.__uid
 
-    @uid.setter
-    def uid( self , uid ):
-        self.__uid = uid
-
     @property
     def event( self ):
-        event , pat = self.__uid.split(':')
-        return event
+        if self.__uid == None : return None
+        return self.__uid.split(':')[0]
 
     @property
     def pattern( self ):
-        event , pat = self.__uid.split(':')
-        return urllib.unquote( pat )
+        if self.__uid == None : return None
+        return urllib.unquote( self.__uid.split(':')[1] )
 
-class pvAUObserver(object):
-    def OnHandleAUEvent( self , **kwdict ):
-        raise NotImplementedError('pvAUObserver::OnHandleAUEvent')
+class pvAutocmdObserver(object):
+    def OnHandleAutocmdEvent( self , **kwdict ):
+        raise NotImplementedError('pvAutocmdObserver::OnHandleAutocmdEvent')
         
 
-class pvAUManager(object):
+class pvAutocmdManager(object):
     __ob_register = {}
 
     @staticmethod
     def registerObserver( event , ob ):
+        if not isinstance( ob , pvAutocmdObserver ):
+            raise RuntimeError("pvAutocmdManager::registerObserver() not a valid observer.")
+
         command = _command_format % {
                 'event' : event.event,
                 'pat'   : event.pattern,
@@ -57,27 +55,24 @@ class pvAUManager(object):
                 }
         vim.command( command )
 
-        pvAUManager.__ob_register[ event.uid ] = pvAUManager.__ob_register.get( event.uid , [] )
-        pvAUManager.__ob_register[ event.uid ].append( ob )
+        pvAutocmdManager.__ob_register[ event.uid ] = pvAutocmdManager.__ob_register.get( event.uid , [] )
+        pvAutocmdManager.__ob_register[ event.uid ].append( ob )
 
 
     @staticmethod
     def notifyObserver( uid ):
-        if not uid in pvAUManager.__ob_register:
-            _logger.debug('pvAUManager::notifyObserver() no key for event[%s], do nothing.' % uid )
-            return
+        if not uid in pvAutocmdManager.__ob_register:
+            raise RuntimeError('pvAutocmdManager::notifyObserver() no key found for event[%s]!' % uid )
 
-        event = pvAUEvent()
-        event.uid = uid
+        event = pvAutocmdEvent( uid = uid )
         kwdict = {}
         kwdict['event'] = event.event
         kwdict['pattern'] = event.pattern
-        _logger.debug('pvAUManager::notifyObserver() make param[%s]' % str( kwdict ) ) 
 
         vim.command( 'set eventignore+=%s' % ( event.event ,  ) )
         try :
-            for ob in pvAUManager.__ob_register[uid] :
-                ob.OnHandleAUEvent( **kwdict )
+            for ob in pvAutocmdManager.__ob_register[uid] :
+                ob.OnHandleAutocmdEvent( **kwdict )
         finally:
             vim.command( 'set eventignore-=%s' % ( event.event ,  ) )
 
@@ -85,18 +80,18 @@ class pvAUManager(object):
     @staticmethod
     def removeObserver( event , ob ):
         # no slot for the event , just return
-        if not event.uid in pvAUManager.__ob_register:
+        if not event.uid in pvAutocmdManager.__ob_register:
             return 
 
         try :
-            pvAUManager.__ob_register[ event.uid ].remove( ob )
+            pvAutocmdManager.__ob_register[ event.uid ].remove( ob )
         except:
-            # not register
+            # not register the ob
             return
 
         # clear the slot if no ob in it
-        if pvAUManager.__ob_register[ event.uid ] is [] :
-            del pvAUManager.__ob_register[ event.uid ]
+        if pvAutocmdManager.__ob_register[ event.uid ] == [] :
+            del pvAutocmdManager.__ob_register[ event.uid ]
 
 
 
