@@ -1,10 +1,10 @@
-from pyVim.pvUtil import pvString
-from pyVim.pvWrap import pvBuffer , PV_BUF_TYPE_ATTACH
-from pyVim.pvWrap import pvWindow
-from pyVim.pvTreeBuffer import pvTreeBuffer , pvTreeNode , pvTreeNodeFactory , pvTreeBufferObserver
-from pyVim.pvTreeBuffer import PV_TREE_NODE_TYPE_BRANCH , PV_TREE_NODE_TYPE_LEEF
-from pyVim.pvTreeBuffer import PV_TREE_UPDATE_TARGET , PV_TREE_UPDATE_SELECT
-from pyVim.pvAutocmd import pvAUEvent , pvAUManager , pvAUObserver 
+from pyvim.pvUtil import pvString
+from pyvim.pvWrap import pvBuffer , PV_BUF_TYPE_ATTACH
+from pyvim.pvWrap import pvWindow
+from pyvim.pvTreeBuffer import pvTreeBuffer , pvTreeNode , pvTreeNodeFactory , pvTreeBufferObserver
+from pyvim.pvTreeBuffer import PV_TREE_NODE_TYPE_BRANCH , PV_TREE_NODE_TYPE_LEEF
+from pyvim.pvTreeBuffer import PV_TREE_UPDATE_TARGET , PV_TREE_UPDATE_SELECT
+from pyvim.pvAutocmd import pvAUEvent , pvAUManager , pvAUObserver 
 
 
 import os 
@@ -130,7 +130,7 @@ class FileExplorer( pvTreeBufferObserver , pvAUObserver ):
         os.chdir( dir )
 
         if kwdict['type'] == PV_TREE_UPDATE_SELECT:
-            from pyVim.pvWrap import pvBuffer , PV_BUF_TYPE_NORMAL
+            from pyvim.pvWrap import pvBuffer , PV_BUF_TYPE_NORMAL
             buf = pvBuffer( type = PV_BUF_TYPE_NORMAL , name = pvString( UnicodeString = node.path ).MultibyteString )
             buf.showBuffer( self.__target_win )
             buf.detach()
