@@ -1,4 +1,4 @@
-from pyVim.pvListBuffer import pvListBufferObserver
+from pyvim.pvListBuffer import pvListBufferObserver
 
 class PanelBase(object):
     @property

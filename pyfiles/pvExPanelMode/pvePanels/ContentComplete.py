@@ -3,13 +3,13 @@ import re
 
 from _PanelBase_ import PanelBase
 
-from pyVim.pvListBuffer import pvListBuffer
-from pyVim.pvUtil import pvString
+from pyvim.pvListBuffer import pvListBuffer
+from pyvim.pvUtil import pvString
 
-from pyVim.pvKeyMap import pvKeyMapEvent , pvKeyMapManager , pvKeyMapObserver
-from pyVim.pvKeyMap import PV_KM_MODE_INSERT , PV_KM_MODE_SELECT
+from pyvim.pvKeyMap import pvKeyMapEvent , pvKeyMapManager , pvKeyMapObserver
+from pyvim.pvKeyMap import PV_KM_MODE_INSERT , PV_KM_MODE_SELECT
 
-from pyVim.pvWrap import pvWindow
+from pyvim.pvWrap import pvWindow
 
 import ContentCompleteTemplate
 

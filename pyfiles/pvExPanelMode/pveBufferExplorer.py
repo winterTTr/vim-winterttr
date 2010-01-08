@@ -8,16 +8,16 @@ _logger = logging.getLogger('pve.BufferExplorer')
 
 
 # basic buffer
-from pyVim.pvWrap import pvBuffer , PV_BUF_TYPE_ATTACH
-from pyVim.pvWrap import pvWindow
+from pyvim.pvWrap import pvBuffer , PV_BUF_TYPE_ATTACH
+from pyvim.pvWrap import pvWindow
 # tab buffer
-from pyVim.pvTabBuffer import pvTabBuffer , pvTabBufferObserver
-from pyVim.pvUtil import pvString
+from pyvim.pvTabBuffer import pvTabBuffer , pvTabBufferObserver
+from pyvim.pvUtil import pvString
 # for key map
-from pyVim.pvKeyMap import pvKeyMapEvent , pvKeyMapObserver , pvKeyMapManager
-from pyVim.pvKeyMap import PV_KM_MODE_NORMAL
+from pyvim.pvKeyMap import pvKeyMapEvent , pvKeyMapObserver , pvKeyMapManager
+from pyvim.pvKeyMap import PV_KM_MODE_NORMAL
 # for autocmd
-from pyVim.pvAutocmd import pvAUEvent , pvAUObserver , pvAUManager
+from pyvim.pvAutocmd import pvAUEvent , pvAUObserver , pvAUManager
 
 
 
