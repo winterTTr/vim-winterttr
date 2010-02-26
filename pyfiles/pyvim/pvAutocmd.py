@@ -9,7 +9,8 @@ vim.command("""
 augroup PYVIM_AUTOCOMMAND
 augroup END""")
 
-_command_format = 'autocmd PYVIM_AUTOCOMMAND %(event)s %(pat)s py pyvim.pvAutocmd.pvAutocmdManager.notifyObserver("%(uid)s")'
+_register_command_format = 'autocmd PYVIM_AUTOCOMMAND %(event)s %(pat)s py pyvim.pvAutocmd.pvAutocmdManager.notifyObserver("%(uid)s")'
+_unregister_command_format = 'autocmd! PYVIM_AUTOCOMMAND %(event)s %(pat)s'
 
 
 class pvAutocmdEvent(object):
@@ -50,7 +51,7 @@ class pvAutocmdManager(object):
         if not isinstance( ob , pvAutocmdObserver ):
             raise RuntimeError("pvAutocmdManager::registerObserver() not a valid observer.")
 
-        command = _command_format % {
+        command = _register_command_format % {
                 'event' : event.event,
                 'pat'   : event.pattern,
                 'uid'   : event.uid
@@ -68,12 +69,13 @@ class pvAutocmdManager(object):
         kwdict['event'] = event.event
         kwdict['pattern'] = event.pattern
 
-        vim.command( 'set eventignore+=%s' % ( event.event ,  ) )
+        #vim.command( 'set eventignore+=%s' % ( event.event ,  ) )
         try :
             for ob in pvAutocmdManager.__ob_register[uid] :
                 ob.OnHandleAutocmdEvent( **kwdict )
         finally:
-            vim.command( 'set eventignore-=%s' % ( event.event ,  ) )
+            #vim.command( 'set eventignore-=%s' % ( event.event ,  ) )
+            pass
 
 
     @staticmethod
@@ -91,6 +93,10 @@ class pvAutocmdManager(object):
         # clear the slot if no ob in it
         if len ( pvAutocmdManager.__ob_register[ event.uid ] ) == 0 :
             del pvAutocmdManager.__ob_register[ event.uid ]
+            vim.command( _unregister_command_format % {
+                'event': event.event , 
+                'pat'  : event.pattern } )
+
 
 
 
