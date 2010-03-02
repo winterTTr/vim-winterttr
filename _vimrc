@@ -116,8 +116,8 @@ if !exists("autocommands_loaded")
 	autocmd QuickFixCmdPost * cwindow
     autocmd FileType * :set formatoptions=tcql autoindent comments&
     autocmd FileType css :set formatoptions=cql autoindent
-    autocmd FileType c,cpp,h,java :set formatoptions=croql smartindent
-                \ comments=sr:/*,mb:*,ex:*/,:// expandtab
+    autocmd FileType c,cpp,h,java :set formatoptions=croql cindent
+                \ cinoptions=>0,f1s comments=sr:/*,mb:*,ex:*/,:// expandtab
 	"autocmd BufEnter * :cd %:p:h
     "autocmd CursorMoved *.c,*.cpp,*.h,*.java call ColumnHighlight()
     "autocmd InsertEnter *.c,*.cpp,*.h,*.java call RemoveHighlightOnInsertEnter()
