@@ -1,4 +1,4 @@
-from pvWrap import pvBuffer , GenerateRandomName , PV_BUF_TYPE_READONLY
+from pvBase import pvBuffer , GenerateRandomName , PV_BUF_TYPE_READONLY
 from pvUtil import pvString
 
 from pvKeymap import pvKeymapManager , pvKeymapEvent , pvKeymapObserver
