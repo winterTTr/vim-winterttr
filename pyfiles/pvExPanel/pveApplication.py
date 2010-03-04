@@ -21,13 +21,13 @@ class Application( pvKeymapObserver ):
         self.__ui['FileExplorer']['window'] = None
         self.__ui['FileExplorer']['buffer'] = None
 
-        vim.command('nnoremenu <silent> pyfiles.\ pvExPanelMode :py pvExPanel.app.start()<CR>')
+        vim.command('nnoremenu <silent> pyfiles.\ pvExPanel :py pvExPanel.app.start()<CR>')
 
     def start( self ):
         for event in self.__key_event:
             pvKeymapManager.registerObserver( event , self )
-        vim.command('nunmenu pyfiles.\ pvExPanelMode')
-        vim.command('nnoremenu <silent> pyfiles.*pvExPanelMode :py pvExPanel.app.stop()<CR>')
+        vim.command('nunmenu pyfiles.\ pvExPanel')
+        vim.command('nnoremenu <silent> pyfiles.*pvExPanel :py pvExPanel.app.stop()<CR>')
 
     def stop( self ):
         if self.__ui['TabExplorer']['buffer']:
@@ -51,8 +51,8 @@ class Application( pvKeymapObserver ):
         for event in self.__key_event:
             pvKeymapManager.removeObserver( event , self )
 
-        vim.command('nunmenu pyfiles.*pvExPanelMode')
-        vim.command('nnoremenu <silent> pyfiles.\ pvExPanelMode :py pvExPanelMode.app.start()<CR>')
+        vim.command('nunmenu pyfiles.*pvExPanel')
+        vim.command('nnoremenu <silent> pyfiles.\ pvExPanel :py pvExPanel.app.start()<CR>')
 
     def switchTabExplorer( self ):
         if_window_open = False
