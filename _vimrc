@@ -706,6 +706,18 @@ endif "}}}2
 
 " }}}1
 "=============================================================================
+" pyvim {{{1
+python << EOS
+try:
+    import pyvim
+    import pvExPanel
+    pvExPanel.pyfilesInit()
+    pvExPanel.app.start()
+except:
+	pass
+EOS
+"}}}1
+"=============================================================================
 " Doxygen {{{1
  let load_doxygen_syntax=1
  let doxygen_use_bitsream_vera=1
