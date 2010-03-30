@@ -708,13 +708,13 @@ endif "}}}2
 "=============================================================================
 " pyvim {{{1
 python << EOS
-try:
-    import pyvim
-    import pvExPanel
-    pvExPanel.pyfilesInit()
-    pvExPanel.app.start()
-except:
-	pass
+import pyvim
+from pyvimex import pvTabBufferExplorer
+tabBufEx = pvTabBufferExplorer.Application()
+tabBufEx.start()
+
+
+
 EOS
 "}}}1
 "=============================================================================
