@@ -38,7 +38,11 @@ set ruler
 set showmatch
 set visualbell t_vb= 
 set novisualbell
-"set cul
+"set cursorline
+hi CursorLine guibg=#333333
+hi CursorColumn guibg=#333333
+hi PMenu guifg=#AAAAAA guibg=#555555
+hi PmenuSel guifg=#0000AA
 "set guifont&
 
 " --- Status Line --- {{{2
@@ -175,6 +179,12 @@ set winaltkeys=no
 " Key map {{{1
 "-------------------------------------------------
 
+" --- Quick Fix ---{{{2
+map <leader>cw :cw<cr>
+map <F3> :cp<cr>
+map <F4> :cn<cr>
+"--------------------------------}}}2
+
 " --- Map the <UP> and <DOWN> ---{{{2
 noremap <UP> gk
 noremap <DOWN> gj
@@ -222,9 +232,16 @@ cnoremap    <m-i>   <c-r>=substitute(getline('.')[(col('.')-1):],'\W.*','','g')<
 "noremap <F12> :%s/\\u\(\w\w\w\w\)/\=nr2char("0x".expand("<cword>")[1:])/g<CR>
 " ------------------------------ }}}2
 
-" --- Scroll using <C-J> and <C-K> --- {{{2
-nnoremap    <C-J>   <C-E>
-nnoremap    <C-K>   <C-Y>
+" --- magic using <C-MFL> --- {{{2
+"nnoremap    <C-J>   <C-E>
+"nnoremap    <C-K>   <C-Y>
+"imap <expr> <C-j>      pumvisible()?"\<C-N>":"\<esc>"
+"imap <expr> <C-k>      pumvisible()?"\<C-P>":"\<esc>"
+imap <C-M>  <ESC>
+imap <C-F>  <C-X><C-F>
+imap <C-L>  <C-X><C-L>
+
+
 " ------------------------------------ }}}2
 
 " --- [CTRL-hjkl to browse command history and move the cursor] --- {{{2
@@ -265,6 +282,11 @@ nn <M-.> :call search ("^". matchstr (getline (line (".")), '\(\s*\)') ."\\S")<C
 "nnoremap <m-k> gT
 "inoremap <m-j> <C-O>gt
 "inoremap <m-k> <C-O>gT
+" ------------------------------------------------ }}}2
+
+" --- Use <C-a> <C-e> to move to begin and end as Emacs--- {{{2
+inoremap <C-a> <HOME>
+inoremap <C-e> <END>
 " ------------------------------------------------ }}}2
 
 " --- Folder after Search --- {{{2
@@ -368,6 +390,15 @@ let Tlist_File_Fold_Auto_Close = 1
 let Tlist_Exit_OnlyWindow=1
 let updatetime=4
 let Tlist_Sort_Type="name"
+" }}}1
+"=============================================================================
+" OmniCppComplete.vim {{{1
+set completeopt=menu
+let OmniCpp_ShowPrototypeInAbbr = 1 
+let OmniCpp_DefaultNamespaces = ["std"]     " 逗号分割的字符串
+let OmniCpp_MayCompleteScope = 1 
+let OmniCpp_ShowPrototypeInAbbr = 0 
+let OmniCpp_SelectFirstItem = 2 
 " }}}1
 "=============================================================================
 " quick buffer options {{{1
@@ -866,4 +897,3 @@ set grepprg=grep\ -nH\ $*
 
 
 " vim: set ft=vim ff=unix tw=72 foldmethod=marker :
-
