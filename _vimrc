@@ -39,10 +39,10 @@ set showmatch
 set visualbell t_vb= 
 set novisualbell
 "set cursorline
-hi CursorLine guibg=#333333
-hi CursorColumn guibg=#333333
-hi PMenu guifg=#AAAAAA guibg=#555555
-hi PmenuSel guifg=#0000AA
+"hi CursorLine guibg=#333333
+"hi CursorColumn guibg=#333333
+"hi PMenu guifg=#AAAAAA guibg=#555555
+"hi PmenuSel guifg=#0000AA
 "set guifont&
 
 " --- Status Line --- {{{2
@@ -112,6 +112,14 @@ set autoindent
 if !exists("autocommands_loaded")
     let autocommands_loaded = 1
 
+    augroup DefineMenuStyle
+        au!
+        autocmd FileType * hi CursorLine guibg=#333333
+        autocmd FileType * hi CursorColumn guibg=#333333
+        autocmd FileType * hi PMenu guifg=#AAAAAA guibg=#555555
+        autocmd FileType * hi PmenuSel guifg=#0000AA
+    augroup END
+
 	augroup SymbianFileType
 		autocmd BufRead,BufNewFile *.hrh set filetype=cpp 
 		au!
@@ -120,8 +128,10 @@ if !exists("autocommands_loaded")
 	autocmd QuickFixCmdPost * cwindow
     autocmd FileType * :set formatoptions=tcql autoindent comments&
     autocmd FileType css :set formatoptions=cql autoindent
+    "autocmd FileType c,cpp,h,java :set formatoptions=croql cindent
+    "            \ cinoptions=>0,f1s comments=sr:/*,mb:*,ex:*/,:// expandtab
     autocmd FileType c,cpp,h,java :set formatoptions=croql cindent
-                \ cinoptions=>0,f1s comments=sr:/*,mb:*,ex:*/,:// expandtab
+                \ comments=sr:/*,mb:*,ex:*/,:// expandtab
 	"autocmd BufEnter * :cd %:p:h
     "autocmd CursorMoved *.c,*.cpp,*.h,*.java call ColumnHighlight()
     "autocmd InsertEnter *.c,*.cpp,*.h,*.java call RemoveHighlightOnInsertEnter()
@@ -233,15 +243,8 @@ cnoremap    <m-i>   <c-r>=substitute(getline('.')[(col('.')-1):],'\W.*','','g')<
 " ------------------------------ }}}2
 
 " --- magic using <C-MFL> --- {{{2
-"nnoremap    <C-J>   <C-E>
-"nnoremap    <C-K>   <C-Y>
-"imap <expr> <C-j>      pumvisible()?"\<C-N>":"\<esc>"
-"imap <expr> <C-k>      pumvisible()?"\<C-P>":"\<esc>"
-imap <C-M>  <ESC>
-imap <C-F>  <C-X><C-F>
-imap <C-L>  <C-X><C-L>
-
-
+nnoremap    <C-J>   <C-E>
+nnoremap    <C-K>   <C-Y>
 " ------------------------------------ }}}2
 
 " --- [CTRL-hjkl to browse command history and move the cursor] --- {{{2
@@ -252,6 +255,8 @@ cnoremap    <C-L>   <right>
 " ----------------------------------------------------------------- }}}2
 
 " --- [CTRL-hjkl to move the cursor in insert mode --- {{{2
+"imap <expr> <C-j>      pumvisible()?"\<C-N>":"\<esc>"
+"imap <expr> <C-k>      pumvisible()?"\<C-P>":"\<esc>"
 inoremap    <C-K>   <up>
 inoremap    <C-J>   <down>
 inoremap    <C-H>   <left>
@@ -888,6 +893,14 @@ set grepprg=grep\ -nH\ $*
 "menu <silent> TT&r.&Utilities.&Calendar<tab>:Calendar :Calendar<CR>
 
 " }}}1
+"=============================================================================
+" neocomplcache {{{1
+let g:NeoComplCache_EnableAtStartup = 1
+" snippets expand key
+imap <silent> <C-l> <Plug>(neocomplcache_snippets_expand)
+smap <silent> <C-l> <Plug>(neocomplcache_snippets_expand) 
+
+"}}}1
 "=============================================================================
 " Tips ;o) {{{1
 " Let Vim to be the man viewer{{{2
