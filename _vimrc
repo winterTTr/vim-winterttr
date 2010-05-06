@@ -400,10 +400,12 @@ let Tlist_Sort_Type="name"
 " OmniCppComplete.vim {{{1
 set completeopt=menu
 let OmniCpp_ShowPrototypeInAbbr = 1 
-let OmniCpp_DefaultNamespaces = ["std"]     " 逗号分割的字符串
+let OmniCpp_DefaultNamespaces = ["std","_GLIBCXX_STD"]     " 逗号分割的字符串
 let OmniCpp_MayCompleteScope = 1 
 let OmniCpp_ShowPrototypeInAbbr = 0 
 let OmniCpp_SelectFirstItem = 2 
+
+set tags+=$VIM\tags\mingw_tags
 " }}}1
 "=============================================================================
 " quick buffer options {{{1
@@ -411,7 +413,7 @@ let g:qb_hotkey = '<M-l>'
 " }}}1
 "=============================================================================
 " Commands {{{1
-command!    -nargs=0 CPPtags        !ctags -R --c++-kinds=+p --fields=+iaS --extra=+q .
+command!    -nargs=0 CPPtags        !ctags -R --languages=c++ --c++-kinds=+p --fields=+iaS --extra=+q .
 command!    -nargs=0 Vimrc          tabedit $MYVIMRC
 command!    DiffOrig         vert new | set bt=nofile | r # | 0d_ | diffthis | wincmd p | diffthis
 
