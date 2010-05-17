@@ -121,8 +121,9 @@ if !exists("autocommands_loaded")
     augroup END
 
 	augroup SymbianFileType
-		autocmd BufRead,BufNewFile *.hrh set filetype=cpp 
 		au!
+		autocmd BufRead,BufNewFile *.hrh set filetype=cpp 
+        autocmd BufRead,BufNewFile *.docml set filetype=xml
 	augroup END
 
 	autocmd QuickFixCmdPost * cwindow
@@ -328,6 +329,7 @@ endif
 " ETC options {{{1
 set nocompatible
 set nobackup
+set nowritebackup
 set noswapfile
 set history=100
 lang message en_US
@@ -397,12 +399,11 @@ let updatetime=4
 let Tlist_Sort_Type="name"
 " }}}1
 "=============================================================================
-" OmniCppComplete.vim {{{1
+" OmniCppComplete {{{1
 set completeopt=menu
 let OmniCpp_ShowPrototypeInAbbr = 1 
 let OmniCpp_DefaultNamespaces = ["std","_GLIBCXX_STD"]     " 逗号分割的字符串
 let OmniCpp_MayCompleteScope = 1 
-let OmniCpp_ShowPrototypeInAbbr = 0 
 let OmniCpp_SelectFirstItem = 2 
 
 set tags+=$VIM\tags\mingw_tags
