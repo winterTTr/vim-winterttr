@@ -747,15 +747,15 @@ endif "}}}2
 "=============================================================================
 " pyvim {{{1
 python << EOS
-import pyvim
-from pyvimex import pvTabBufferExplorer
-tabBufEx = pvTabBufferExplorer.Application()
-tabBufEx.start()
-
-from pyvimex import pvFileExplorer
-fileEx = pvFileExplorer.Application()
-fileEx.start()
-
+#import pyvim
+#from pyvimex import pvTabBufferExplorer
+#tabBufEx = pvTabBufferExplorer.Application()
+#tabBufEx.start()
+#
+#from pyvimex import pvFileExplorer
+#fileEx = pvFileExplorer.Application()
+#fileEx.start()
+#
 EOS
 "}}}1
 "=============================================================================
