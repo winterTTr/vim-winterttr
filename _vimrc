@@ -402,7 +402,7 @@ let Tlist_Sort_Type="name"
 " OmniCppComplete {{{1
 set completeopt=menu
 let OmniCpp_ShowPrototypeInAbbr = 1 
-let OmniCpp_DefaultNamespaces = ["std","_GLIBCXX_STD"]     " 逗号分割的字符串
+let OmniCpp_DefaultNamespaces = ["std","_GLIBCXX_STD"]
 let OmniCpp_MayCompleteScope = 1 
 let OmniCpp_SelectFirstItem = 2 
 
