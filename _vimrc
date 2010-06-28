@@ -1,4 +1,4 @@
-"   Filename: .vimrc
+" C:\Python26\Lib\site-packages    Filename: .vimrc
 "   Author: winterTTr
 "   Mail: winterTTr@gmail.com
 "   Version: $Id: _vimrc 16 2008-11-27 09:58:57Z winterTTr $
@@ -749,8 +749,8 @@ endif "}}}2
 python << EOS
 
 import pyvim
-from pyvimex import pvTabBufferExplorer
-tabBufEx = pvTabBufferExplorer.Application()
+from pyvimex import pvBufferExplorer
+tabBufEx = pvBufferExplorer.Application()
 tabBufEx.start()
 
 from pyvimex import pvFileExplorer
