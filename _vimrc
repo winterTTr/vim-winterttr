@@ -1,4 +1,4 @@
-" C:\Python26\Lib\site-packages    Filename: .vimrc
+"   Filename: .vimrc
 "   Author: winterTTr
 "   Mail: winterTTr@gmail.com
 "   Version: $Id: _vimrc 16 2008-11-27 09:58:57Z winterTTr $
