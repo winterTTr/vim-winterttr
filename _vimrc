@@ -8,7 +8,11 @@
 "=============================================================================
 " Encoding and lang options {{{1
 set langmenu=none
+"set langmenu=zh_CN.utf-8
 set helplang=cn
+language message en_US
+"language message zh_CN.utf-8
+
 set fileformats=unix,dos
 if has("multi_byte")
     set nobomb
@@ -332,7 +336,6 @@ set nobackup
 set nowritebackup
 set noswapfile
 set history=100
-lang message en_US
 "}}}1
 "=============================================================================
 " Abbreviations {{{1
