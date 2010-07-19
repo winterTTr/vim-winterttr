@@ -1,4 +1,4 @@
-*syntax.txt*	For Vim version 7.2.  Last change: 2008 Jul 22
+*syntax.txt*	For Vim version 7.3b.  Last change: 2010 May 14
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -35,7 +35,8 @@ In the User Manual:
 13. Linking groups		|:highlight-link|
 14. Cleaning up			|:syn-clear|
 15. Highlighting tags		|tag-highlight|
-16. Color xterms		|xterm-color|
+16. Window-local syntax		|:ownsyntax|
+17. Color xterms		|xterm-color|
 
 {Vi does not have any of these commands}
 
@@ -112,6 +113,9 @@ this works, look in the file:
     :syntax manual	$VIMRUNTIME/syntax/manual.vim
     :syntax off		$VIMRUNTIME/syntax/nosyntax.vim
 Also see |syntax-loading|.
+
+NOTE: If displaying long lines is slow and switching off syntax highlighting
+makes it fast, consider setting the 'synmaxcol' option to a lower value.
 
 ==============================================================================
 2. Syntax files						*:syn-files*
@@ -198,8 +202,12 @@ that you write the syntax file in a directory that is early in 'runtimepath'.
 Vim will only load the first syntax file found.
 
 
-NAMING CONVENTIONS
-				    *group-name* *{group-name}* *E669* *W18*
+NAMING CONVENTIONS		    *group-name* *{group-name}* *E669* *W18*
+
+A syntax group name is to be used for syntax items that match the same kind of
+thing.  These are then linked to a highlight group that specifies the color.
+A syntax group name doesn't specify any color or attributes itself.
+
 The name for a highlight or syntax group must consist of ASCII letters, digits
 and the underscore.  As a regexp: "[a-zA-Z0-9_]*"
 
@@ -372,45 +380,88 @@ Source the script to convert the current file: >
 
 	:runtime! syntax/2html.vim
 <
-Warning: This is slow!
 							*:TOhtml*
 Or use the ":TOhtml" user command.  It is defined in a standard plugin.
 ":TOhtml" also works with a range and in a Visual area: >
 
 	:10,40TOhtml
 
-After you save the resulting file, you can view it with any HTML viewer, such
-as Netscape.  The colors should be exactly the same as you see them in Vim.
+Warning: This is slow! The script must process every character of every line.
+Because it is so slow, by default a progress bar is displayed in the
+statusline for each step that usually takes a long time. If you don't like
+seeing this progress bar, you can disable it and get a very minor speed
+improvement with: >
 
-To restrict the conversion to a range of lines set "html_start_line" and
-"html_end_line" to the first and last line to be converted.  Example, using
-the last set Visual area: >
+	let g:html_no_progress = 1
 
-	:let html_start_line = line("'<")
-	:let html_end_line = line("'>")
+":TOhtml" has another special feature: if the window is in diff mode, it will
+generate HTML that shows all the related windows.  This can be disabled by
+setting the g:html_diff_one_file variable: >
+
+	let g:html_diff_one_file = 1
+
+After you save the resulting file, you can view it with any browser.  The
+colors should be exactly the same as you see them in Vim.
+
+To restrict the conversion to a range of lines, use a range with the |:TOhtml|
+command, or set "g:html_start_line" and "g:html_end_line" to the first and
+last line to be converted.  Example, using the last set Visual area: >
+
+	:let g:html_start_line = line("'<")
+	:let g:html_end_line = line("'>")
 
 The lines are numbered according to 'number' option and the Number
 highlighting.  You can force lines to be numbered in the HTML output by
 setting "html_number_lines" to non-zero value: >
-   :let html_number_lines = 1
+   :let g:html_number_lines = 1
 Force to omit the line numbers by using a zero value: >
-   :let html_number_lines = 0
+   :let g:html_number_lines = 0
 Go back to the default to use 'number' by deleting the variable: >
-   :unlet html_number_lines
-
-Closed folds are put in the HTML as they are displayed.  If you don't want
-this, use the |zR| command before invoking 2html, or use: >
-   :let html_ignore_folding = 1
+   :unlet g:html_number_lines
 
 By default, HTML optimized for old browsers is generated.  If you prefer using
 cascading style sheets (CSS1) for the attributes (resulting in considerably
 shorter and valid HTML 4 file), use: >
-   :let html_use_css = 1
+   :let g:html_use_css = 1
+
+Closed folds are put in the HTML as they are displayed.  If you don't want
+this, use the |zR| command before invoking 2html, or use: >
+   :let g:html_ignore_folding = 1
+
+You may want to generate HTML that includes all the data within the folds, and
+allow the user to view the folded data similar to how they would in Vim. To
+generate this dynamic fold information, use: >
+   :let g:html_dynamic_folds = 1
+
+Using html_dynamic_folds will imply html_use_css, because it would be far too
+difficult to do it for old browsers. However, html_ignore_folding overrides
+html_dynamic_folds.
+
+Using html_dynamic_folds will default to generating a foldcolumn in the html
+similar to Vim's foldcolumn, that will use javascript to open and close the
+folds in the HTML document. The width of this foldcolumn starts at the current
+setting of |'foldcolumn'| but grows to fit the greatest foldlevel in your
+document. If you do not want to show a foldcolumn at all, use: >
+   :let g:html_no_foldcolumn = 1
+
+Using this option, there will be no foldcolumn available to open the folds in
+the HTML. For this reason, another option is provided: html_hover_unfold.
+Enabling this option will use CSS 2.0 to allow a user to open a fold by
+hovering the mouse pointer over it. Note that old browsers (notably Internet
+Explorer 6) will not support this feature.  Browser-specific markup for IE6 is
+included to fall back to the normal CSS1 code so that the folds show up
+correctly for this browser, but they will not be openable without a
+foldcolumn. Note that using html_hover_unfold will allow modern browsers with
+disabled javascript to view closed folds. To use this option, use: >
+   :let g:html_hover_unfold = 1
+
+Setting html_no_foldcolumn with html_dynamic_folds will automatically set
+html_hover_unfold, because otherwise the folds wouldn't be dynamic.
 
 By default "<pre>" and "</pre>" is used around the text.  This makes it show
 up as you see it in Vim, but without wrapping.	If you prefer wrapping, at the
 risk of making some things look a bit different, use: >
-   :let html_no_pre = 1
+   :let g:html_no_pre = 1
 This will use <br> at the end of each line and use "&nbsp;" for repeated
 spaces.
 
@@ -418,20 +469,20 @@ The current value of 'encoding' is used to specify the charset of the HTML
 file.  This only works for those values of 'encoding' that have an equivalent
 HTML charset name.  To overrule this set g:html_use_encoding to the name of
 the charset to be used: >
-   :let html_use_encoding = "foobar"
+   :let g:html_use_encoding = "foobar"
 To omit the line that specifies the charset, set g:html_use_encoding to an
 empty string: >
-   :let html_use_encoding = ""
+   :let g:html_use_encoding = ""
 To go back to the automatic mechanism, delete the g:html_use_encoding
 variable: >
-   :unlet html_use_encoding
+   :unlet g:html_use_encoding
 <
 For diff mode a sequence of more than 3 filler lines is displayed as three
 lines with the middle line mentioning the total number of inserted lines.  If
 you prefer to see all the inserted lines use: >
-    :let html_whole_filler = 1
+    :let g:html_whole_filler = 1
 And to go back to displaying up to three lines again: >
-    :unlet html_whole_filler
+    :unlet g:html_whole_filler
 <
 					    *convert-to-XML* *convert-to-XHTML*
 An alternative is to have the script generate XHTML (XML compliant HTML).  To
@@ -439,8 +490,6 @@ do this set the "use_xhtml" variable: >
     :let use_xhtml = 1
 To disable it again delete the variable: >
     :unlet use_xhtml
-The generated XHTML file can be used in DocBook XML documents.  See:
-	http://people.mech.kuleuven.ac.be/~pissaris/howto/src2db.html
 
 Remarks:
 - This only works in a version with GUI support.  If the GUI is not actually
@@ -525,9 +574,10 @@ files are included:
 	pic		PIC assembly (currently for PIC16F84)
 
 The most flexible is to add a line in your assembly file containing: >
-	:asmsyntax=nasm
+	asmsyntax=nasm
 Replace "nasm" with the name of the real assembly syntax.  This line must be
-one of the first five lines in the file.
+one of the first five lines in the file.  No non-white text must be
+immediately before or after this text.
 
 The syntax type can always be overruled for a specific buffer by setting the
 b:asmsyntax variable: >
@@ -674,7 +724,7 @@ If you see '{' and '}' highlighted as an error where they are OK, reset the
 highlighting for cErrInParen and cErrInBracket.
 
 If you want to use folding in your C files, you can add these lines in a file
-an the "after" directory in 'runtimepath'.  For Unix this would be
+in the "after" directory in 'runtimepath'.  For Unix this would be
 ~/.vim/after/syntax/c.vim. >
     syn sync fromstart
     set foldmethod=syntax
@@ -790,7 +840,8 @@ startup vimrc: >
 DESKTOP					   *desktop.vim* *ft-desktop-syntax*
 
 Primary goal of this syntax file is to highlight .desktop and .directory files
-according to freedesktop.org standard: http://pdx.freedesktop.org/Standards/
+according to freedesktop.org standard:
+http://standards.freedesktop.org/desktop-entry-spec/latest/
 But actually almost none implements this standard fully.  Thus it will
 highlight all Unix ini files.  But you can force strict highlighting according
 to standard by placing this in your vimrc file: >
@@ -867,7 +918,7 @@ global or buffer-local variable load_doxygen_syntax.  This is done by adding
 the following to your .vimrc. >
 	:let g:load_doxygen_syntax=1
 
-There are a couple of variables that have an affect on syntax highlighting, and
+There are a couple of variables that have an effect on syntax highlighting, and
 are to do with non-standard highlighting options.
 
 Variable			Default	Effect ~
@@ -1889,7 +1940,7 @@ Some functions are highlighted by default.  To switch it off: >
 
    :let pascal_no_functions=1
 
-Furthermore, there are specific variable for some compiler.  Besides
+Furthermore, there are specific variables for some compilers.  Besides
 pascal_delphi, there are pascal_gpc and pascal_fpc.  Default extensions try to
 match Turbo Pascal. >
 
@@ -2529,11 +2580,13 @@ If you notice highlighting errors while scrolling backwards, which are fixed
 when redrawing with CTRL-L, try setting the "tcsh_minlines" internal variable
 to a larger number: >
 
-	:let tcsh_minlines = 100
+	:let tcsh_minlines = 1000
 
-This will make the syntax synchronization start 100 lines before the first
-displayed line.  The default value is 15.  The disadvantage of using a larger
-number is that redrawing can become slow.
+This will make the syntax synchronization start 1000 lines before the first
+displayed line.  If you set "tcsh_minlines" to "fromstart", then
+synchronization is done from the start of the file. The default value for
+tcsh_minlines is 100.  The disadvantage of using a larger number is that
+redrawing can become slow.
 
 
 TEX						*tex.vim* *ft-tex-syntax*
@@ -2641,7 +2694,7 @@ set "tf_minlines" to the value you desire.  Example: >
 
 VIM			*vim.vim*		*ft-vim-syntax*
 			*g:vimsyn_minlines*	*g:vimsyn_maxlines*
-There is a tradeoff between more accurate syntax highlighting versus screen
+There is a trade-off between more accurate syntax highlighting versus screen
 updating speed.  To improve accuracy, you may wish to increase the
 g:vimsyn_minlines variable.  The g:vimsyn_maxlines variable may be used to
 improve screen updating rates (see |:syn-sync| for more on this). >
@@ -3074,12 +3127,14 @@ and may be mixed with patterns.
 Not all commands accept all arguments.	This table shows which arguments
 can not be used for all commands:
 							*E395* *E396*
-		    contains  oneline	fold  display  extend ~
-:syntax keyword		 -	 -	 -	 -	 -
-:syntax match		yes	 -	yes	yes	yes
-:syntax region		yes	yes	yes	yes	yes
+		    contains  oneline	fold  display  extend concealends~
+:syntax keyword		 -	 -	 -	 -	 -      -
+:syntax match		yes	 -	yes	yes	yes     -
+:syntax region		yes	yes	yes	yes	yes    yes
 
 These arguments can be used for all three commands:
+	conceal
+	cchar
 	contained
 	containedin
 	nextgroup
@@ -3088,6 +3143,30 @@ These arguments can be used for all three commands:
 	skipnl
 	skipempty
 
+conceal						*conceal* *:syn-conceal*
+
+When the "conceal" argument is given, the item is marked as concealable.
+Whether or not it is actually concealed depends on the value of the
+'conceallevel' option.  If 'modifiable' option is on, concealable items
+in the current line are always displayed unconcealed to be able to edit
+the line.
+
+concealends						*:syn-concealends*
+
+When the "concealends" argument is given, the start and end matches of
+the region, but not the contents of the region, are marked as concealable.
+Whether or not they are actually concealed depends on the setting on the
+'conceallevel' option. The ends of a region can only be concealed separately
+in this way when they have their own highlighting via "matchgroup"
+
+cchar							*:syn-cchar*
+
+The "cchar" argument defines the character shown in place of the item
+when it is concealed (setting "cchar" only makes sense when the conceal
+argument is given.) If "cchar" is not set then the default conceal
+character defined in the 'listchars' option is used. Example: >
+   :syntax match Entity "&amp;" conceal cchar=&
+See |hl-Conceal| for highlighting.
 
 contained						*:syn-contained*
 
@@ -3344,6 +3423,16 @@ Note that this example doesn't work for nested "if"s.  You need to add
 "contains" arguments to make that work (omitted for simplicity of the
 example).
 
+IMPLICIT CONCEAL					*:syn-conceal-implicit*
+
+:sy[ntax] conceal [on|off]
+	This defines if the following ":syntax" commands will define keywords,
+	matches or regions with the "conceal" flag set. After ":syn conceal
+	on", all subsequent ":syn keyword", ":syn match" or ":syn region"
+	defined will have the "conceal" flag set implicitly. ":syn conceal
+	off" returns to the normal state where the "conceal" flag must be
+	given explicitly.
+
 ==============================================================================
 7. Syntax patterns				*:syn-pattern* *E401* *E402*
 
@@ -3414,8 +3503,9 @@ Notes:
 - The highlighted area will never be outside of the matched text.
 - A negative offset for an end pattern may not always work, because the end
   pattern may be detected when the highlighting should already have stopped.
-- Until Vim 7.2 the offsets were counted in bytes instead of characters.  This
-  didn't work well for multi-byte characters.
+- Before Vim 7.2 the offsets were counted in bytes instead of characters.
+  This didn't work well for multi-byte characters, so it was changed with the
+  Vim 7.2 release.
 - The start of a match cannot be in a line other than where the pattern
   matched.  This doesn't work: "a\nb"ms=e.  You can make the highlighting
   start in another line, this does work: "a\nb"hs=e.
@@ -3466,7 +3556,8 @@ expected, but there are a few exceptions.
 
 When using a start pattern with an offset, the start of the match is not
 allowed to start in a following line.  The highlighting can start in a
-following line though.
+following line though.  Using the "\zs" item also requires that the start of
+the match doesn't move to another line.
 
 The skip pattern can include the "\n", but the search for an end pattern will
 continue in the first character of the next line, also when that character is
@@ -3829,13 +3920,20 @@ This will open a new window containing all highlight group names, displayed
 in their own color.
 
 						*:colo* *:colorscheme* *E185*
+:colo[rscheme]		Output the name of the currently active color scheme.
+			This is basically the same as >
+				:echo g:colors_name
+<			In case g:colors_name has not been defined :colo will
+			output "default".  When compiled without the |+eval|
+			feature it will output "unknown".
+
 :colo[rscheme] {name}	Load color scheme {name}.  This searches 'runtimepath'
 			for the file "colors/{name}.vim.  The first one that
 			is found is loaded.
-			To see the name of the currently active color scheme
-			(if there is one): >
-				:echo g:colors_name
-<			Doesn't work recursively, thus you can't use
+			To see the name of the currently active color scheme: >
+				:colo
+<			The name is also stored in the g:colors_name variable.
+			Doesn't work recursively, thus you can't use
 			":colorscheme" in a color scheme script.
 			After the color scheme has been loaded the
 			|ColorScheme| autocommand event is triggered.
@@ -4032,7 +4130,7 @@ ctermbg={color-nr}				*highlight-ctermbg*
 	colors.
 	When a colorscheme is being used, changing 'background' causes it to
 	be reloaded, which may reset all colors (including Normal).  First
-	delete the "colors_name" variable when you don't want this.
+	delete the "g:colors_name" variable when you don't want this.
 
 	When you have set "ctermfg" or "ctermbg" for the Normal group, Vim
 	needs to reset the color when exiting.	This is done with the "op"
@@ -4119,6 +4217,11 @@ These are the default highlighting groups.  These groups are used by the
 'highlight' option default.  Note that the highlighting depends on the value
 of 'background'.  You can see the current settings with the ":highlight"
 command.
+							*hl-ColorColumn*
+ColorColumn	used for the columns set with 'colorcolumn'
+							*hl-Conceal*
+Conceal		placeholder characters substituted for concealed
+		text (see 'conceallevel')
 							*hl-Cursor*
 Cursor		the character under the cursor
 							*hl-CursorIM*
@@ -4154,7 +4257,7 @@ IncSearch	'incsearch' highlighting; also used for the text replaced with
 		":s///c"
 							*hl-LineNr*
 LineNr		Line number for ":number" and ":#" commands, and when 'number'
-		option is set.
+		or 'relativenumber' option is set.
 							*hl-MatchParen*
 MatchParen	The character under the cursor or just before it, if it
 		is a paired bracket, and its match. |pi_paren.txt|
@@ -4420,6 +4523,35 @@ And put these lines in your .vimrc: >
    autocmd BufRead,BufNewFile *.[ch] if filereadable(fname)
    autocmd BufRead,BufNewFile *.[ch]   exe 'so ' . fname
    autocmd BufRead,BufNewFile *.[ch] endif
+
+==============================================================================
+16. Window-local syntax				*:ownsyntax*
+
+Normally all windows on a buffer share the same syntax settings. It is
+possible, however, to set a particular window on a file to have its own
+private syntax setting. A possible example would be to edit LaTeX source
+with conventional highlighting in one window, while seeing the same source
+highlighted differently (so as to hide control sequences and indicate bold,
+italic etc regions) in another. The 'scrollbind' option is useful here.
+
+To set the current window to have the syntax "foo", separately from all other
+windows on the buffer: >
+   :ownsyntax foo
+<						*w:current_syntax*
+This will set the "w:current_syntax" variable to "foo".  The value of
+"b:current_syntax" does not change.  This is implemented by saving and
+restoring "b:current_syntax", since the syntax files do set
+"b:current_syntax".  The value set by the syntax file is assigned to
+"w:current_syntax".
+
+Once a window has its own syntax, syntax commands executed from other windows
+on the same buffer (including :syntax clear) have no effect. Conversely, 
+syntax commands executed from that window do not effect other windows on the
+same buffer.
+
+A window with its own syntax reverts to normal behavior when another buffer
+is loaded into that window or the file is reloaded.
+When splitting the window, the new window will use the original syntax.
 
 ==============================================================================
 16. Color xterms				*xterm-color* *color-xterm*
