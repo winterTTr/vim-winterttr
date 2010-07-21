@@ -752,15 +752,9 @@ endif "}}}2
 python << EOS
 import pyvim
 
-# buffer explorer
-from pyvimex import pvBufferExplorer
-tabBufEx = pvBufferExplorer.Application()
-tabBufEx.start()
-
-# file explorer
-from pyvimex import pvFileExplorer
-fileEx = pvFileExplorer.Application()
-fileEx.start()
+from pyvimex import pvExplorerPanel
+expPanel = pvExplorerPanel.Application( '<M-1>' )
+expPanel.start()
 
 # doxygen
 from pyvimex import pvDoxygen
