@@ -151,7 +151,7 @@ if !exists("autocommands_loaded")
 	augroup END  " }}}3
 	augroup JavascriptLint "{{{3
 		au!
-		autocmd FileType javascript set makeprg=jsl.exe\ -conf\ jsl.default.conf\ -process\ \"%\"
+		autocmd FileType javascript set makeprg=jsl.exe\ -nofilelisting\ -nocontext\ -nosummary\ -nologo\ -conf\ jsl.default.conf\ -process\ \"%\"
 	augroup END           "}}}3
 	autocmd QuickFixCmdPost * cwindow
     autocmd FileType * :set formatoptions=tcql autoindent comments&
