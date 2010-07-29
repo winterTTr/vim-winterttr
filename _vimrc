@@ -115,54 +115,53 @@ set autoindent
 " --- auto command ---- {{{2
 if !exists("autocommands_loaded")
     let autocommands_loaded = 1
-
-    augroup DefineMenuStyle
+    augroup DefineMenuStyle "{{{3
         au!
         autocmd FileType * hi CursorLine guibg=#333333
         autocmd FileType * hi CursorColumn guibg=#333333
         autocmd FileType * hi PMenu guifg=#AAAAAA guibg=#555555
         autocmd FileType * hi PmenuSel guifg=#0000AA
-    augroup END
-
-	augroup SymbianFileType
+	augroup END "}}}3
+	augroup SymbianFileType "{{{3
 		au!
 		autocmd BufRead,BufNewFile *.hrh set filetype=cpp 
         autocmd BufRead,BufNewFile *.docml set filetype=xml
-	augroup END
-
+	augroup END "}}}3
+	augroup CPPFile "{{{3
+		au!
+		autocmd FileType cpp syn match cppFuncDef "::\~\?\zs\h\w*\ze([^)]*\()\s*\(const\)\?\)\?$"
+					\| hi def link cppFuncDef Special
+	augroup END   " }}}3
+	augroup Binary " {{{3
+		" vim -b : edit binary using xxd-format!
+		au!
+		au BufReadPre  *.bin,*.exe let &bin=1
+		au BufReadPost *.bin,*.exe if &bin | %!xxd
+		au BufReadPost *.bin,*.exe set ft=xxd | endif
+		au BufRead *.exe,*.bin if &bin | set noendofline | endif
+		au BufWritePre *.bin,*.exe if &bin | %!xxd -r
+		au BufWritePre *.bin,*.exe endif
+		au BufWritePost *.bin,*.exe if &bin | %!xxd
+		au BufWritePost *.bin,*.exe set nomod | endif
+	augroup END  " }}}3
+	augroup TTrSessionManager " {{{3
+		au!
+		"autocmd VimLeave * call TTr_SessionSave()
+		"autocmd VimEnter * call TTr_SessionLoad()
+	augroup END  " }}}3
+	augroup JavascriptLint "{{{3
+		au!
+		autocmd FileType javascript set makeprg=jsl.exe\ -conf\ jsl.default.conf\ -process\ \"%\"
+	augroup END           "}}}3
 	autocmd QuickFixCmdPost * cwindow
     autocmd FileType * :set formatoptions=tcql autoindent comments&
     autocmd FileType css :set formatoptions=cql autoindent
-    "autocmd FileType c,cpp,h,java :set formatoptions=croql cindent
-    "            \ cinoptions=>0,f1s comments=sr:/*,mb:*,ex:*/,:// expandtab
     autocmd FileType c,cpp,h,java :set formatoptions=croql cindent
                 \ comments=sr:/*,mb:*,ex:*/,:// expandtab
 	"autocmd BufEnter * :cd %:p:h
     "autocmd CursorMoved *.c,*.cpp,*.h,*.java call ColumnHighlight()
     "autocmd InsertEnter *.c,*.cpp,*.h,*.java call RemoveHighlightOnInsertEnter()
-    augroup CPPFile "{{{3
-        au!
-        autocmd FileType cpp syn match cppFuncDef "::\~\?\zs\h\w*\ze([^)]*\()\s*\(const\)\?\)\?$"
-                    \| hi def link cppFuncDef Special
-    augroup END   " }}}3
     "autocmd GUIEnter * simalt ~x
-    " vim -b : edit binary using xxd-format!
-    augroup Binary " {{{3
-        au!
-        au BufReadPre  *.bin,*.exe let &bin=1
-        au BufReadPost *.bin,*.exe if &bin | %!xxd
-        au BufReadPost *.bin,*.exe set ft=xxd | endif
-        au BufRead *.exe,*.bin if &bin | set noendofline | endif
-        au BufWritePre *.bin,*.exe if &bin | %!xxd -r
-        au BufWritePre *.bin,*.exe endif
-        au BufWritePost *.bin,*.exe if &bin | %!xxd
-        au BufWritePost *.bin,*.exe set nomod | endif
-    augroup END  " }}}3
-    augroup TTrSessionManager " {{{3
-        au!
-        "autocmd VimLeave * call TTr_SessionSave()
-        "autocmd VimEnter * call TTr_SessionLoad()
-    augroup END  " }}}3
 endif
 " ---------------------}}}2
 
