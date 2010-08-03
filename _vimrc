@@ -7,11 +7,9 @@
 
 "=============================================================================
 " Encoding and lang options {{{1
-set langmenu=none
-"set langmenu=zh_CN.utf-8
+set langmenu=none "zh_CN.utf-8
 set helplang=cn
-language message en_US
-"language message zh_CN.utf-8
+language message en_US "zh_CN.utf-8
 
 set fileformats=unix,dos
 if has("multi_byte")
@@ -19,9 +17,7 @@ if has("multi_byte")
     set encoding=utf-8
     if has("unix")
         set fileencodings=ucs-bom,utf-8,euc-cn,prc,latin1
-    endif
-
-    if has("win32")
+    elseif has("win32")
         set fileencodings=ucs-bom,utf-8,cp932,cp936,cp950,prc,latin1
     endif
 else
@@ -62,9 +58,9 @@ if has("gui_running")
     set columns=130
     set lines=45
     "colorscheme darkblue
-	"colorscheme desertEx
+    "colorscheme desertEx
     "colorscheme freya
-	"colorscheme brookstream
+    "colorscheme brookstream
     colorscheme darkerdesert
     set background=dark
     "set guioptions=aegimtrLv
@@ -115,53 +111,53 @@ set autoindent
 " --- auto command ---- {{{2
 if !exists("autocommands_loaded")
     let autocommands_loaded = 1
+    autocmd QuickFixCmdPost * cwindow
+    autocmd FileType * :set formatoptions=tcql autoindent comments&
+    autocmd FileType css :set formatoptions=cql autoindent
+    autocmd FileType c,cpp,h,java :set formatoptions=croql cindent
+                \ comments=sr:/*,mb:*,ex:*/,:// expandtab
+    "autocmd BufEnter * :cd %:p:h
+    "autocmd CursorMoved *.c,*.cpp,*.h,*.java call ColumnHighlight()
+    "autocmd InsertEnter *.c,*.cpp,*.h,*.java call RemoveHighlightOnInsertEnter()
+    "autocmd GUIEnter * simalt ~x
     augroup DefineMenuStyle "{{{3
         au!
         autocmd FileType * hi CursorLine guibg=#333333
         autocmd FileType * hi CursorColumn guibg=#333333
         autocmd FileType * hi PMenu guifg=#AAAAAA guibg=#555555
         autocmd FileType * hi PmenuSel guifg=#0000AA
-	augroup END "}}}3
-	augroup SymbianFileType "{{{3
-		au!
-		autocmd BufRead,BufNewFile *.hrh set filetype=cpp 
+    augroup END "}}}3
+    augroup SymbianFileType "{{{3
+        au!
+        autocmd BufRead,BufNewFile *.hrh set filetype=cpp 
         autocmd BufRead,BufNewFile *.docml set filetype=xml
-	augroup END "}}}3
-	augroup CPPFile "{{{3
-		au!
-		autocmd FileType cpp syn match cppFuncDef "::\~\?\zs\h\w*\ze([^)]*\()\s*\(const\)\?\)\?$"
-					\| hi def link cppFuncDef Special
-	augroup END   " }}}3
-	augroup Binary " {{{3
-		" vim -b : edit binary using xxd-format!
-		au!
-		au BufReadPre  *.bin,*.exe let &bin=1
-		au BufReadPost *.bin,*.exe if &bin | %!xxd
-		au BufReadPost *.bin,*.exe set ft=xxd | endif
-		au BufRead *.exe,*.bin if &bin | set noendofline | endif
-		au BufWritePre *.bin,*.exe if &bin | %!xxd -r
-		au BufWritePre *.bin,*.exe endif
-		au BufWritePost *.bin,*.exe if &bin | %!xxd
-		au BufWritePost *.bin,*.exe set nomod | endif
-	augroup END  " }}}3
-	augroup TTrSessionManager " {{{3
-		au!
-		"autocmd VimLeave * call TTr_SessionSave()
-		"autocmd VimEnter * call TTr_SessionLoad()
-	augroup END  " }}}3
-	augroup JavascriptLint "{{{3
-		au!
-		autocmd FileType javascript set makeprg=jsl.exe\ -nofilelisting\ -nocontext\ -nosummary\ -nologo\ -conf\ \"$VIM/jsl.default.conf\"\ -process\ \"%\"
-	augroup END           "}}}3
-	autocmd QuickFixCmdPost * cwindow
-    autocmd FileType * :set formatoptions=tcql autoindent comments&
-    autocmd FileType css :set formatoptions=cql autoindent
-    autocmd FileType c,cpp,h,java :set formatoptions=croql cindent
-                \ comments=sr:/*,mb:*,ex:*/,:// expandtab
-	"autocmd BufEnter * :cd %:p:h
-    "autocmd CursorMoved *.c,*.cpp,*.h,*.java call ColumnHighlight()
-    "autocmd InsertEnter *.c,*.cpp,*.h,*.java call RemoveHighlightOnInsertEnter()
-    "autocmd GUIEnter * simalt ~x
+    augroup END "}}}3
+    augroup CPPFile "{{{3
+        au!
+        autocmd FileType cpp syn match cppFuncDef "::\~\?\zs\h\w*\ze([^)]*\()\s*\(const\)\?\)\?$"
+                    \| hi def link cppFuncDef Special
+    augroup END   " }}}3
+    augroup Binary " {{{3
+        " vim -b : edit binary using xxd-format!
+        au!
+        au BufReadPre  *.bin,*.exe let &bin=1
+        au BufReadPost *.bin,*.exe if &bin | %!xxd
+        au BufReadPost *.bin,*.exe set ft=xxd | endif
+        au BufRead *.exe,*.bin if &bin | set noendofline | endif
+        au BufWritePre *.bin,*.exe if &bin | %!xxd -r
+        au BufWritePre *.bin,*.exe endif
+        au BufWritePost *.bin,*.exe if &bin | %!xxd
+        au BufWritePost *.bin,*.exe set nomod | endif
+    augroup END  " }}}3
+    augroup TTrSessionManager " {{{3
+        au!
+        "autocmd VimLeave * call TTr_SessionSave()
+        "autocmd VimEnter * call TTr_SessionLoad()
+    augroup END  " }}}3
+    augroup JavascriptLint "{{{3
+        au!
+        autocmd FileType javascript set makeprg=jsl.exe\ -nofilelisting\ -nocontext\ -nosummary\ -nologo\ -conf\ \"$VIM/jsl.default.conf\"\ -process\ \"%\"
+    augroup END           "}}}3
 endif
 " ---------------------}}}2
 
@@ -213,11 +209,11 @@ inoremap <silent> <C-C> <C-O>:q<CR>
 
 " --- Save the file via <C-S> ---{{{2
 function! s:TTr_MapFunc_SaveAction()
-	if expand("%") == "" 
-		browse confirm update 
-	else 
-		confirm update 
-	endif
+    if expand("%") == "" 
+        browse confirm update 
+    else 
+        confirm update 
+    endif
 endfunction
 inoremap <silent> <C-S> <C-O>:call <SID>TTr_MapFunc_SaveAction()<CR>
 nnoremap <silent> <C-S> :call <SID>TTr_MapFunc_SaveAction()<CR>
@@ -649,29 +645,29 @@ let g:TTr_AutoTags_Config['global'] = ['D:\SymbianSDK\taglist\SDK\tags']
 let g:TTr_AutoTags_Config['local'] = ""
 
 function! s:TTr_AutoTags_SetLocalPath(tagsPath)
-	let g:TTr_AutoTags_Config['local'] = a:tagsPath
-	set tags=
-	for gpath in g:TTr_AutoTags_Config['global']
-		execute "set tags+=" . gpath
-	endfor
-	execute "set tags+=" . g:TTr_AutoTags_Config['local'].'*.tags'
+    let g:TTr_AutoTags_Config['local'] = a:tagsPath
+    set tags=
+    for gpath in g:TTr_AutoTags_Config['global']
+        execute "set tags+=" . gpath
+    endfor
+    execute "set tags+=" . g:TTr_AutoTags_Config['local'].'*.tags'
 endfunction
 
 function! s:TTr_AutoTags_UpdateTagsFiles()
-	" check auto save path
-	if !exists("g:TTr_AutoTags_Config") || g:TTr_AutoTags_Config['local'] == ""
-		return
-	endif
+    " check auto save path
+    if !exists("g:TTr_AutoTags_Config") || g:TTr_AutoTags_Config['local'] == ""
+        return
+    endif
 
-	" check if the buffer associated with a file
-	if expand("%:p") == ""
-		return
-	endif
+    " check if the buffer associated with a file
+    if expand("%:p") == ""
+        return
+    endif
 
-	let tagsOutputFile = g:TTr_AutoTags_Config['local'] . expand("%:p:t") .'.tags'
-	let tagsTargetFile = expand("%:p")
-	let execCmd = '!ctags --c++-kinds=+p --fields=+iaS --extra=+q -f "'. tagsOutputFile . '" "' . tagsTargetFile .'"'
-	silent execute execCmd
+    let tagsOutputFile = g:TTr_AutoTags_Config['local'] . expand("%:p:t") .'.tags'
+    let tagsTargetFile = expand("%:p")
+    let execCmd = '!ctags --c++-kinds=+p --fields=+iaS --extra=+q -f "'. tagsOutputFile . '" "' . tagsTargetFile .'"'
+    silent execute execCmd
 endfunction
 
 " ----------------------- }}}2
@@ -708,7 +704,7 @@ endfunction
 
 function! Py_CompleteAttributes() "{{{2
     "let ModulePath = matchstr(getline(".")[:col('.')],'\m[0-9A-Za-z.]*\.\w*$')
-	"let partName = matchstr(getline("."),'\m[0-9A-Za-z.]*\.\zs\w*\ze.*$')
+    "let partName = matchstr(getline("."),'\m[0-9A-Za-z.]*\.\zs\w*\ze.*$')
     redir => AttrNameStr | silent exec "py print getAttributesByName()" | redir END
 
     let AttrNameStr = AttrNameStr[1:]
@@ -739,9 +735,9 @@ if !exists("autoload_python") "{{{2
         autocmd FileType PYTHON set expandtab shiftwidth=4
         "autocmd FileType PYTHON inoremap <C-ENTER> <C-R>=Py_CompleteAttributes()<CR>
 
-	   "Set some bindings up for 'compile' of python
-	   autocmd FileType python set makeprg=python\ -c\ \"import\ py_compile,sys;\ sys.stderr=sys.stdout;\ py_compile.compile(r'%')\"
-	   autocmd FileType python set efm=%C\ %.%#,%A\ \ File\ \"%f\"\\,\ line\ %l%.%#,%Z%[%^\ ]%\\@=%m
+       "Set some bindings up for 'compile' of python
+       autocmd FileType python set makeprg=python\ -c\ \"import\ py_compile,sys;\ sys.stderr=sys.stdout;\ py_compile.compile(r'%')\"
+       autocmd FileType python set efm=%C\ %.%#,%A\ \ File\ \"%f\"\\,\ line\ %l%.%#,%Z%[%^\ ]%\\@=%m
 
     augroup END
 endif "}}}2
@@ -769,18 +765,18 @@ EOS
 
 " DgFileHeader {{{2
 function! DgExpandFileHeader() "{{{ 2
-	let DgFileHeader = [ 
-				\' *  \brief    -->add brief <--',
-				\' *  \author   winterTTr',
-				\' *  \version  $Revision$',
-				\' *  \date     $Date$' , 
-				\' *  \bug      --> add bug list <--',
-				\' *',
-				\' *  --> add detail msg here --<',
-				\' */']
-	let fileName = expand('%:t')
-	call insert( DgFileHeader , '/*! \file     '.fileName , 0 )
-	call append( 0 , DgFileHeader )
+    let DgFileHeader = [ 
+                \' *  \brief    -->add brief <--',
+                \' *  \author   winterTTr',
+                \' *  \version  $Revision$',
+                \' *  \date     $Date$' , 
+                \' *  \bug      --> add bug list <--',
+                \' *',
+                \' *  --> add detail msg here --<',
+                \' */']
+    let fileName = expand('%:t')
+    call insert( DgFileHeader , '/*! \file     '.fileName , 0 )
+    call append( 0 , DgFileHeader )
 endfunction "}}}2
 command! -nargs=0 DgFile call DgExpandFileHeader()
 
