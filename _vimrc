@@ -188,6 +188,7 @@ set selectmode=key
 set keymodel=startsel,stopsel
 set switchbuf=useopen,usetab
 set winaltkeys=no
+set cursorbind
 "}}}1
 "=============================================================================
 " Key map {{{1
