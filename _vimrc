@@ -103,8 +103,9 @@ set wrapscan
 "=============================================================================
 " Auto options {{{1
 "-------------------------------------------------
-filetype plugin on
 filetype on
+filetype plugin on
+filetype indent on
 set autoread
 set autoindent
 
@@ -113,9 +114,8 @@ if !exists("autocommands_loaded")
     let autocommands_loaded = 1
     autocmd QuickFixCmdPost * cwindow
     autocmd FileType * :set formatoptions=tcql autoindent comments&
-    autocmd FileType css :set formatoptions=cql autoindent
-    autocmd FileType c,cpp,h,java :set formatoptions=croql cindent
-                \ comments=sr:/*,mb:*,ex:*/,:// expandtab
+    autocmd FileType css :set formatoptions=cql autoindent expandtab shiftwidth=4
+    autocmd FileType c,cpp,h,java :set formatoptions=croql cindent comments=sr:/*,mb:*,ex:*/,:// expandtab
     "autocmd BufEnter * :cd %:p:h
     "autocmd CursorMoved *.c,*.cpp,*.h,*.java call ColumnHighlight()
     "autocmd InsertEnter *.c,*.cpp,*.h,*.java call RemoveHighlightOnInsertEnter()
@@ -134,8 +134,7 @@ if !exists("autocommands_loaded")
     augroup END "}}}3
     augroup CPPFile "{{{3
         au!
-        autocmd FileType cpp syn match cppFuncDef "::\~\?\zs\h\w*\ze([^)]*\()\s*\(const\)\?\)\?$"
-                    \| hi def link cppFuncDef Special
+        autocmd FileType cpp syn match cppFuncDef "::\~\?\zs\h\w*\ze([^)]*\()\s*\(const\)\?\)\?$" | hi def link cppFuncDef Special
     augroup END   " }}}3
     augroup Binary " {{{3
         " vim -b : edit binary using xxd-format!
@@ -154,9 +153,10 @@ if !exists("autocommands_loaded")
         "autocmd VimLeave * call TTr_SessionSave()
         "autocmd VimEnter * call TTr_SessionLoad()
     augroup END  " }}}3
-    augroup JavascriptLint "{{{3
+    augroup Javascript "{{{3
         au!
         autocmd FileType javascript set makeprg=jsl.exe\ -nofilelisting\ -nocontext\ -nosummary\ -nologo\ -conf\ \"$VIM/jsl.default.conf\"\ -process\ \"%\"
+        autocmd FileType javascript set shiftwidth=4 expandtab
     augroup END           "}}}3
 endif
 " ---------------------}}}2
