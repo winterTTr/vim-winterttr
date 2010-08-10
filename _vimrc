@@ -169,6 +169,11 @@ if !exists("autocommands_loaded")
 		au!
 		autocmd FileType html,xml,xhtml set expandtab shiftwidth=2
 	augroup END "}}}3
+	augroup AUG_LatexSuite "{{{3
+		autocmd!
+		autocmd FileType TEX :set shiftwidth=2 iskeyword+=:
+	augroup end        "}}}3
+
 endif
 " ---------------------}}}2
 
@@ -190,12 +195,13 @@ set backspace=eol,indent,start
 set whichwrap=b,s,h,l
 set iminsert=1
 set imsearch=1
-" make it possible to use shift + <array> to select context(select-mode)
 set selectmode=key
 set keymodel=startsel,stopsel
 set switchbuf=useopen,usetab
 set winaltkeys=no
 set cursorbind
+"set shellslash
+set grepprg=grep\ -nH\ $*
 "}}}1
 "=============================================================================
 " Key map {{{1
@@ -450,69 +456,9 @@ command!    -nargs=0 HideFunctions call TTr_HideAll()
 
 command!    -nargs=1 SetSession :let g:SessionFileName=g:PathToSessions.<q-args>.".vim"
 command!    -nargs=1 UnsetSession :let g:SessionFileName=""
-
-command!    -nargs=1 -complete=dir TagsSetPath call <SID>TTr_AutoTags_SetLocalPath(<f-args>)
 " }}}1
 "=============================================================================
 " Functions For Mine :-) {{{1
-
-" --- Switch Between the java/cpp/c and its h files --- {{{2
-nnoremap    <silent> <M-o>   :call SwitchBetweenProgrammingFile()<CR>
-
-" Function <SwitchBetweenProgrammingFile> used to detect the file .{{{3
-"       if exist , split open ; else ask to create.
-function! SwitchBetweenProgrammingFile() "{{{4
-
-    " Open type ( now I set it to vertical split )
-    let FileOpenType = "vertical split "
-    "let FileOpenType = "tabnew "
-
-    " get Current file's expand name and the name without exp including the full path
-    let CurExpName = expand("%:e")
-    let CurFullPathNameNoExp = expand("%:p:r")
-    let CurNameNoExp = expand("%:r")
-
-    " Make the list for detecting when the current file is H file
-    let ExpIndex = ["cpp","c","java",""]
-
-    " if the CurExpName == H , detecting the possible file and open the first can be readable
-    if CurExpName == "h"
-        "detecting
-        for index in ExpIndex
-            let FullNameForOpen = CurFullPathNameNoExp.".".index
-            if filereadable(FullNameForOpen)
-                execute FileOpenType.FullNameForOpen
-                return
-            endif
-        endfor
-        " if can't find one , ask to create
-        let UserInputExpName = input("create file (<esc> to cancel): ".CurNameNoExp.".",&filetype)
-        if UserInputExpName == ""
-            "execute FileOpenType.CurFullPathNameNoExp
-            return
-        else
-            execute FileOpenType.CurFullPathNameNoExp.".".UserInputExpName
-            return
-        endif
-    endif
-    
-    " if the CurExpName != h , open the H file if exist.
-    if filereadable(CurFullPathNameNoExp.".h")
-        execute FileOpenType.CurFullPathNameNoExp.".h"
-        return
-    else " not exsit , ask to create
-        let UserChoice = input("Create file [".CurNameNoExp.".h] ?[y/n]","y")
-        if UserChoice == "y"
-            execute FileOpenType.CurFullPathNameNoExp.".h"
-            return
-        else " not y
-            return
-        endif
-    endif
-
-endfunction "}}}4
-" end function SwitchBetweenProgrammingFile }}}3
-" ------------------------------------------------------ }}}2
 
 " --- TTr_ShowProgrammingTags() from VimTips --- {{{2
 function! TTr_ShowProgrammingTags(type)
@@ -647,45 +593,6 @@ function! TTr_SessionSave()
    endif
 endfunction
 " ------------------------------ }}}2
-
-" --- Toggle Comments --- {{{2
-
-"nnoremap <F7> :call TTrCodeAssistor_ToggleComments()<CR>
-"vnoremap <F7> :call TTrCodeAssistor_ToggleComments()<CR>
-" ----------------------- }}}2
-
-" --- Auto update Tags File when save --- {{{2
-let g:TTr_AutoTags_Config = {}
-let g:TTr_AutoTags_Config['global'] = ['D:\SymbianSDK\taglist\SDK\tags']
-let g:TTr_AutoTags_Config['local'] = ""
-
-function! s:TTr_AutoTags_SetLocalPath(tagsPath)
-    let g:TTr_AutoTags_Config['local'] = a:tagsPath
-    set tags=
-    for gpath in g:TTr_AutoTags_Config['global']
-        execute "set tags+=" . gpath
-    endfor
-    execute "set tags+=" . g:TTr_AutoTags_Config['local'].'*.tags'
-endfunction
-
-function! s:TTr_AutoTags_UpdateTagsFiles()
-    " check auto save path
-    if !exists("g:TTr_AutoTags_Config") || g:TTr_AutoTags_Config['local'] == ""
-        return
-    endif
-
-    " check if the buffer associated with a file
-    if expand("%:p") == ""
-        return
-    endif
-
-    let tagsOutputFile = g:TTr_AutoTags_Config['local'] . expand("%:p:t") .'.tags'
-    let tagsTargetFile = expand("%:p")
-    let execCmd = '!ctags --c++-kinds=+p --fields=+iaS --extra=+q -f "'. tagsOutputFile . '" "' . tagsTargetFile .'"'
-    silent execute execCmd
-endfunction
-
-" ----------------------- }}}2
 
 " [AutoComplete functions] from mbbill {{{2
 "let s:min_len = 2
@@ -863,18 +770,6 @@ command! -nargs=0 DgDefine  call DgExpandDefineHeader()
 
 command! -nargs=0 DgMember  execute "normal A\<tab>\<tab>/*!<   */\<left>\<left>\<left>" | startinsert
 
-" }}}1
-"=============================================================================
-" Latex Setting {{{1
-if has("win32")
-    set shellslash
-endif
-augroup LatexSuite
-    autocmd!
-    autocmd FileType TEX :set sw=2 iskeyword+=:
-augroup end
-filetype indent on
-set grepprg=grep\ -nH\ $*
 " }}}1
 "=============================================================================
 " Menu {{{1
