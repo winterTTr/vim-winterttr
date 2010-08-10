@@ -114,50 +114,61 @@ if !exists("autocommands_loaded")
     let autocommands_loaded = 1
     autocmd QuickFixCmdPost * cwindow
     autocmd FileType * :set formatoptions=tcql autoindent comments&
-    autocmd FileType css :set formatoptions=cql autoindent expandtab shiftwidth=4
-    autocmd FileType c,cpp,h,java :set formatoptions=croql cindent comments=sr:/*,mb:*,ex:*/,:// expandtab
     "autocmd BufEnter * :cd %:p:h
     "autocmd CursorMoved *.c,*.cpp,*.h,*.java call ColumnHighlight()
     "autocmd InsertEnter *.c,*.cpp,*.h,*.java call RemoveHighlightOnInsertEnter()
     "autocmd GUIEnter * simalt ~x
-    augroup DefineMenuStyle "{{{3
+	augroup AUG_CSS "{{{3
+		au!
+		autocmd FileType css :set formatoptions=cql autoindent expandtab shiftwidth=2
+	augroup END     "}}}3
+	augroup AUG_CPPJAVA "{{{3
+		au!
+		autocmd FileType c,cpp,h set formatoptions=croql cindent comments=sr:/*,mb:*,ex:*/,:// expandtab
+		autocmd FileType cpp syn match cppFuncDef "::\~\?\zs\h\w*\ze([^)]*\()\s*\(const\)\?\)\?$" | hi def link cppFuncDef Special
+		autocmd FileType java    set formatoptions=croql cindent comments=sr:/*,mb:*,ex:*/,:// expandtab
+	augroup END     "}}}3
+    augroup AUG_DefineMenuStyle "{{{3
         au!
         autocmd FileType * hi CursorLine guibg=#333333
         autocmd FileType * hi CursorColumn guibg=#333333
         autocmd FileType * hi PMenu guifg=#AAAAAA guibg=#555555
         autocmd FileType * hi PmenuSel guifg=#0000AA
     augroup END "}}}3
-    augroup SymbianFileType "{{{3
+    augroup AUG_Symbian "{{{3
         au!
         autocmd BufRead,BufNewFile *.hrh set filetype=cpp 
         autocmd BufRead,BufNewFile *.docml set filetype=xml
     augroup END "}}}3
-    augroup CPPFile "{{{3
-        au!
-        autocmd FileType cpp syn match cppFuncDef "::\~\?\zs\h\w*\ze([^)]*\()\s*\(const\)\?\)\?$" | hi def link cppFuncDef Special
-    augroup END   " }}}3
-    augroup Binary " {{{3
+    augroup AUG_Binary " {{{3
         " vim -b : edit binary using xxd-format!
         au!
-        au BufReadPre  *.bin,*.exe let &bin=1
-        au BufReadPost *.bin,*.exe if &bin | %!xxd
-        au BufReadPost *.bin,*.exe set ft=xxd | endif
-        au BufRead *.exe,*.bin if &bin | set noendofline | endif
-        au BufWritePre *.bin,*.exe if &bin | %!xxd -r
-        au BufWritePre *.bin,*.exe endif
-        au BufWritePost *.bin,*.exe if &bin | %!xxd
-        au BufWritePost *.bin,*.exe set nomod | endif
+        au BufReadPre   *.bin,*.exe let &bin=1
+        au BufReadPost  *.bin,*.exe if &bin | %!xxd | set ft=xxd | endif
+        au BufRead      *.exe,*.bin if &bin | set noendofline | endif
+		au BufWritePre  *.bin,*.exe if &bin | %!xxd -r | endif
+		au BufWritePost *.bin,*.exe if &bin | %!xxd | set nomod | endif
     augroup END  " }}}3
-    augroup TTrSessionManager " {{{3
+    augroup AUG_TTrSessionManager " {{{3
         au!
         "autocmd VimLeave * call TTr_SessionSave()
         "autocmd VimEnter * call TTr_SessionLoad()
     augroup END  " }}}3
-    augroup Javascript "{{{3
+    augroup AUG_JAVASCRIPT "{{{3
         au!
+		autocmd FileType javascript set expandtab shiftwidth=4
         autocmd FileType javascript set makeprg=jsl.exe\ -nofilelisting\ -nocontext\ -nosummary\ -nologo\ -conf\ \"$VIM/jsl.default.conf\"\ -process\ \"%\"
-        autocmd FileType javascript set shiftwidth=4 expandtab
-    augroup END           "}}}3
+	augroup AUG_PYTHON "{{{3
+		au!
+		"autocmd FileType PYTHON inoremap <C-ENTER> <C-R>=Py_CompleteAttributes()<CR>
+		autocmd FileType PYTHON set expandtab shiftwidth=4
+		autocmd FileType python set makeprg=python\ -c\ \"import\ py_compile,sys;\ sys.stderr=sys.stdout;\ py_compile.compile(r'%')\"
+		autocmd FileType python set efm=%C\ %.%#,%A\ \ File\ \"%f\"\\,\ line\ %l%.%#,%Z%[%^\ ]%\\@=%m
+	augroup END "}}}3
+	augroup AUG_XMLHTML "{{{3
+		au!
+		autocmd FileType html,xml,xhtml set expandtab shiftwidth=2
+	augroup END "}}}3
 endif
 " ---------------------}}}2
 
@@ -705,7 +716,6 @@ endfunction
 "}}}1
 "=============================================================================
 " Python {{{1
-
 function! Py_CompleteAttributes() "{{{2
     "let ModulePath = matchstr(getline(".")[:col('.')],'\m[0-9A-Za-z.]*\.\w*$')
     "let partName = matchstr(getline("."),'\m[0-9A-Za-z.]*\.\zs\w*\ze.*$')
@@ -731,21 +741,6 @@ function! Py_CompleteAttributes() "{{{2
 
     return ""
 endfunction "}}}2
-
-if !exists("autoload_python") "{{{2
-    let autoload_python = 1
-    augroup PYTHON
-        au!
-        autocmd FileType PYTHON set expandtab shiftwidth=4
-        "autocmd FileType PYTHON inoremap <C-ENTER> <C-R>=Py_CompleteAttributes()<CR>
-
-       "Set some bindings up for 'compile' of python
-       autocmd FileType python set makeprg=python\ -c\ \"import\ py_compile,sys;\ sys.stderr=sys.stdout;\ py_compile.compile(r'%')\"
-       autocmd FileType python set efm=%C\ %.%#,%A\ \ File\ \"%f\"\\,\ line\ %l%.%#,%Z%[%^\ ]%\\@=%m
-
-    augroup END
-endif "}}}2
-
 " }}}1
 "=============================================================================
 " pyvim {{{1
