@@ -1,4 +1,4 @@
-*eval.txt*	For Vim version 7.3c.  Last change: 2010 Jul 25
+*eval.txt*	For Vim version 7.3f.  Last change: 2010 Aug 07
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -534,6 +534,10 @@ that references this function.	The function can only be used through a
 remaining that refers to it.
 
 It is not necessary to use the "dict" attribute for a numbered function.
+
+If you get an error for a numbered function, you can find out what it is with
+a trick.  Assuming the function is 42, the command is: >
+	:function {42}
 
 
 Functions for Dictionaries ~
@@ -4520,6 +4524,7 @@ readfile({fname} [, {binary} [, {max}]])
 		as an item.  Lines broken at NL characters.  Macintosh files
 		separated with CR will result in a single long line (unless a
 		NL appears somewhere).
+		All NUL characters are replaced with a NL character.
 		When {binary} is equal to "b" binary mode is used:
 		- When the last line ends in a NL an extra empty list item is
 		  added.
@@ -4527,7 +4532,8 @@ readfile({fname} [, {binary} [, {max}]])
 		Otherwise:
 		- CR characters that appear before a NL are removed.
 		- Whether the last line ends in a NL or not does not matter.
-		All NUL characters are replaced with a NL character.
+		- When 'encoding' is Unicode any UTF-8 byte order mark is
+		  removed from the text.
 		When {max} is given this specifies the maximum number of lines
 		to be read.  Useful if you only want to check the first ten
 		lines of a file: >
@@ -5094,7 +5100,7 @@ setreg({regname}, {value} [,{options}])
 		Set the register {regname} to {value}.
 		If {options} contains "a" or {regname} is upper case,
 		then the value is appended.
-		{options} can also contains a register type specification:
+		{options} can also contain a register type specification:
 		    "c" or "v"	      |characterwise| mode
 		    "l" or "V"	      |linewise| mode
 		    "b" or "<CTRL-V>" |blockwise-visual| mode
