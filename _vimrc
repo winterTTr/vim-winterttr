@@ -27,23 +27,15 @@ endif
 "=============================================================================
 " UI Settings {{{1
 "-------------------------------------------------
-syntax on
-set selection=inclusive
 set showmode
 set showcmd
 set title
 set number
 set ruler
 "set rulerformat=%55(%{strftime('%a\ %b\ %e\ %I:%M\ %p')}\ %5l,%-6(%c%V%)\ %P%)
-set showmatch
 set visualbell t_vb= 
 set novisualbell
 "set cursorline
-"hi CursorLine guibg=#333333
-"hi CursorColumn guibg=#333333
-"hi PMenu guifg=#AAAAAA guibg=#555555
-"hi PmenuSel guifg=#0000AA
-"set guifont&
 
 " --- Status Line --- {{{2
 set laststatus=2
@@ -63,7 +55,6 @@ if has("gui_running")
     "colorscheme brookstream
     colorscheme darkerdesert
     set background=dark
-    "set guioptions=aegimtrLv
     set guioptions=aegimtrL
     let Tlist_Show_Menu=1
     "set guifont=Bitstream_Vera_Sans_Mono:h10:cANSI
@@ -103,9 +94,8 @@ set wrapscan
 "=============================================================================
 " Auto options {{{1
 "-------------------------------------------------
-filetype on
-filetype plugin on
-filetype indent on
+syntax on
+filetype plugin indent on
 set autoread
 set autoindent
 
@@ -191,6 +181,8 @@ set linebreak
 "=============================================================================
 " Control options {{{1
 "-------------------------------------------------
+set showmatch
+set selection=inclusive
 set backspace=eol,indent,start
 set whichwrap=b,s,h,l
 set iminsert=1
