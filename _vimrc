@@ -214,7 +214,7 @@ noremap <DOWN> gj
 
 " --- Close the file via <C-C>--- {{{2
 nnoremap <silent> <C-C> :q<CR>
-vnoremap <silent> <C-C> <C-C>:q<CR>
+"vnoremap <silent> <C-C> <C-C>:q<CR>
 inoremap <silent> <C-C> <C-O>:q<CR>
 " ------------------------------}}}2
 
@@ -337,6 +337,16 @@ endif
 
 " --- select the last paste or input text --- {{{2
 nnoremap <expr> gp '`[' . strpart(getregtype(), 0, 1) . '`]'
+" ------------------------------------ }}}2
+
+
+" --- Visual Mode Search, Search inside the V-select area -- {{{2
+function! SearchInVSelectedArea()
+	return '\%>' . ( line("'<") - 1 ) . 'l\%<' . ( line("'>") + 1 ) .  'l'
+endfunction
+
+vnoremap / <C-C>/<C-R>=SearchInVSelectedArea()<CR>
+
 " ------------------------------------ }}}2
 
 "}}}1
