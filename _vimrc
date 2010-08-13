@@ -341,11 +341,11 @@ nnoremap <expr> gp '`[' . strpart(getregtype(), 0, 1) . '`]'
 
 
 " --- Visual Mode Search, Search inside the V-select area -- {{{2
-function! SearchInVSelectedArea()
-	return '\%>' . ( line("'<") - 1 ) . 'l\%<' . ( line("'>") + 1 ) .  'l'
-endfunction
+"function! SearchInVSelectedArea()
+"	return '\%>' . ( line("'<") - 1 ) . 'l\%<' . ( line("'>") + 1 ) .  'l'
+"endfunction
 
-vnoremap / <C-C>/<C-R>=SearchInVSelectedArea()<CR>
+vnoremap / <C-C>/\%V
 
 " ------------------------------------ }}}2
 
