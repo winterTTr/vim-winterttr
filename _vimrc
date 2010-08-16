@@ -110,16 +110,16 @@ if !exists("autocommands_loaded")
     "autocmd CursorMoved *.c,*.cpp,*.h,*.java call ColumnHighlight()
     "autocmd InsertEnter *.c,*.cpp,*.h,*.java call RemoveHighlightOnInsertEnter()
     "autocmd GUIEnter * simalt ~x
-	augroup AUG_CSS "{{{3
-		au!
-		autocmd FileType css :set formatoptions=cql autoindent expandtab shiftwidth=2
-	augroup END     "}}}3
-	augroup AUG_CPPJAVA "{{{3
-		au!
-		autocmd FileType c,cpp,h set formatoptions=croql cindent comments=sr:/*,mb:*,ex:*/,:// expandtab
-		autocmd FileType cpp syn match cppFuncDef "::\~\?\zs\h\w*\ze([^)]*\()\s*\(const\)\?\)\?$" | hi def link cppFuncDef Special
-		autocmd FileType java    set formatoptions=croql cindent comments=sr:/*,mb:*,ex:*/,:// expandtab
-	augroup END     "}}}3
+    augroup AUG_CSS "{{{3
+        au!
+        autocmd FileType css :set formatoptions=cql autoindent expandtab shiftwidth=2
+    augroup END     "}}}3
+    augroup AUG_CPPJAVA "{{{3
+        au!
+        autocmd FileType c,cpp,h set formatoptions=croql cindent comments=sr:/*,mb:*,ex:*/,:// expandtab
+        autocmd FileType cpp syn match cppFuncDef "::\~\?\zs\h\w*\ze([^)]*\()\s*\(const\)\?\)\?$" | hi def link cppFuncDef Special
+        autocmd FileType java    set formatoptions=croql cindent comments=sr:/*,mb:*,ex:*/,:// expandtab
+    augroup END     "}}}3
     augroup AUG_DefineMenuStyle "{{{3
         au!
         autocmd FileType * hi CursorLine guibg=#333333
@@ -138,8 +138,8 @@ if !exists("autocommands_loaded")
         au BufReadPre   *.bin,*.exe let &bin=1
         au BufReadPost  *.bin,*.exe if &bin | %!xxd | set ft=xxd | endif
         au BufRead      *.exe,*.bin if &bin | set noendofline | endif
-		au BufWritePre  *.bin,*.exe if &bin | %!xxd -r | endif
-		au BufWritePost *.bin,*.exe if &bin | %!xxd | set nomod | endif
+        au BufWritePre  *.bin,*.exe if &bin | %!xxd -r | endif
+        au BufWritePost *.bin,*.exe if &bin | %!xxd | set nomod | endif
     augroup END  " }}}3
     augroup AUG_TTrSessionManager " {{{3
         au!
@@ -148,23 +148,23 @@ if !exists("autocommands_loaded")
     augroup END  " }}}3
     augroup AUG_JAVASCRIPT "{{{3
         au!
-		autocmd FileType javascript set expandtab shiftwidth=4
+        autocmd FileType javascript set expandtab shiftwidth=4
         autocmd FileType javascript set makeprg=jsl.exe\ -nofilelisting\ -nocontext\ -nosummary\ -nologo\ -conf\ \"$VIM/jsl.default.conf\"\ -process\ \"%\"
-	augroup AUG_PYTHON "{{{3
-		au!
-		"autocmd FileType PYTHON inoremap <C-ENTER> <C-R>=Py_CompleteAttributes()<CR>
-		autocmd FileType PYTHON set expandtab shiftwidth=4
-		autocmd FileType python set makeprg=python\ -c\ \"import\ py_compile,sys;\ sys.stderr=sys.stdout;\ py_compile.compile(r'%')\"
-		autocmd FileType python set efm=%C\ %.%#,%A\ \ File\ \"%f\"\\,\ line\ %l%.%#,%Z%[%^\ ]%\\@=%m
-	augroup END "}}}3
-	augroup AUG_XMLHTML "{{{3
-		au!
-		autocmd FileType html,xml,xhtml set expandtab shiftwidth=2
-	augroup END "}}}3
-	augroup AUG_LatexSuite "{{{3
-		autocmd!
-		autocmd FileType TEX :set shiftwidth=2 iskeyword+=:
-	augroup end        "}}}3
+    augroup AUG_PYTHON "{{{3
+        au!
+        "autocmd FileType PYTHON inoremap <C-ENTER> <C-R>=Py_CompleteAttributes()<CR>
+        autocmd FileType PYTHON set expandtab shiftwidth=4
+        autocmd FileType python set makeprg=python\ -c\ \"import\ py_compile,sys;\ sys.stderr=sys.stdout;\ py_compile.compile(r'%')\"
+        autocmd FileType python set efm=%C\ %.%#,%A\ \ File\ \"%f\"\\,\ line\ %l%.%#,%Z%[%^\ ]%\\@=%m
+    augroup END "}}}3
+    augroup AUG_XMLHTML "{{{3
+        au!
+        autocmd FileType html,xml,xhtml set expandtab shiftwidth=2
+    augroup END "}}}3
+    augroup AUG_LatexSuite "{{{3
+        autocmd!
+        autocmd FileType TEX :set shiftwidth=2 iskeyword+=:
+    augroup end        "}}}3
 
 endif
 " ---------------------}}}2
@@ -342,7 +342,7 @@ nnoremap <expr> gp '`[' . strpart(getregtype(), 0, 1) . '`]'
 
 " --- Visual Mode Search, Search inside the V-select area -- {{{2
 "function! SearchInVSelectedArea()
-"	return '\%>' . ( line("'<") - 1 ) . 'l\%<' . ( line("'>") + 1 ) .  'l'
+"   return '\%>' . ( line("'<") - 1 ) . 'l\%<' . ( line("'>") + 1 ) .  'l'
 "endfunction
 
 vnoremap / <C-C>/\%V
@@ -656,18 +656,21 @@ endfunction "}}}2
 " }}}1
 "=============================================================================
 " pyvim {{{1
+if has("python")
 python << EOS
-import pyvim
+try:
+    import pyvim
+    from pyvimex import pvExplorerPanel
+    expPanel = pvExplorerPanel.Application( '<M-1>' )
+    expPanel.start()
 
-from pyvimex import pvExplorerPanel
-expPanel = pvExplorerPanel.Application( '<M-1>' )
-expPanel.start()
-
-# doxygen
-from pyvimex import pvDoxygen
-pvDoxygen.DoxygenMenuInit()
-
+    # doxygen
+    from pyvimex import pvDoxygen
+    pvDoxygen.DoxygenMenuInit()
+except:
+    pass
 EOS
+endif
 "}}}1
 "=============================================================================
 " Doxygen {{{1
@@ -817,4 +820,4 @@ smap <silent> <C-l> <Plug>(neocomplcache_snippets_expand)
 "=============================================================================
 
 
-" vim: set ft=vim ff=unix tw=72 foldmethod=marker :
+" vim: set ft=vim ff=unix tw=72 foldmethod=marker expandtab :
