@@ -9,6 +9,7 @@
 " Encoding and lang options {{{1
 "-------------------------------------------------
 set langmenu=none "zh_CN.utf-8
+set spell
 "set helplang=cn
 language message en_US "zh_CN.utf-8
 
