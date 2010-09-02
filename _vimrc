@@ -9,7 +9,7 @@
 " Encoding and lang options {{{1
 "-------------------------------------------------
 set langmenu=none "zh_CN.utf-8
-set spell
+set nospell
 "set helplang=cn
 language message en_US "zh_CN.utf-8
 
@@ -165,6 +165,10 @@ if !exists("autocommands_loaded")
     augroup AUG_LatexSuite "{{{3
         autocmd!
         autocmd FileType TEX :set shiftwidth=2 iskeyword+=:
+    augroup end        "}}}3
+    augroup AUG_JSON "{{{3
+        autocmd!
+        au BufRead,BufNewFile *.json setfiletype json
     augroup end        "}}}3
 
 endif
