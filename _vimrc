@@ -112,6 +112,10 @@ if !exists("autocommands_loaded")
     "autocmd CursorMoved *.c,*.cpp,*.h,*.java call ColumnHighlight()
     "autocmd InsertEnter *.c,*.cpp,*.h,*.java call RemoveHighlightOnInsertEnter()
     "autocmd GUIEnter * simalt ~x
+    augroup AUG_GSL "{{{3
+        au!
+        autocmd BufRead,BufNewFile *.gsl set filetype=xml 
+    augroup END     "}}}3
     augroup AUG_CSS "{{{3
         au!
         autocmd FileType css :set formatoptions=cql autoindent expandtab shiftwidth=2
@@ -161,7 +165,7 @@ if !exists("autocommands_loaded")
     augroup END "}}}3
     augroup AUG_XMLHTML "{{{3
         au!
-        autocmd FileType html,xml,xhtml set expandtab shiftwidth=2
+        autocmd FileType html,xml,xhtml set expandtab shiftwidth=2 formatoptions-=t
     augroup END "}}}3
     augroup AUG_LatexSuite "{{{3
         autocmd!
