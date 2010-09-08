@@ -109,8 +109,6 @@ if !exists("autocommands_loaded")
     autocmd QuickFixCmdPost * cwindow
     autocmd FileType * :set formatoptions=tcql autoindent comments&
     "autocmd BufEnter * :cd %:p:h
-    "autocmd CursorMoved *.c,*.cpp,*.h,*.java call ColumnHighlight()
-    "autocmd InsertEnter *.c,*.cpp,*.h,*.java call RemoveHighlightOnInsertEnter()
     "autocmd GUIEnter * simalt ~x
     augroup AUG_GSL "{{{3
         au!
@@ -528,12 +526,17 @@ function! TTr_Foldsearch(search)
     normal gg0
 endfunction
 " --------------------------------- }}}2
-
+autocmd CursorMoved * call ColumnHighlight()
+autocmd InsertEnter * call RemoveHighlightOnInsertEnter()
 " --- HighLight column matching (from mbbill)--- {{{2
 let g:TTr_ShowHighlightColumn=0
 function! ColumnHighlight()
+    if index( [ 'c' , 'cpp' , 'java' , 'xml' ] , &ft ) == -1
+        return
+    endif 
+
     let c=getline(line('.'))[col('.') - 1]
-    if c=='{' || c=='}'
+    if c=='{' || c=='}' || ( &ft == "xml" && c == '<' )
         set cuc
         let g:TTr_ShowHighlightColumn=1
     else
