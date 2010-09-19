@@ -112,6 +112,7 @@ if !exists("autocommands_loaded")
     "autocmd GUIEnter * simalt ~x
     augroup AUG_GSL "{{{3
         au!
+        autocmd BufRead,BufNewFile *.gsl syntax off
         autocmd BufRead,BufNewFile *.gsl set filetype=xml 
     augroup END     "}}}3
     augroup AUG_CSS "{{{3
