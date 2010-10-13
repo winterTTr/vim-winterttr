@@ -59,9 +59,9 @@ if has("gui_running")
     set background=dark
     set guioptions=aegimtrL
     let Tlist_Show_Menu=1
-    set guifont=Terminus:h12:cANSI
+    "set guifont=Terminus:h12:cANSI
     "set guifont=Bitstream_Vera_Sans_Mono:h14:cANSI
-    "set guifont=Fixedsys:h10:cGB2312
+    set guifont=Fixedsys:h10:cGB2312
     "set guifont=Bitstream_Vera_Sans_Mono:h10:b:cANSI
     set guifontwide=NSimsun:h12
 endif
@@ -162,9 +162,9 @@ if !exists("autocommands_loaded")
         autocmd FileType python set makeprg=python\ -c\ \"import\ py_compile,sys;\ sys.stderr=sys.stdout;\ py_compile.compile(r'%')\"
         autocmd FileType python set efm=%C\ %.%#,%A\ \ File\ \"%f\"\\,\ line\ %l%.%#,%Z%[%^\ ]%\\@=%m
     augroup END "}}}3
-    augroup AUG_XMLHTML "{{{3
+    augroup AUG_XML_HTML_XSL "{{{3
         au!
-        autocmd FileType html,xml,xhtml set expandtab shiftwidth=2 formatoptions-=t
+        autocmd FileType html,xml,xhtml,xslt set expandtab shiftwidth=2 formatoptions-=t
     augroup END "}}}3
     augroup AUG_LatexSuite "{{{3
         autocmd!
