@@ -178,6 +178,10 @@ if !exists("autocommands_loaded")
 endif
 " ---------------------}}}2
 
+set undofile
+set undodir=$VIM/_undo_
+set undolevels=1000    "default
+
 "}}}1
 "=============================================================================
 " Format Options {{{1
