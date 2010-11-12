@@ -435,6 +435,11 @@ let Tlist_File_Fold_Auto_Close = 1
 let Tlist_Exit_OnlyWindow=1
 let updatetime=4
 let Tlist_Sort_Type="name"
+
+let g:tlist_javascript_settings = 'javascript;s:string;a:array;o:object;f:function'
+
+
+
 " }}}1
 "=============================================================================
 " OmniCppComplete {{{1
