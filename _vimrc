@@ -117,7 +117,7 @@ if !exists("autocommands_loaded")
     augroup END     "}}}3
     augroup AUG_CSS "{{{3
         au!
-        autocmd FileType css :set formatoptions=cql autoindent expandtab shiftwidth=2
+        autocmd FileType css :set formatoptions=cql autoindent expandtab
     augroup END     "}}}3
     augroup AUG_CPPJAVA "{{{3
         au!
@@ -153,6 +153,7 @@ if !exists("autocommands_loaded")
     augroup END  " }}}3
     augroup AUG_JAVASCRIPT "{{{3
         au!
+        autocmd BufRead,BufNewFile *.jsm set filetype=javascript
         autocmd FileType javascript set expandtab shiftwidth=4
         autocmd FileType javascript set makeprg=jsl.exe\ -nofilelisting\ -nocontext\ -nosummary\ -nologo\ -conf\ \"$VIM/jsl.default.conf\"\ -process\ \"%\"
     augroup AUG_PYTHON "{{{3
@@ -164,11 +165,11 @@ if !exists("autocommands_loaded")
     augroup END "}}}3
     augroup AUG_XML_HTML_XSL "{{{3
         au!
-        autocmd FileType html,xml,xhtml,xslt set expandtab shiftwidth=2 formatoptions-=t
+        autocmd FileType html,xml,xhtml,xslt set expandtab formatoptions-=t
     augroup END "}}}3
     augroup AUG_LatexSuite "{{{3
         autocmd!
-        autocmd FileType TEX :set shiftwidth=2 iskeyword+=:
+        autocmd FileType TEX :set iskeyword+=:
     augroup end        "}}}3
     augroup AUG_JSON "{{{3
         autocmd!
