@@ -837,6 +837,10 @@ smap <silent> <C-l> <Plug>(neocomplcache_snippets_expand)
 
 "}}}1
 "=============================================================================
+" minibufexpl {{{1
+let g:miniBufExplSplitBelow=1
+" }}}1
+"=============================================================================
 " Tips ;o) {{{1
 " Let Vim to be the man viewer{{{2
 "sh, ksh:  export MANPAGER="col -b | view -c 'set ft=man nomod nolist' -" }}}2
