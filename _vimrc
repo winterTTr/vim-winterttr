@@ -61,7 +61,7 @@ if has("gui_running")
     let Tlist_Show_Menu=1
     "set guifont=Terminus:h12:cANSI
     "set guifont=Bitstream_Vera_Sans_Mono:h14:cANSI
-    set guifont=Fixedsys:h10:cGB2312
+    set guifont=Fixedsys:h12:cANSI
     "set guifont=Bitstream_Vera_Sans_Mono:h10:b:cANSI
     set guifontwide=NSimsun:h12
 endif
