@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 7.3.  Last change: 2010 Nov 16
+*options.txt*	For Vim version 7.3.  Last change: 2010 Dec 08
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -1434,6 +1434,15 @@ A jump table for the options with a short description can be found at |Q_op|.
 			explicitly accessed using the "* notation.  Also see
 			|gui-clipboard|.
 
+	unnamedplus	A variant of "unnamed" flag which uses the clipboard
+			register '+' (|quoteplus|) instead of register '*' for
+			all operations except yank.  Yank shall copy the text
+			into register '+' and also into '*' when "unnamed" is
+			included.
+			Only available with the |+X11| feature.
+			Availability can be checked with: >
+				if has('unnamedplus')
+<
 	autoselect	Works like the 'a' flag in 'guioptions': If present,
 			then whenever Visual mode is started, or the Visual
 			area extended, Vim tries to become the owner of the
@@ -2852,6 +2861,9 @@ A jump table for the options with a short description can be found at |Q_op|.
 	  file only, the option is not changed.
 	When 'binary' is set, the value of 'fileformats' is not used.
 
+	Note that when Vim starts up with an empty buffer this option is not
+	use.  Set 'fileformat' in your .vimrc instead.
+
 	For systems with a Dos-like <EOL> (<CR><NL>), when reading files that
 	are ":source"ed and for vimrc files, automatic <EOL> detection may be
 	done:
@@ -3209,7 +3221,8 @@ A jump table for the options with a short description can be found at |Q_op|.
 	the internal format mechanism.
 
 	The expression may be evaluated in the |sandbox|, see
-	|sandbox-option|.
+	|sandbox-option|.  That stops the option from working, since changing
+	the buffer text is not allowed.
 
 						*'fsync'* *'fs'*
 'fsync' 'fs'		boolean	(default on)
@@ -6232,7 +6245,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 	Do smart autoindenting when starting a new line.  Works for C-like
 	programs, but can also be used for other languages.  'cindent' does
 	something like this, works better in most cases, but is more strict,
-	see |C-indenting|.  When 'cindent' is on or 'smartindent' is set,
+	see |C-indenting|.  When 'cindent' is on or 'indentexpr' is set,
 	setting 'si' has no effect.  'indentexpr' is a more advanced
 	alternative.
 	Normally 'autoindent' should also be on when using 'smartindent'.
@@ -7751,6 +7764,17 @@ A jump table for the options with a short description can be found at |Q_op|.
 <	The use of |:set+=| and |:set-=| is preferred when adding or removing
 	a pattern from the list.  This avoids problems when a future version
 	uses another default.
+
+
+			*'wildignorecase'* *'wic'* *'nowildignorecase'* *'nowic'*
+'wildignorecase' 'wic'	boolean	(default off)
+			global
+			{not in Vi}
+	When set case is ignored when completing file names and directories.
+	Has no effect on systems where file name case is generally ignored.
+	Does not apply when the shell is used to expand wildcards, which
+	happens when there are special characters.
+
 
 				*'wildmenu'* *'wmnu'* *'nowildmenu'* *'nowmnu'*
 'wildmenu' 'wmnu'	boolean	(default off)
