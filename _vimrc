@@ -207,7 +207,7 @@ set selectmode=key
 set keymodel=startsel,stopsel
 set switchbuf=useopen,usetab
 set winaltkeys=no
-set cursorbind
+"set cursorbind
 "set shellslash
 set grepprg=grep\ -nH\ $*
 "}}}1
