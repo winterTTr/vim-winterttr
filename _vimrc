@@ -175,6 +175,10 @@ if !exists("autocommands_loaded")
         autocmd!
         au BufRead,BufNewFile *.json setfiletype json
     augroup end        "}}}3
+    augroup AUG_XUL "{{{3
+        autocmd!
+        au BufRead,BufNewFile *.xul setfiletype xml
+    augroup end        "}}}3
 
 endif
 " ---------------------}}}2
@@ -344,7 +348,7 @@ if has("gui_running")
         " is so you don't have to hit return after command. Double quotes are
         " not necessary in the 'explorer.exe %:p:h' section.
         nnoremap <silent> <C-F5> :if expand("%:p:h") != "" \|execute '!start explorer /e,/select,'.substitute(expand("%:p"),'/','\','g')\|endif<CR>
-        nnoremap <silent> <C-F6> :execute '!start cmd.exe /k cd /d "' . expand("%:h") . '"'<CR>
+        nnoremap <silent> <C-F6> :execute '!start cmd.exe /k cd /d "' . expand("%:p:h") . '"'<CR>
     endif
 endif
 " --------------------------------------- }}}2
@@ -437,7 +441,7 @@ let Tlist_Exit_OnlyWindow=1
 let updatetime=4
 let Tlist_Sort_Type="name"
 
-let g:tlist_javascript_settings = 'javascript;s:string;a:array;o:object;f:function'
+let g:tlist_javascript_settings = 'javascript;s:string;a:array;o:object;f:function;m:member'
 
 
 
