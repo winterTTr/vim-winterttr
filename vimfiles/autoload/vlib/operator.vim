@@ -18,6 +18,15 @@ function vlib#operator#Invoke(aObject,aFuncName,...)
     return s:CallWithScope(a:aFuncName,a:000,a:aObject,a:aObject)
 endfunction
 
+function vlib#operator#PInvoke(aObject,aFuncName,...)
+	let parent = get( a:aObject, "__prototype__" )
+	if type( parent ) != g:vlib#type#dict 
+		throw "vexception:No such function:" . a:aFuncName
+	endif
+	return s:CallWithScope(a:aFuncName,a:000,parent,a:aObject)
+endfunction
+
+
 function vlib#operator#Get(aObject,aPropertyName)
 	return s:GetWithScope(a:aPropertyName,a:aObject)
 endfunction
