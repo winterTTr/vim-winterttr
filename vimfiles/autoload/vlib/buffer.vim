@@ -34,9 +34,9 @@ endfunction
 
 
 " define normal buffer, which is used to load file
-let vlib#buffer#CNornalBuffer = vlib#operator#New(g:vlib#buffer#CCommandTarget)
+let vlib#buffer#CFileBuffer = vlib#operator#New(g:vlib#buffer#CCommandTarget)
 
-function vlib#buffer#CNornalBuffer.Init(aFilename) dict
+function vlib#buffer#CFileBuffer.Init(aFilename) dict
 	" init command target
 	call vlib#operator#PInvoke( self , "Init" )
 

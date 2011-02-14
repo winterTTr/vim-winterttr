@@ -15,15 +15,25 @@ function vlib#operator#New(...)
 endfunction
 
 function vlib#operator#Invoke(aObject,aFuncName,...)
+	"echo "===Invoke==="
+	"echo a:aObject
+	"echo a:aFuncName
+	"echo a:000
     return s:CallWithScope(a:aFuncName,a:000,a:aObject,a:aObject)
 endfunction
 
 function vlib#operator#PInvoke(aObject,aFuncName,...)
-	let parent = get( a:aObject, "__prototype__" )
-	if type( parent ) != g:vlib#type#dict 
+	let classPrototype = get( a:aObject, "__prototype__" )
+	if type( classPrototype ) != g:vlib#type#dict 
 		throw "vexception:No such function:" . a:aFuncName
 	endif
-	return s:CallWithScope(a:aFuncName,a:000,parent,a:aObject)
+
+	let parentClassPrototype = get ( classPrototype , "__prototype__" )
+	if type( parentClassPrototype ) != g:vlib#type#dict 
+		throw "vexception:No such function:" . a:aFuncName
+	endif
+
+	return s:CallWithScope(a:aFuncName,a:000,parentClassPrototype,a:aObject)
 endfunction
 
 
@@ -51,8 +61,15 @@ endfunction
 
 
 function s:CallWithScope(aFuncName,aParamList,aScope,aSelf)
+	"echo "===CallWithScope==="
+	"echo a:aFuncName
+	"echo a:aParamList
+	"echo a:aScope
+	"echo a:aSelf
     let FuncRef = get( a:aScope , a:aFuncName )
+	"echo type( FuncRef ) == g:vlib#type#function
     if type( FuncRef ) == g:vlib#type#function
+		"echo "here"
         return call( FuncRef , a:aParamList , a:aSelf )
     else
         let prototype = get( a:aScope , "__prototype__" )
