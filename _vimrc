@@ -108,6 +108,7 @@ if !exists("autocommands_loaded")
     let autocommands_loaded = 1
     autocmd QuickFixCmdPost * cwindow
     autocmd FileType * :set formatoptions=tcql autoindent comments&
+    autocmd CursorHold * silent! exe printf('match Underlined /\<%s\>/', expand('<cword>'))
     "autocmd BufEnter * :cd %:p:h
     "autocmd GUIEnter * simalt ~x
     augroup AUG_GSL "{{{3
@@ -186,6 +187,7 @@ endif
 set undofile
 set undodir=$VIM/_undo_
 set undolevels=1000    "default
+set updatetime=2000
 
 "}}}1
 "=============================================================================
@@ -438,7 +440,6 @@ let Tlist_Use_SingleClick=0
 let Tlist_Use_Right_Window = 1
 let Tlist_File_Fold_Auto_Close = 1
 let Tlist_Exit_OnlyWindow=1
-let updatetime=4
 let Tlist_Sort_Type="name"
 
 let g:tlist_javascript_settings = 'javascript;s:string;a:array;o:object;f:function;m:member'
