@@ -1,6 +1,6 @@
 let vlib#buffer#CCommandTarget = vlib#operator#New()
 
-function vlib#buffer#CCommandTarget.Init() dict
+function vlib#buffer#CCommandTarget.Init(aInitInfo) dict
 	let self.mCommandQueue = []
 endfunction
 
@@ -25,9 +25,9 @@ endfunction
 " define normal buffer, which is used to load file
 let vlib#buffer#CBufferBase = vlib#operator#New(g:vlib#buffer#CCommandTarget)
 
-function vlib#buffer#CBufferBase.Init() dict
+function vlib#buffer#CBufferBase.Init(aInitInfo) dict
 	" init command target
-	call call( g:vlib#buffer#CCommandTarget.Init , [] , self )
+	call call( g:vlib#buffer#CCommandTarget.Init , a:aInitInfo , self )
 
 	" set buffer id
 	self.mBufferID = 0 
