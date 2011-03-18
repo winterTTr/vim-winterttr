@@ -359,6 +359,9 @@ endif
 nnoremap <expr> gp '`[' . strpart(getregtype(), 0, 1) . '`]'
 " ------------------------------------ }}}2
 
+" --- set to the current path --- {{{2
+nnoremap <silent> <M-p> :cd %:h<CR>
+" ------------------------------------ }}}2
 
 " --- Visual Mode Search, Search inside the V-select area -- {{{2
 "function! SearchInVSelectedArea()

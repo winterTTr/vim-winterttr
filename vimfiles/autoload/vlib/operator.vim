@@ -2,15 +2,14 @@
 " __prototype__ property
 let vlib#operator#object = {}
 
-function vlib#operator#New(...)
+function vlib#operator#object.Init(aInitInfo) dict
+	"do nothing
+endfunction
+
+function vlib#operator#New(aBaseClass,aInitInfo)
 	let newObject = {}
-	if a:0 == 0 
-		" a new class from object
-		let newObject.__prototype__ = g:vlib#operator#object
-	else
-		" just use single inheritation
-		let newObject.__prototype__ = a:1
-	endif
+	let newObject.__prototype__ = a:aBaseClass
+	call vlib#operator#Invoke( newObject , "Init" , a:InitInfo )
 	return newObject
 endfunction
 
