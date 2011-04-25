@@ -108,7 +108,7 @@ if !exists("autocommands_loaded")
     let autocommands_loaded = 1
     autocmd QuickFixCmdPost * cwindow
     autocmd FileType * :set formatoptions=tcql autoindent comments&
-    autocmd CursorHold * silent! exe printf('match Underlined /\<%s\>/', expand('<cword>'))
+    "autocmd CursorHold * silent! exe printf('match Underlined /\<%s\>/', expand('<cword>'))
     "autocmd BufEnter * :cd %:p:h
     "autocmd GUIEnter * simalt ~x
     augroup AUG_GSL "{{{3
