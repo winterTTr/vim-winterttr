@@ -359,7 +359,6 @@ endif
 nnoremap <expr> gp '`[' . strpart(getregtype(), 0, 1) . '`]'
 " ------------------------------------ }}}2
 
-
 " --- Visual Mode Search, Search inside the V-select area -- {{{2
 "function! SearchInVSelectedArea()
 "   return '\%>' . ( line("'<") - 1 ) . 'l\%<' . ( line("'>") + 1 ) .  'l'
@@ -369,6 +368,9 @@ vnoremap / <C-C>/\%V
 
 " ------------------------------------ }}}2
 
+" --- auto change the cwd to current file --- {{{2
+nnoremap <silent> <m-p> :cd %:h<CR>
+" ------------------------------------ }}}2
 "}}}1
 "=============================================================================
 " ETC options {{{1
