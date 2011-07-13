@@ -61,7 +61,7 @@ if has("gui_running")
     let Tlist_Show_Menu=1
     "set guifont=Terminus:h12:cANSI
     "set guifont=Bitstream_Vera_Sans_Mono:h14:cANSI
-    set guifont=Fixedsys:h12:cANSI
+    set guifont=Fixedsys:h12:cGB2312
     "set guifont=Bitstream_Vera_Sans_Mono:h10:b:cANSI
     set guifontwide=NSimsun:h12
 endif
@@ -221,6 +221,10 @@ set grepprg=grep\ -nH\ $*
 " Key map {{{1
 "-------------------------------------------------
 
+" --- Easy Motion map ---{{{2
+nmap <space> H0\f
+"--------------------------------}}}2
+
 " --- Quick Fix ---{{{2
 map <leader>cw :cw<cr>
 map <F3> :cp<cr>
@@ -257,7 +261,7 @@ nnoremap ,e :e <C-R>=expand("%:p:h")."\\"<CR>
 
 " --- tag help key ---{{{2
 noremap  <M-]>  :tab split<CR><C-]>
-nnoremap <space> <C-W>}
+"nnoremap <space> <C-W>}
 "----------------------}}}2
 
 " --- > and < do not affect the V-mode --- {{{2
