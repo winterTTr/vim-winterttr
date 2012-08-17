@@ -1,0 +1,6 @@
+let vlib#type#number  = type(0)
+let vlib#type#string  = type("")
+let vlib#type#function= type( function("tr") )
+let vlib#type#list    = type( [] )
+let vlib#type#dict    = type( {} )
+let vlib#type#float   = type( 0.0 )
